@@ -31,7 +31,7 @@ gem "devise"
 gem "omniauth-keycloak", "~> 1.4"
 
 # Multi-tenant architecture
-gem "apartment", "~> 2.5"
+gem "apartment", "~> 2.2.1"
 gem "acts_as_tenant", "~> 0.6"
 
 # Authorization
