@@ -1,0 +1,119 @@
+version: '3'
+
+vars:
+  DOCKER_COMPOSE_FILE: docker-compose.yml
+  TERRAFORM_DIR: terraform
+  KUBERNETES_DIR: kubernetes
+
+tasks:
+  install:
+    desc: Install all dependencies
+    cmds:
+      - echo "Installing dependencies..."
+      - if [ ! -f .env ]; then cp .env.example .env; fi
+      - docker-compose build
+
+  dev:
+    desc: Start development environment
+    cmds:
+      - echo "Starting development environment..."
+      - docker-compose up
+
+  dev:down:
+    desc: Stop development environment
+    cmds:
+      - echo "Stopping development environment..."
+      - docker-compose down
+
+  test:
+    desc: Run tests
+    cmds:
+      - echo "Running tests..."
+      - docker-compose run --rm web bundle exec rspec
+
+  lint:
+    desc: Run linters
+    cmds:
+      - echo "Running linters..."
+      - docker-compose run --rm web bundle exec rubocop
+
+  console:
+    desc: Start Rails console
+    cmds:
+      - echo "Starting Rails console..."
+      - docker-compose run --rm web bundle exec rails console
+
+  db:setup:
+    desc: Setup database
+    cmds:
+      - echo "Setting up database..."
+      - docker-compose run --rm web bundle exec rails db:setup
+
+  db:migrate:
+    desc: Run database migrations
+    cmds:
+      - echo "Running migrations..."
+      - docker-compose run --rm web bundle exec rails db:migrate
+
+  db:seed:
+    desc: Seed database
+    cmds:
+      - echo "Seeding database..."
+      - docker-compose run --rm web bundle exec rails db:seed
+
+  build:
+    desc: Build production Docker image
+    cmds:
+      - echo "Building production Docker image..."
+      - docker build -t baseball-league-manager:latest .
+
+  deploy:aws:
+    desc: Deploy to AWS
+    dir: "{{.TERRAFORM_DIR}}/aws"
+    cmds:
+      - echo "Deploying to AWS..."
+      - terraform init
+      - terraform apply -auto-approve
+
+  deploy:gcp:
+    desc: Deploy to Google Cloud
+    dir: "{{.TERRAFORM_DIR}}/gcp"
+    cmds:
+      - echo "Deploying to Google Cloud..."
+      - terraform init
+      - terraform apply -auto-approve
+
+  deploy:azure:
+    desc: Deploy to Azure
+    dir: "{{.TERRAFORM_DIR}}/azure"
+    cmds:
+      - echo "Deploying to Azure..."
+      - terraform init
+      - terraform apply -auto-approve
+
+  k8s:apply:
+    desc: Apply Kubernetes manifests
+    dir: "{{.KUBERNETES_DIR}}"
+    cmds:
+      - echo "Applying Kubernetes manifests..."
+      - kubectl apply -f .
+
+  k8s:delete:
+    desc: Delete Kubernetes resources
+    dir: "{{.KUBERNETES_DIR}}"
+    cmds:
+      - echo "Deleting Kubernetes resources..."
+      - kubectl delete -f .
+
+  docs:generate:
+    desc: Generate documentation
+    cmds:
+      - echo "Generating documentation..."
+      - docker-compose run --rm web bundle exec yard doc
+
+  clean:
+    desc: Clean up development environment
+    cmds:
+      - echo "Cleaning up..."
+      - docker-compose down -v
+      - docker system prune -f

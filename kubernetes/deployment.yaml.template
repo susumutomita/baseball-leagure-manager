@@ -1,0 +1,205 @@
+# This is a template file. DO NOT store actual secrets here.
+# Use environment variables or a secure secret management system in production.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: baseball-league-web
+  labels:
+    app: baseball-league
+    component: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: baseball-league
+      component: web
+  template:
+    metadata:
+      labels:
+        app: baseball-league
+        component: web
+    spec:
+      containers:
+      - name: web
+        # Replace with your actual image repository during deployment
+        image: your-registry/baseball-league-manager:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: RAILS_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: redis-url
+        - name: RAILS_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: rails-master-key
+        - name: KEYCLOAK_URL
+          valueFrom:
+            configMapKeyRef:
+              name: baseball-league-config
+              key: keycloak-url
+        - name: KEYCLOAK_REALM
+          valueFrom:
+            configMapKeyRef:
+              name: baseball-league-config
+              key: keycloak-realm
+        - name: KEYCLOAK_CLIENT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: baseball-league-config
+              key: keycloak-client-id
+        - name: KEYCLOAK_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: keycloak-client-secret
+        - name: STRIPE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: stripe-api-key
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: baseball-league-sidekiq
+  labels:
+    app: baseball-league
+    component: sidekiq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: baseball-league
+      component: sidekiq
+  template:
+    metadata:
+      labels:
+        app: baseball-league
+        component: sidekiq
+    spec:
+      containers:
+      - name: sidekiq
+        # Replace with your actual image repository during deployment
+        image: your-registry/baseball-league-manager:latest
+        command: ["bundle", "exec", "sidekiq"]
+        env:
+        - name: RAILS_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: redis-url
+        - name: RAILS_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: rails-master-key
+        - name: KEYCLOAK_URL
+          valueFrom:
+            configMapKeyRef:
+              name: baseball-league-config
+              key: keycloak-url
+        - name: KEYCLOAK_REALM
+          valueFrom:
+            configMapKeyRef:
+              name: baseball-league-config
+              key: keycloak-realm
+        - name: KEYCLOAK_CLIENT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: baseball-league-config
+              key: keycloak-client-id
+        - name: KEYCLOAK_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: keycloak-client-secret
+        - name: STRIPE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: baseball-league-secrets
+              key: stripe-api-key
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: baseball-league-web
+  labels:
+    app: baseball-league
+    component: web
+spec:
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: baseball-league
+    component: web
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: baseball-league-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - baseball-league.example.com
+    secretName: baseball-league-tls
+  rules:
+  - host: baseball-league.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: baseball-league-web
+            port:
+              number: 80
