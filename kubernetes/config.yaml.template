@@ -1,0 +1,26 @@
+# This is a template file. DO NOT store actual secrets here.
+# Use environment variables or a secure secret management system in production.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: baseball-league-config
+data:
+  # Replace these placeholders with actual values during deployment
+  keycloak-url: "https://keycloak.example.com"
+  keycloak-realm: "baseball-league"
+  keycloak-client-id: "baseball-app"
+---
+# WARNING: This is only a template
+# In production, use kubectl create secret or a secure secret management system
+apiVersion: v1
+kind: Secret
+metadata:
+  name: baseball-league-secrets
+type: Opaque
+stringData:
+  # These are placeholder values only - NEVER commit actual secrets
+  database-url: "postgresql://username:password@hostname:5432/database"
+  redis-url: "redis://hostname:6379/0"
+  rails-master-key: "placeholder-master-key"
+  keycloak-client-secret: "placeholder-client-secret"
+  stripe-api-key: "placeholder-api-key"
