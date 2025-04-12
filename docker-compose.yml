@@ -4,7 +4,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "5432:5432"
 
@@ -25,7 +25,7 @@ services:
       - "3000:3000"
     environment:
       REDIS_URL: redis://redis:6379/1
-      DATABASE_URL: postgresql://postgres:password@db:5432/baseball_league_development
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/baseball_league_development
       RAILS_ENV: development
     depends_on:
       - db
