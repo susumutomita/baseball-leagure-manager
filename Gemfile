@@ -31,8 +31,9 @@ gem "devise"
 gem "omniauth-keycloak", "~> 1.4"
 
 # Multi-tenant architecture
-gem "apartment", "~> 2.2.1"
 gem "acts_as_tenant", "~> 0.6"
+# Using ros-apartment fork that supports Rails 7
+gem "ros-apartment", github: "influitive/apartment", branch: "development"
 
 # Authorization
 gem "pundit", "~> 2.3"
