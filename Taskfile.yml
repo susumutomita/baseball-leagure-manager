@@ -12,6 +12,7 @@ tasks:
       - echo "Installing dependencies..."
       - if [ ! -f .env ]; then cp .env.example .env; fi
       - docker-compose build
+      - docker-compose run --rm web yarn install
 
   dev:
     desc: Start development environment
@@ -31,11 +32,48 @@ tasks:
       - echo "Running tests..."
       - docker-compose run --rm web bundle exec rspec
 
-  lint:
-    desc: Run linters
+  test:frontend:
+    desc: Run frontend tests
     cmds:
-      - echo "Running linters..."
+      - echo "Running frontend tests..."
+      - docker-compose run --rm web yarn test
+
+  lint:
+    desc: Run all linters
+    cmds:
+      - task: lint:ruby
+      - task: lint:typescript
+
+  lint:ruby:
+    desc: Run Ruby linters
+    cmds:
+      - echo "Running Ruby linters..."
       - docker-compose run --rm web bundle exec rubocop
+
+  lint:typescript:
+    desc: Run TypeScript linters
+    cmds:
+      - echo "Running TypeScript linters..."
+      - docker-compose run --rm web yarn lint
+
+  lint:fix:
+    desc: Fix linting issues
+    cmds:
+      - echo "Fixing linting issues..."
+      - docker-compose run --rm web bundle exec rubocop -a
+      - docker-compose run --rm web yarn lint:fix
+
+  format:
+    desc: Format code
+    cmds:
+      - echo "Formatting code..."
+      - docker-compose run --rm web yarn format
+
+  security:check:
+    desc: Run security checks
+    cmds:
+      - echo "Running security checks..."
+      - docker-compose run --rm web bundle exec brakeman
 
   console:
     desc: Start Rails console
@@ -61,11 +99,32 @@ tasks:
       - echo "Seeding database..."
       - docker-compose run --rm web bundle exec rails db:seed
 
+  frontend:build:
+    desc: Build frontend assets
+    cmds:
+      - echo "Building frontend assets..."
+      - docker-compose run --rm web yarn build
+
+  frontend:watch:
+    desc: Watch frontend assets for changes
+    cmds:
+      - echo "Watching frontend assets..."
+      - docker-compose run --rm web yarn watch
+
   build:
     desc: Build production Docker image
     cmds:
       - echo "Building production Docker image..."
       - docker build -t baseball-league-manager:latest .
+
+  ci:
+    desc: Run CI checks locally
+    cmds:
+      - echo "Running CI checks locally..."
+      - task: lint
+      - task: security:check
+      - task: test
+      - task: test:frontend
 
   deploy:aws:
     desc: Deploy to AWS
@@ -110,6 +169,12 @@ tasks:
     cmds:
       - echo "Generating documentation..."
       - docker-compose run --rm web bundle exec yard doc
+
+  api:docs:generate:
+    desc: Generate API documentation
+    cmds:
+      - echo "Generating API documentation..."
+      - docker-compose run --rm web bundle exec rails rswag:specs:swaggerize
 
   clean:
     desc: Clean up development environment
