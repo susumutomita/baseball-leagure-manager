@@ -43,7 +43,7 @@ jobs:
         image: postgres:14
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'postgres_test' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: baseball_league_test
         ports:
           - 5432:5432
@@ -78,7 +78,7 @@ jobs:
       - name: Set up database
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:${{ secrets.POSTGRES_PASSWORD || 'postgres_test' }}@localhost:5432/baseball_league_test
+          DATABASE_URL: postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/baseball_league_test
         run: |
           bundle exec rails db:create
           bundle exec rails db:schema:load
@@ -86,7 +86,7 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:${{ secrets.POSTGRES_PASSWORD || 'postgres_test' }}@localhost:5432/baseball_league_test
+          DATABASE_URL: postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/baseball_league_test
           REDIS_URL: redis://localhost:6379/0
         run: bundle exec rspec
 
