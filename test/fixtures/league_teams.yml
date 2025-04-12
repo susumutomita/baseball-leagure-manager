@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  league: one
+  team: one
+  registration_date: 2025-04-12 14:30:23
+  payment_status: MyString
+
+two:
+  league: two
+  team: two
+  registration_date: 2025-04-12 14:30:23
+  payment_status: MyString

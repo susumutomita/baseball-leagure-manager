@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  position: MyString
+  jersey_number: 1
+  team: one
+  birth_date: 2025-04-12
+  contact_email: MyString
+
+two:
+  name: MyString
+  position: MyString
+  jersey_number: 1
+  team: two
+  birth_date: 2025-04-12
+  contact_email: MyString

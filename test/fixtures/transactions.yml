@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  team: one
+  league: one
+  amount: 9.99
+  description: MyString
+  payment_status: MyString
+  payment_method: MyString
+  transaction_date: 2025-04-12 14:26:18
+  payment_reference: MyString
+
+two:
+  team: two
+  league: two
+  amount: 9.99
+  description: MyString
+  payment_status: MyString
+  payment_method: MyString
+  transaction_date: 2025-04-12 14:26:18
+  payment_reference: MyString
