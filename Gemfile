@@ -32,8 +32,8 @@ gem "omniauth-keycloak", "~> 1.4"
 
 # Multi-tenant architecture
 gem "acts_as_tenant", "~> 0.6"
-# Using ros-apartment fork that supports Rails 7
-gem "ros-apartment", github: "influitive/apartment", branch: "development"
+# Using activerecord-multi-tenant for Rails 7 compatibility
+gem "activerecord-multi-tenant", "~> 1.3"
 
 # Authorization
 gem "pundit", "~> 2.3"
