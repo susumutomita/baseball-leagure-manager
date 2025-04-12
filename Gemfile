@@ -33,7 +33,7 @@ gem "omniauth-keycloak", "~> 1.4"
 # Multi-tenant architecture
 gem "acts_as_tenant", "~> 0.6"
 # Using activerecord-multi-tenant for Rails 7 compatibility
-gem "activerecord-multi-tenant", "~> 1.3"
+gem "activerecord-multi-tenant", "~> 2.4.0"
 
 # Authorization
 gem "pundit", "~> 2.3"
