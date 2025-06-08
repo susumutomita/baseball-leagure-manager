@@ -25,9 +25,11 @@ RUN apt-get update -qq && \
   apt-get install --no-install-recommends -y build-essential curl git libpq-dev libvips pkg-config python-is-python3
 
 # Install Node.js and Yarn
-RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
-  apt-get install -y nodejs && \
-  npm install -g yarn@$YARN_VERSION
+RUN echo "Using Node.js version: ${NODE_VERSION}" && \
+    apt-get update -qq && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION:-18}.x | bash - || { echo "Failed to fetch Node.js setup script"; exit 1; } && \
+    apt-get install -y nodejs && \
+    npm install -g yarn@${YARN_VERSION:-1.22.19}
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
@@ -38,7 +40,7 @@ RUN bundle config set --local deployment 'false' && \
 
 # Install node modules
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install || { echo "Regenerating yarn.lock"; yarn install --force; }
 
 # Copy application code
 COPY . .

@@ -37,3 +37,6 @@
 # Ignore Kubernetes files with potential secrets
 kubernetes/config.yaml
 kubernetes/deployment.yaml
+
+node_modules
+.DS_Store
