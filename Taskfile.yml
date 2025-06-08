@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  DOCKER_COMPOSE_FILE: docker-compose.yml
+  DOCKER_COMPOSE_FILE: docker compose.yml
   TERRAFORM_DIR: terraform
   KUBERNETES_DIR: kubernetes
 
@@ -11,32 +11,33 @@ tasks:
     cmds:
       - echo "Installing dependencies..."
       - if [ ! -f .env ]; then cp .env.example .env; fi
-      - docker-compose build
-      - docker-compose run --rm web yarn install
+      - docker compose build
+      - docker compose run --rm web yarn install
+
 
   dev:
     desc: Start development environment
     cmds:
       - echo "Starting development environment..."
-      - docker-compose up
+      - docker compose up
 
   dev:down:
     desc: Stop development environment
     cmds:
       - echo "Stopping development environment..."
-      - docker-compose down
+      - docker compose down
 
   test:
     desc: Run tests
     cmds:
       - echo "Running tests..."
-      - docker-compose run --rm web bundle exec rspec
+      - docker compose run --rm web bundle exec rspec
 
   test:frontend:
     desc: Run frontend tests
     cmds:
       - echo "Running frontend tests..."
-      - docker-compose run --rm web yarn test
+      - docker compose run --rm web yarn test
 
   lint:
     desc: Run all linters
@@ -48,68 +49,68 @@ tasks:
     desc: Run Ruby linters
     cmds:
       - echo "Running Ruby linters..."
-      - docker-compose run --rm web bundle exec rubocop
+      - docker compose run --rm web bundle exec rubocop
 
   lint:typescript:
     desc: Run TypeScript linters
     cmds:
       - echo "Running TypeScript linters..."
-      - docker-compose run --rm web yarn lint
+      - docker compose run --rm web yarn lint
 
   lint:fix:
     desc: Fix linting issues
     cmds:
       - echo "Fixing linting issues..."
-      - docker-compose run --rm web bundle exec rubocop -a
-      - docker-compose run --rm web yarn lint:fix
+      - docker compose run --rm web bundle exec rubocop -a
+      - docker compose run --rm web yarn lint:fix
 
   format:
     desc: Format code
     cmds:
       - echo "Formatting code..."
-      - docker-compose run --rm web yarn format
+      - docker compose run --rm web yarn format
 
   security:check:
     desc: Run security checks
     cmds:
       - echo "Running security checks..."
-      - docker-compose run --rm web bundle exec brakeman
+      - docker compose run --rm web bundle exec brakeman
 
   console:
     desc: Start Rails console
     cmds:
       - echo "Starting Rails console..."
-      - docker-compose run --rm web bundle exec rails console
+      - docker compose run --rm web bundle exec rails console
 
   db:setup:
     desc: Setup database
     cmds:
       - echo "Setting up database..."
-      - docker-compose run --rm web bundle exec rails db:setup
+      - docker compose run --rm web bundle exec rails db:setup
 
   db:migrate:
     desc: Run database migrations
     cmds:
       - echo "Running migrations..."
-      - docker-compose run --rm web bundle exec rails db:migrate
+      - docker compose run --rm web bundle exec rails db:migrate
 
   db:seed:
     desc: Seed database
     cmds:
       - echo "Seeding database..."
-      - docker-compose run --rm web bundle exec rails db:seed
+      - docker compose run --rm web bundle exec rails db:seed
 
   frontend:build:
     desc: Build frontend assets
     cmds:
       - echo "Building frontend assets..."
-      - docker-compose run --rm web yarn build
+      - docker compose run --rm web yarn build
 
   frontend:watch:
     desc: Watch frontend assets for changes
     cmds:
       - echo "Watching frontend assets..."
-      - docker-compose run --rm web yarn watch
+      - docker compose run --rm web yarn watch
 
   build:
     desc: Build production Docker image
@@ -168,17 +169,17 @@ tasks:
     desc: Generate documentation
     cmds:
       - echo "Generating documentation..."
-      - docker-compose run --rm web bundle exec yard doc
+      - docker compose run --rm web bundle exec yard doc
 
   api:docs:generate:
     desc: Generate API documentation
     cmds:
       - echo "Generating API documentation..."
-      - docker-compose run --rm web bundle exec rails rswag:specs:swaggerize
+      - docker compose run --rm web bundle exec rails rswag:specs:swaggerize
 
   clean:
     desc: Clean up development environment
     cmds:
       - echo "Cleaning up..."
-      - docker-compose down -v
+      - docker compose down -v
       - docker system prune -f

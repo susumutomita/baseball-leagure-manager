@@ -14,7 +14,9 @@
     "baseUrl": ".",
     "paths": {
       "*": ["app/javascript/*"]
-    }
+    },
+    "lib": ["dom", "es2015"],
+    "types": ["node", "@hotwired/stimulus"]
   },
   "include": [
     "app/javascript/**/*"
