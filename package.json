@@ -46,6 +46,7 @@
     "watch": "webpack --config webpack.config.js --watch --mode=development",
     "lint": "eslint app/javascript --ext .ts,.tsx",
     "lint:fix": "eslint app/javascript --ext .ts,.tsx --fix",
-    "format": "prettier --write 'app/javascript/**/*.{ts,tsx}'"
+    "format": "prettier --write 'app/javascript/**/*.{ts,tsx}'",
+    "typecheck": "tsc --noEmit"
   }
 }

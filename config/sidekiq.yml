@@ -1,0 +1,37 @@
+:schedule:
+  invoice_generation:
+    cron: "0 0 * * *" # Run daily at midnight
+    class: Billing::InvoiceGenerationJob
+    description: "Generate monthly invoices"
+  
+  usage_alerts:
+    cron: "0 */6 * * *" # Run every 6 hours
+    class: Billing::UsageAlertJob
+    description: "Check and send usage limit alerts"
+  
+  payment_retry:
+    cron: "0 2 * * *" # Run daily at 2 AM
+    class: Billing::PaymentRetryJob
+    description: "Retry failed payments"
+  
+  usage_cleanup:
+    cron: "0 3 * * 0" # Run weekly on Sunday at 3 AM
+    class: Billing::UsageCleanupJob
+    description: "Clean up old usage records"
+
+:queues:
+  - default
+  - mailers
+  - billing
+  - critical
+
+:concurrency: 25
+
+:timeout: 30
+
+# Retry configuration
+:max_retries: 25
+
+# Dead job configuration
+:dead_max_jobs: 10000
+:dead_timeout_in_seconds: 15552000 # 6 months

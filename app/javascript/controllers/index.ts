@@ -6,8 +6,9 @@ const application = Application.start();
 application.debug = process.env.NODE_ENV === "development";
 window.Stimulus = application;
 
+// @ts-ignore - webpack require.context
 const context = require.context("./", true, /_controller\.ts$/);
-context.keys().forEach((key) => {
+context.keys().forEach((key: string) => {
   const controllerName = key
     .replace(/^\.\//, "")
     .replace(/\_controller\.ts$/, "")

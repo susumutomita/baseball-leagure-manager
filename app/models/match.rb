@@ -1,10 +1,16 @@
 class Match < ApplicationRecord
+  include TenantScoped
+
   belongs_to :league
   belongs_to :home_team, class_name: 'Team'
   belongs_to :away_team, class_name: 'Team'
+  belongs_to :match_proposal, optional: true
+  belongs_to :winner_team, class_name: 'Team', optional: true
+  belongs_to :season, optional: true
+  belongs_to :venue, optional: true
 
   # Enums
-  enum status: {
+  enum :status, {
     scheduled: 'scheduled',
     in_progress: 'in_progress',
     completed: 'completed',
@@ -12,9 +18,13 @@ class Match < ApplicationRecord
     postponed: 'postponed'
   }
 
+  # Associations for AI Scheduler
+  has_many :schedule_conflicts, dependent: :destroy
+  has_many :conflicting_matches, through: :schedule_conflicts
+  has_many :rescheduled_matches, dependent: :destroy
+
   # Validations
-  validates :date, presence: true
-  validates :venue, presence: true
+  validates :scheduled_at, presence: true
   validates :status, presence: true
   validates :home_score, :away_score,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 },
@@ -24,20 +34,22 @@ class Match < ApplicationRecord
   validate :scores_present_if_completed
 
   # Scopes
-  scope :upcoming, -> { where('date > ?', Time.current).order(date: :asc) }
-  scope :past, -> { where('date < ?', Time.current).order(date: :desc) }
+  scope :upcoming, -> { where('scheduled_at > ?', Time.current).order(scheduled_at: :asc) }
+  scope :past, -> { where(scheduled_at: ...Time.current).order(scheduled_at: :desc) }
   scope :by_team, ->(team_id) { where('home_team_id = ? OR away_team_id = ?', team_id, team_id) }
 
   # Methods
   def winner
     return nil unless completed?
     return nil if home_score == away_score
+
     home_score > away_score ? home_team : away_team
   end
 
   def loser
     return nil unless completed?
     return nil if home_score == away_score
+
     home_score < away_score ? home_team : away_team
   end
 
@@ -46,7 +58,7 @@ class Match < ApplicationRecord
   end
 
   def can_start?
-    scheduled? && date <= Time.current
+    scheduled? && scheduled_at <= Time.current
   end
 
   def can_complete?
@@ -57,22 +69,22 @@ class Match < ApplicationRecord
 
   def teams_in_same_league
     return unless league && home_team && away_team
-    unless league.teams.include?(home_team) && league.teams.include?(away_team)
-      errors.add(:base, 'Both teams must be registered in the league')
-    end
+
+    return if league.teams.include?(home_team) && league.teams.include?(away_team)
+
+    errors.add(:base, 'Both teams must be registered in the league')
   end
 
   def teams_are_different
-    if home_team_id == away_team_id
-      errors.add(:base, 'Home team and away team must be different')
-    end
+    return unless home_team_id == away_team_id
+
+    errors.add(:base, 'Home team and away team must be different')
   end
 
   def scores_present_if_completed
-    if completed?
-      if home_score.nil? || away_score.nil?
-        errors.add(:base, 'Both scores must be present for completed matches')
-      end
-    end
+    return unless completed?
+    return unless home_score.nil? || away_score.nil?
+
+    errors.add(:base, 'Both scores must be present for completed matches')
   end
 end

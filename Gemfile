@@ -29,6 +29,7 @@ gem "jbuilder"
 # Use Devise for authentication
 gem "devise"
 gem "omniauth-keycloak", "~> 1.4"
+gem "httparty", "~> 0.21"
 
 # Multi-tenant architecture
 gem "acts_as_tenant", "~> 0.6"
@@ -47,6 +48,18 @@ gem "sidekiq-scheduler", "~> 5.0"
 
 # Payment processing
 gem "stripe", "~> 9.0"
+
+# AI integration
+gem "ruby-openai", "~> 6.3"
+
+# Weather API integration
+gem "open-weather-ruby-client", "~> 0.6"
+
+# Geocoding for venue locations
+gem "geocoder", "~> 1.8"
+
+# Machine learning for predictions
+# gem "ruby-fann", "~> 1.3" # Commented out due to build issues
 
 # Use Redis adapter to run Action Cable in production
 gem "redis", ">= 4.0.1"

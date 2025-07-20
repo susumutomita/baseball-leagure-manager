@@ -1,4 +1,4 @@
-class LeaguesController < ApplicationController
+class LeaguesController < Organizations::BaseController
   def index
   end
 

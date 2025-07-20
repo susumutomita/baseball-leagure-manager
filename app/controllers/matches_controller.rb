@@ -1,4 +1,4 @@
-class MatchesController < ApplicationController
+class MatchesController < Organizations::BaseController
   def index
   end
 

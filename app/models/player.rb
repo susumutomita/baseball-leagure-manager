@@ -1,5 +1,8 @@
 class Player < ApplicationRecord
+  include TenantScoped
+  
   belongs_to :team
+  has_many :player_stats, dependent: :destroy
 
   # Validations
   validates :name, presence: true

@@ -1,4 +1,6 @@
 class LeagueTeam < ApplicationRecord
+  include TenantScoped
+  
   belongs_to :league
   belongs_to :team
 

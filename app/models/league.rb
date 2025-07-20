@@ -1,9 +1,13 @@
 class League < ApplicationRecord
+  include TenantScoped
+  
   # Associations
   has_many :matches, dependent: :destroy
   has_many :transactions, dependent: :destroy
   has_many :league_teams
   has_many :teams, through: :league_teams
+  has_one :ai_matching_config, dependent: :destroy
+  has_many :match_proposals, dependent: :destroy
 
   # Enums
   enum status: {
