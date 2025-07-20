@@ -7,6 +7,11 @@ class Organization < ApplicationRecord
   has_many :transactions, dependent: :destroy
   has_many :matches, dependent: :destroy
   
+  # Analytics associations
+  has_many :player_analytics, dependent: :destroy
+  has_many :team_analytics, dependent: :destroy
+  has_many :performance_reports, dependent: :destroy
+  
   # Billing associations
   has_one :organization_subscription, dependent: :destroy
   has_many :payment_methods, dependent: :destroy

@@ -35,6 +35,12 @@ class User < ApplicationRecord
     user
   end
 
+  def self.system_user
+    # Returns a system user for automated operations
+    # In production, this should be properly configured
+    find_by(email: 'system@example.com') || User.first
+  end
+
   # Instance methods
   def admin?
     role == 'admin'

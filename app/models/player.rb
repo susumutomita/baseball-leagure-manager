@@ -3,6 +3,8 @@ class Player < ApplicationRecord
   
   belongs_to :team
   has_many :player_stats, dependent: :destroy
+  has_many :player_analytics, dependent: :destroy
+  has_many :performance_reports, as: :reportable, dependent: :destroy
 
   # Validations
   validates :name, presence: true

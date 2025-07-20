@@ -37,6 +37,7 @@ class Match < ApplicationRecord
   scope :upcoming, -> { where('scheduled_at > ?', Time.current).order(scheduled_at: :asc) }
   scope :past, -> { where(scheduled_at: ...Time.current).order(scheduled_at: :desc) }
   scope :by_team, ->(team_id) { where('home_team_id = ? OR away_team_id = ?', team_id, team_id) }
+  scope :completed, -> { where(status: 'completed') }
 
   # Methods
   def winner

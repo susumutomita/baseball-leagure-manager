@@ -8,6 +8,8 @@ class Team < ApplicationRecord
   has_many :transactions
   has_many :team_strength_metrics, dependent: :destroy
   has_one :current_strength_metric, -> { where(is_current: true) }, class_name: 'TeamStrengthMetric'
+  has_many :team_analytics, dependent: :destroy
+  has_many :performance_reports, as: :reportable, dependent: :destroy
 
   # AI Scheduler associations
   has_many :schedule_conflicts, dependent: :destroy

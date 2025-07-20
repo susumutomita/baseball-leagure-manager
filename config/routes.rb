@@ -218,6 +218,27 @@ Rails.application.routes.draw do
     post 'stripe', to: 'stripe_webhooks#create'
   end
 
+  # Analytics routes
+  namespace :analytics do
+    get 'dashboard/coach/:team_id', to: 'dashboard#coach_dashboard', as: :coach_dashboard
+    get 'dashboard/league', to: 'dashboard#league_dashboard', as: :league_dashboard
+    get 'dashboard/player/:player_id', to: 'dashboard#player_dashboard', as: :player_dashboard
+    get 'dashboard/overview', to: 'dashboard#overview', as: :overview
+    get 'dashboard/compare', to: 'dashboard#compare_players', as: :compare_players
+    
+    resources :reports do
+      member do
+        get :download
+        post :regenerate
+        post :send_report
+      end
+      collection do
+        post :schedule
+        get :export
+      end
+    end
+  end
+
   # Health check endpoint
   get "up" => "rails/health#show", as: :rails_health_check
 end
