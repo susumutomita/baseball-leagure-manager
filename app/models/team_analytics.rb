@@ -7,8 +7,6 @@ class TeamAnalytics < ApplicationRecord
   belongs_to :season, optional: true
   belongs_to :organization
 
-  validates :team_id, presence: true
-  validates :organization_id, presence: true
   validates :team_id, uniqueness: { scope: %i[season_id organization_id] }
 
   # Validate metrics ranges

@@ -7,8 +7,6 @@ class PlayerAnalytics < ApplicationRecord
   belongs_to :season, optional: true
   belongs_to :organization
 
-  validates :player_id, presence: true
-  validates :organization_id, presence: true
   validates :player_id, uniqueness: { scope: %i[season_id organization_id] }
 
   # Validate metrics ranges
@@ -178,7 +176,7 @@ class PlayerAnalytics < ApplicationRecord
     return 1.0 if batting_averages.all?(&:zero?)
 
     mean = batting_averages.sum / batting_averages.count
-    variance = batting_averages.map { |avg| (avg - mean)**2 }.sum / batting_averages.count
+    variance = batting_averages.sum { |avg| (avg - mean)**2 } / batting_averages.count
     std_deviation = Math.sqrt(variance)
 
     # Lower standard deviation = higher consistency

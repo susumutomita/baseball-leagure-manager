@@ -13,8 +13,6 @@ class PerformanceReport < ApplicationRecord
   }
   validates :format, inclusion: { in: %w[json pdf csv excel] }
   validates :status, inclusion: { in: %w[pending generating completed failed] }
-  validates :organization_id, presence: true
-  validates :generated_by_id, presence: true
 
   # Scopes
   scope :completed, -> { where(status: 'completed') }
@@ -342,7 +340,7 @@ class PerformanceReport < ApplicationRecord
         data[:average_ops] < 0.650
       end
 
-      weak_positions&.each do |position, _|
+      weak_positions&.each_key do |position|
         recommendations << {
           category: 'roster',
           priority: 'high',
@@ -414,7 +412,10 @@ class PerformanceReport < ApplicationRecord
   end
 
   def extract_key_recommendations(recommendations)
+    # Using map instead of pluck for hash array
+    # rubocop:disable Rails/Pluck
     recommendations.first(3).map { |r| r[:suggestion] }
+    # rubocop:enable Rails/Pluck
   end
 
   # Utility methods
@@ -445,7 +446,7 @@ class PerformanceReport < ApplicationRecord
   end
 
   def calculate_percentile(rank, total)
-    return nil unless rank && total > 0
+    return nil unless rank && total.positive?
 
     ((total - rank + 1).to_f / total * 100).round(1)
   end
@@ -454,7 +455,7 @@ class PerformanceReport < ApplicationRecord
     return 0.0 if values.empty?
 
     mean = values.sum.to_f / values.count
-    variance = values.map { |v| (v - mean)**2 }.sum / values.count
+    variance = values.sum { |v| (v - mean)**2 } / values.count
     Math.sqrt(variance).round(3)
   end
 
