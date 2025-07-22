@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 module Webhooks
-  class StripeWebhooksController < ApplicationController
-    # Use null session for webhook endpoints to prevent CSRF attacks
-    protect_from_forgery with: :null_session
-    skip_before_action :authenticate_user!
+  class StripeWebhooksController < BaseController
+    # Authentication is handled by Stripe signature verification
+    # No user authentication needed for webhooks
 
     def create
       payload = request.body.read
