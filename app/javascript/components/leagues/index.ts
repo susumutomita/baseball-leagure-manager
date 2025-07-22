@@ -1,3 +1,3 @@
-export * from './LeagueList';
-export * from './LeagueDetail';
-export * from './LeagueForm';
+export * from "./LeagueList";
+export * from "./LeagueDetail";
+export * from "./LeagueForm";

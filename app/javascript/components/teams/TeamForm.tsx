@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 interface TeamFormProps {
   teamId?: number;
@@ -12,11 +12,14 @@ interface TeamFormData {
   logo_url: string;
 }
 
-export const TeamForm: React.FC<TeamFormProps> = ({ teamId, isEdit = false }) => {
+export const TeamForm: React.FC<TeamFormProps> = ({
+  teamId,
+  isEdit = false,
+}) => {
   const [formData, setFormData] = useState<TeamFormData>({
-    name: '',
-    description: '',
-    logo_url: '',
+    name: "",
+    description: "",
+    logo_url: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,14 +33,14 @@ export const TeamForm: React.FC<TeamFormProps> = ({ teamId, isEdit = false }) =>
           const response = await axios.get(`/api/v1/teams/${teamId}`);
           const teamData = response.data.data;
           setFormData({
-            name: teamData.name || '',
-            description: teamData.description || '',
-            logo_url: teamData.logo_url || '',
+            name: teamData.name || "",
+            description: teamData.description || "",
+            logo_url: teamData.logo_url || "",
           });
           setError(null);
         } catch (err) {
-          setError('Failed to load team data. Please try again later.');
-          console.error('Error fetching team:', err);
+          setError("Failed to load team data. Please try again later.");
+          console.error("Error fetching team:", err);
         } finally {
           setLoading(false);
         }
@@ -47,7 +50,9 @@ export const TeamForm: React.FC<TeamFormProps> = ({ teamId, isEdit = false }) =>
     }
   }, [isEdit, teamId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -65,37 +70,38 @@ export const TeamForm: React.FC<TeamFormProps> = ({ teamId, isEdit = false }) =>
       if (isEdit && teamId) {
         await axios.put(`/api/v1/teams/${teamId}`, { team: formData });
       } else {
-        await axios.post('/api/v1/teams', { team: formData });
+        await axios.post("/api/v1/teams", { team: formData });
       }
       setSuccess(true);
       if (!isEdit) {
         setFormData({
-          name: '',
-          description: '',
-          logo_url: '',
+          name: "",
+          description: "",
+          logo_url: "",
         });
       }
     } catch (err) {
-      setError('Failed to save team. Please check your input and try again.');
-      console.error('Error saving team:', err);
+      setError("Failed to save team. Please check your input and try again.");
+      console.error("Error saving team:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading && isEdit) return <div className="loading">Loading team data...</div>;
+  if (loading && isEdit)
+    return <div className="loading">Loading team data...</div>;
 
   return (
     <div className="team-form-container">
-      <h1>{isEdit ? 'Edit Team' : 'Create New Team'}</h1>
-      
+      <h1>{isEdit ? "Edit Team" : "Create New Team"}</h1>
+
       {error && <div className="error-message">{error}</div>}
       {success && (
         <div className="success-message">
-          Team successfully {isEdit ? 'updated' : 'created'}!
+          Team successfully {isEdit ? "updated" : "created"}!
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit} className="team-form">
         <div className="form-group">
           <label htmlFor="name">Team Name *</label>
@@ -109,7 +115,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({ teamId, isEdit = false }) =>
             className="form-control"
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="description">Description</label>
           <textarea
@@ -121,7 +127,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({ teamId, isEdit = false }) =>
             rows={4}
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="logo_url">Logo URL</label>
           <input
@@ -134,10 +140,10 @@ export const TeamForm: React.FC<TeamFormProps> = ({ teamId, isEdit = false }) =>
             placeholder="https://example.com/logo.png"
           />
         </div>
-        
+
         <div className="form-actions">
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'Saving...' : isEdit ? 'Update Team' : 'Create Team'}
+            {loading ? "Saving..." : isEdit ? "Update Team" : "Create Team"}
           </button>
           <a href="/teams" className="cancel-button">
             Cancel

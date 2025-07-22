@@ -2,25 +2,33 @@ FROM ruby:3.2.2
 
 # Install dependencies
 RUN apt-get update -qq && \
-    apt-get install -y nodejs npm postgresql-client && \
+    apt-get install -y build-essential postgresql-client nodejs npm git libpq-dev && \
     npm install -g yarn
 
 # Set working directory
 WORKDIR /app
 
+# Set bundler config
+RUN gem install bundler:2.4.10
+
 # Install Ruby dependencies
 COPY Gemfile Gemfile.lock ./
-RUN bundle install
+RUN bundle config set --local deployment 'false' && \
+    bundle config set --local without '' && \
+    bundle install --jobs 4 --retry 3
 
 # Install Node dependencies
 COPY package.json yarn.lock ./
-RUN yarn install
+RUN yarn install --frozen-lockfile || yarn install
 
 # Copy application code
 COPY . .
 
 # Create required directories
-RUN mkdir -p app/assets/builds tmp/pids
+RUN mkdir -p app/assets/builds tmp/pids log
+
+# Ensure proper permissions
+RUN chmod -R 755 /app
 
 # Expose port
 EXPOSE 3000

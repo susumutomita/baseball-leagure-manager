@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 interface Team {
   id: number;
@@ -17,12 +17,12 @@ export const TeamList: React.FC = () => {
     const fetchTeams = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/v1/teams');
+        const response = await axios.get("/api/v1/teams");
         setTeams(response.data.data);
         setError(null);
       } catch (err) {
-        setError('Failed to load teams. Please try again later.');
-        console.error('Error fetching teams:', err);
+        setError("Failed to load teams. Please try again later.");
+        console.error("Error fetching teams:", err);
       } finally {
         setLoading(false);
       }
@@ -44,7 +44,11 @@ export const TeamList: React.FC = () => {
           {teams.map((team) => (
             <div key={team.id} className="team-card">
               {team.logo_url && (
-                <img src={team.logo_url} alt={`${team.name} logo`} className="team-logo" />
+                <img
+                  src={team.logo_url}
+                  alt={`${team.name} logo`}
+                  className="team-logo"
+                />
               )}
               <h3>{team.name}</h3>
               {team.description && <p>{team.description}</p>}

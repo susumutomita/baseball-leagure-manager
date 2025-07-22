@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 interface Team {
   id: number;
@@ -27,8 +27,8 @@ export const TeamDetail: React.FC<TeamDetailProps> = ({ teamId }) => {
         setTeam(response.data.data);
         setError(null);
       } catch (err) {
-        setError('Failed to load team details. Please try again later.');
-        console.error('Error fetching team:', err);
+        setError("Failed to load team details. Please try again later.");
+        console.error("Error fetching team:", err);
       } finally {
         setLoading(false);
       }
@@ -45,23 +45,27 @@ export const TeamDetail: React.FC<TeamDetailProps> = ({ teamId }) => {
     <div className="team-detail">
       <div className="team-header">
         {team.logo_url && (
-          <img src={team.logo_url} alt={`${team.name} logo`} className="team-logo" />
+          <img
+            src={team.logo_url}
+            alt={`${team.name} logo`}
+            className="team-logo"
+          />
         )}
         <h1>{team.name}</h1>
       </div>
-      
+
       {team.description && (
         <div className="team-description">
           <h3>Description</h3>
           <p>{team.description}</p>
         </div>
       )}
-      
+
       <div className="team-metadata">
         <p>Created: {new Date(team.created_at).toLocaleDateString()}</p>
         <p>Last updated: {new Date(team.updated_at).toLocaleDateString()}</p>
       </div>
-      
+
       <div className="team-actions">
         <a href={`/teams/${team.id}/edit`} className="edit-button">
           Edit Team
