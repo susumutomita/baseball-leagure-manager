@@ -1,0 +1,29 @@
+FROM ruby:3.2.2
+
+# Install dependencies
+RUN apt-get update -qq && \
+    apt-get install -y nodejs npm postgresql-client && \
+    npm install -g yarn
+
+# Set working directory
+WORKDIR /app
+
+# Install Ruby dependencies
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+# Install Node dependencies
+COPY package.json yarn.lock ./
+RUN yarn install
+
+# Copy application code
+COPY . .
+
+# Create required directories
+RUN mkdir -p app/assets/builds tmp/pids
+
+# Expose port
+EXPOSE 3000
+
+# Start Rails server
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
