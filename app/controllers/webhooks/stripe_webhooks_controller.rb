@@ -2,7 +2,8 @@
 
 module Webhooks
   class StripeWebhooksController < ApplicationController
-    skip_before_action :verify_authenticity_token
+    # Use null session for webhook endpoints to prevent CSRF attacks
+    protect_from_forgery with: :null_session
     skip_before_action :authenticate_user!
 
     def create

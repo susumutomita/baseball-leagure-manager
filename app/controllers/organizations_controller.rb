@@ -70,7 +70,18 @@ class OrganizationsController < ApplicationController
     params.require(:organization).permit(
       :name, :slug, :domain, :logo_url, :time_zone,
       :max_teams_limit, :max_players_limit,
-      settings: {}
+      settings: [
+        :enable_auto_matching,
+        :enable_weather_integration,
+        :enable_financial_insights,
+        :default_match_duration,
+        :require_match_approval,
+        :allow_player_self_registration,
+        :notification_preferences,
+        :invoice_footer_text,
+        :currency,
+        :fiscal_year_start_month
+      ]
     )
   end
 end

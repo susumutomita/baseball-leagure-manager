@@ -144,22 +144,41 @@ module Organizations
     end
 
     def download_stripe_pdf
-      require 'open-uri'
+      require 'net/http'
+      require 'uri'
+      
+      # Validate URL is from Stripe
+      uri = URI.parse(@invoice.stripe_invoice_pdf)
+      unless uri.host&.end_with?('.stripe.com')
+        Rails.logger.error "Invalid PDF URL host: #{uri.host}"
+        return invoice_generator.regenerate_invoice_pdf(@invoice)
+      end
       
       # Create temp file
       temp_file = Tempfile.new(['invoice', '.pdf'])
       
-      # Download PDF from Stripe
-      URI.open(@invoice.stripe_invoice_pdf) do |pdf|
-        temp_file.write(pdf.read)
+      # Download PDF from Stripe using Net::HTTP
+      begin
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        
+        request = Net::HTTP::Get.new(uri.request_uri)
+        response = http.request(request)
+        
+        if response.is_a?(Net::HTTPSuccess)
+          temp_file.write(response.body)
+          temp_file.rewind
+          temp_file.path
+        else
+          Rails.logger.error "Failed to download Stripe PDF: HTTP #{response.code}"
+          invoice_generator.regenerate_invoice_pdf(@invoice)
+        end
+      rescue StandardError => e
+        Rails.logger.error "Failed to download Stripe PDF: #{e.message}"
+        # Fall back to generating custom PDF
+        invoice_generator.regenerate_invoice_pdf(@invoice)
       end
-      
-      temp_file.rewind
-      temp_file.path
-    rescue StandardError => e
-      Rails.logger.error "Failed to download Stripe PDF: #{e.message}"
-      # Fall back to generating custom PDF
-      invoice_generator.regenerate_invoice_pdf(@invoice)
     end
   end
 end
