@@ -51,10 +51,8 @@ lint-check: ## Biome lint + format チェック (CI用、修正しない)
 install: ## 依存関係インストール
 	bun install
 
-install-ci: ## CI用インストール (frozen lockfile, lifecycle scripts無効 + 信頼パッケージのみ実行)
-	bun install --frozen-lockfile --ignore-scripts
-	bun pm trust @biomejs/biome --all
-	$(BIOME) --version
+install-ci: ## CI用インストール (frozen lockfile, trustedDependenciesのみpostinstall許可)
+	bun install --frozen-lockfile
 
 clean: ## ビルド成果物を削除
 	rm -rf packages/web/.next
