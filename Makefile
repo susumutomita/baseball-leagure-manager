@@ -1,5 +1,7 @@
 .PHONY: start dev build lint lint-fix lint-check format typecheck test test-watch test-coverage check clean install install-ci
 
+BIOME := ./node_modules/.bin/biome
+
 # ===================================================
 # 試合成立エンジン — Makefile
 # ===================================================
@@ -15,13 +17,13 @@ build: ## プロダクションビルド
 
 ## 品質チェック
 lint: ## Biome lint チェック
-	bunx biome check .
+	$(BIOME) check .
 
 lint-fix: ## Biome lint 自動修正
-	bunx biome check --write .
+	$(BIOME) check --write .
 
 format: ## Biome フォーマット
-	bunx biome format --write .
+	$(BIOME) format --write .
 
 typecheck: ## TypeScript 型チェック
 	bun run --filter '*' typecheck
@@ -38,9 +40,9 @@ test-coverage: ## テスト + カバレッジ
 check: lint typecheck test ## lint + typecheck + test 一括実行
 	@echo "✅ All checks passed"
 
-lint-check: ## Biome lint チェック (CI用、修正しない)
-	bunx biome check .
-	bunx biome format --check .
+lint-check: ## Biome lint + format チェック (CI用、修正しない)
+	$(BIOME) check .
+	$(BIOME) format .
 
 ## セットアップ
 install: ## 依存関係インストール
@@ -49,7 +51,7 @@ install: ## 依存関係インストール
 install-ci: ## CI用インストール (frozen lockfile, lifecycle scripts無効 + 信頼パッケージのみ実行)
 	bun install --frozen-lockfile --ignore-scripts
 	bun pm trust @biomejs/biome --all
-	bunx @biomejs/biome --version
+	$(BIOME) --version
 
 clean: ## ビルド成果物を削除
 	rm -rf packages/web/.next
