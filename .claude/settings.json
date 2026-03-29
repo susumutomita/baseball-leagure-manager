@@ -6,17 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /home/user/baseball-leagure-manager && ./node_modules/.bin/biome check . 2>&1 || echo 'HOOK_FAILED: lint check failed. Run bun run lint:fix to fix issues.'",
-            "timeout": 30000
-          },
-          {
-            "type": "command",
-            "command": "cd /home/user/baseball-leagure-manager && ./node_modules/.bin/biome format --check . 2>&1 || echo 'HOOK_FAILED: format check failed. Run bun run format to fix issues.'",
-            "timeout": 30000
-          },
-          {
-            "type": "command",
-            "command": "cd /home/user/baseball-leagure-manager && bun test --coverage 2>&1 || echo 'HOOK_FAILED: tests failed. Fix failing tests before completing the task.'",
+            "command": "cd /home/user/baseball-leagure-manager && make before-commit 2>&1 || echo 'HOOK_FAILED: make before-commit failed. Fix all issues before completing the task.'",
             "timeout": 60000
           }
         ]

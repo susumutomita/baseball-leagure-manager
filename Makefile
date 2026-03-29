@@ -1,4 +1,4 @@
-.PHONY: start dev build lint lint-fix lint-check format typecheck test test-watch test-coverage check clean install install-ci
+.PHONY: start dev build lint lint-fix lint-check format typecheck test test-watch test-coverage check before-commit clean install install-ci
 
 BIOME := ./node_modules/.bin/biome
 
@@ -39,6 +39,9 @@ test-coverage: ## テスト + カバレッジ
 
 check: lint typecheck test ## lint + typecheck + test 一括実行
 	@echo "✅ All checks passed"
+
+before-commit: lint-fix typecheck test-coverage ## コミット前チェック (自動修正 + typecheck + テスト + カバレッジ)
+	@echo "✅ Ready to commit"
 
 lint-check: ## Biome lint + format チェック (CI用、修正しない)
 	$(BIOME) check .
