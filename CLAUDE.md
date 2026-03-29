@@ -31,29 +31,20 @@ supabase/
   migrations/ — DBスキーマ (SQL)
 ```
 
-## コマンド
+## コマンド (Makefile)
 
 ```bash
-# 開発サーバー起動
-bun run dev
-
-# lint (Biome)
-bun run lint
-
-# lint 自動修正
-bun run lint:fix
-
-# 型チェック
-bun run typecheck
-
-# テスト実行
-bun run test
-
-# テスト (watch モード)
-bun run test:watch
-
-# lint + typecheck + test 一括実行
-bun run check
+make start          # ローカル開発サーバー起動 (install + dev)
+make lint           # Biome lint チェック
+make lint-fix       # Biome lint 自動修正
+make format         # Biome フォーマット
+make typecheck      # TypeScript 型チェック
+make test           # テスト実行
+make test-coverage  # テスト + カバレッジ表示
+make check          # lint + typecheck + test 一括実行
+make build          # プロダクションビルド
+make clean          # ビルド成果物削除
+make help           # 全コマンド一覧
 ```
 
 ## 開発ルール
