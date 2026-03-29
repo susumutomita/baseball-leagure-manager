@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/user/baseball-leagure-manager && make before-commit 2>&1 || echo 'HOOK_FAILED: make before-commit failed. Fix all issues before completing the task.'",
+            "timeout": 60000
+          }
+        ]
+      }
+    ]
+  }
+}

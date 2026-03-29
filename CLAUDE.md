@@ -31,29 +31,20 @@ supabase/
   migrations/ — DBスキーマ (SQL)
 ```
 
-## コマンド
+## コマンド (Makefile)
 
 ```bash
-# 開発サーバー起動
-bun run dev
-
-# lint (Biome)
-bun run lint
-
-# lint 自動修正
-bun run lint:fix
-
-# 型チェック
-bun run typecheck
-
-# テスト実行
-bun run test
-
-# テスト (watch モード)
-bun run test:watch
-
-# lint + typecheck + test 一括実行
-bun run check
+make start          # ローカル開発サーバー起動 (install + dev)
+make lint           # Biome lint チェック
+make lint-fix       # Biome lint 自動修正
+make format         # Biome フォーマット
+make typecheck      # TypeScript 型チェック
+make test           # テスト実行
+make test-coverage  # テスト + カバレッジ表示
+make check          # lint + typecheck + test 一括実行
+make build          # プロダクションビルド
+make clean          # ビルド成果物削除
+make help           # 全コマンド一覧
 ```
 
 ## 開発ルール
@@ -99,6 +90,17 @@ bun run check
 
 - コミットメッセージは変更の意図が明確に伝わるように書く
 - `feat:` / `fix:` / `refactor:` / `docs:` / `test:` / `chore:` のプレフィックスを使用する
+
+### CI/CD
+
+- **CI** (GitHub Actions): PR・pushごとに lint → typecheck → test → build を実行
+  - 全ジョブが通らないとマージ不可
+- **CD** (Vercel): main へのプッシュで自動デプロイ
+  - デプロイ前にも lint + typecheck + test を実行
+- **必要な Secrets** (GitHub リポジトリ設定):
+  - `VERCEL_TOKEN` — Vercel API トークン
+  - `NEXT_PUBLIC_SUPABASE_URL` — Supabase プロジェクト URL
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase Anon Key
 
 ### 設計思想
 
