@@ -24,8 +24,7 @@ format: ## Biome フォーマット
 	bunx biome format --write .
 
 typecheck: ## TypeScript 型チェック
-	bunx tsc -p packages/core/tsconfig.json --noEmit
-	bunx tsc -p packages/web/tsconfig.json --noEmit
+	bun run --filter '*' typecheck
 
 test: ## テスト実行
 	bun test
@@ -47,8 +46,10 @@ lint-check: ## Biome lint チェック (CI用、修正しない)
 install: ## 依存関係インストール
 	bun install
 
-install-ci: ## CI用インストール (frozen lockfile)
-	bun install --frozen-lockfile
+install-ci: ## CI用インストール (frozen lockfile, lifecycle scripts無効 + 信頼パッケージのみ実行)
+	bun install --frozen-lockfile --ignore-scripts
+	bun pm trust @biomejs/biome --all
+	bunx @biomejs/biome --version
 
 clean: ## ビルド成果物を削除
 	rm -rf packages/web/.next

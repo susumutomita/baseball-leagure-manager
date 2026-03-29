@@ -38,11 +38,8 @@ jobs:
           npm i -g @aikidosec/safe-chain
           safe-chain setup-ci
 
-      # Supply chain security: Disable lifecycle scripts
+      # Supply chain security: Disable lifecycle scripts (handled by make install-ci)
       - name: Install dependencies
-        env:
-          npm_config_ignore_scripts: "true"
-          CI: "true"
         run: make install-ci
 
       - run: make lint-check
@@ -61,11 +58,8 @@ jobs:
           npm i -g @aikidosec/safe-chain
           safe-chain setup-ci
 
-      # Supply chain security: Disable lifecycle scripts
+      # Supply chain security: Disable lifecycle scripts (handled by make install-ci)
       - name: Install dependencies
-        env:
-          npm_config_ignore_scripts: "true"
-          CI: "true"
         run: make install-ci
 
       - run: make typecheck
@@ -84,11 +78,8 @@ jobs:
           npm i -g @aikidosec/safe-chain
           safe-chain setup-ci
 
-      # Supply chain security: Disable lifecycle scripts
+      # Supply chain security: Disable lifecycle scripts (handled by make install-ci)
       - name: Install dependencies
-        env:
-          npm_config_ignore_scripts: "true"
-          CI: "true"
         run: make install-ci
 
       - run: make test
@@ -108,11 +99,8 @@ jobs:
           npm i -g @aikidosec/safe-chain
           safe-chain setup-ci
 
-      # Supply chain security: Disable lifecycle scripts
+      # Supply chain security: Disable lifecycle scripts (handled by make install-ci)
       - name: Install dependencies
-        env:
-          npm_config_ignore_scripts: "true"
-          CI: "true"
         run: make install-ci
 
       - run: make build

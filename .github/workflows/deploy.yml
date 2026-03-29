@@ -30,11 +30,8 @@ jobs:
           npm i -g @aikidosec/safe-chain
           safe-chain setup-ci
 
-      # Supply chain security: Disable lifecycle scripts
+      # Supply chain security: Disable lifecycle scripts (handled by make install-ci)
       - name: Install dependencies
-        env:
-          npm_config_ignore_scripts: "true"
-          CI: "true"
         run: make install-ci
 
       # 品質チェック — デプロイ前に全て通す
