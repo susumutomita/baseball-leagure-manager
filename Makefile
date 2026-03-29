@@ -1,4 +1,4 @@
-.PHONY: start dev build lint lint-fix format typecheck test test-watch test-coverage check clean install
+.PHONY: start dev build lint lint-fix lint-check format typecheck test test-watch test-coverage check clean install install-ci
 
 # ===================================================
 # 試合成立エンジン — Makefile
@@ -39,9 +39,16 @@ test-coverage: ## テスト + カバレッジ
 check: lint typecheck test ## lint + typecheck + test 一括実行
 	@echo "✅ All checks passed"
 
+lint-check: ## Biome lint チェック (CI用、修正しない)
+	bunx biome check .
+	bunx biome format --check .
+
 ## セットアップ
 install: ## 依存関係インストール
 	bun install
+
+install-ci: ## CI用インストール (frozen lockfile)
+	bun install --frozen-lockfile
 
 clean: ## ビルド成果物を削除
 	rm -rf packages/web/.next
