@@ -100,6 +100,17 @@ bun run check
 - コミットメッセージは変更の意図が明確に伝わるように書く
 - `feat:` / `fix:` / `refactor:` / `docs:` / `test:` / `chore:` のプレフィックスを使用する
 
+### CI/CD
+
+- **CI** (GitHub Actions): PR・pushごとに lint → typecheck → test → build を実行
+  - 全ジョブが通らないとマージ不可
+- **CD** (Vercel): main へのプッシュで自動デプロイ
+  - デプロイ前にも lint + typecheck + test を実行
+- **必要な Secrets** (GitHub リポジトリ設定):
+  - `VERCEL_TOKEN` — Vercel API トークン
+  - `NEXT_PUBLIC_SUPABASE_URL` — Supabase プロジェクト URL
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase Anon Key
+
 ### 設計思想
 
 - AI は **提案** する (Planner)
