@@ -408,7 +408,127 @@ Yチームが4/12をACCEPT → status = BOOKED, game_id設定
 
 ---
 
-## 8. 監査ログ
+## 8. 個人成績コンテキスト
+
+### game_results（試合結果）
+
+試合単位の結果サマリー。
+
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| id | UUID PK | |
+| game_id | UUID FK → games | UNIQUE |
+| our_score | INTEGER | 自チーム得点 |
+| opponent_score | INTEGER | 相手チーム得点 |
+| result | TEXT | `WIN` / `LOSE` / `DRAW` |
+| innings | INTEGER DEFAULT 7 | イニング数 |
+| note | TEXT | メモ（特記事項） |
+| created_at | TIMESTAMPTZ | |
+
+### at_bats（打席結果）
+
+1打席ごとの結果を記録。個人成績の基礎データ。
+
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| id | UUID PK | |
+| game_id | UUID FK → games | |
+| member_id | UUID FK → members | |
+| inning | INTEGER NOT NULL | イニング（1〜） |
+| batting_order | INTEGER | 打順（1〜9+） |
+| result | TEXT NOT NULL | 後述の打席結果コード |
+| hit_direction | TEXT | `LEFT` / `LEFT_CENTER` / `CENTER` / `RIGHT_CENTER` / `RIGHT` |
+| hit_type | TEXT | `GROUND` / `FLY` / `LINE` / `BUNT` |
+| rbi | INTEGER DEFAULT 0 | 打点 |
+| runs_scored | BOOLEAN DEFAULT false | この打席で得点したか |
+| stolen_base | BOOLEAN DEFAULT false | 盗塁したか |
+| note | TEXT | メモ |
+| created_at | TIMESTAMPTZ | |
+
+**打席結果コード (result):**
+
+| コード | 意味 | 打数カウント | 出塁 |
+|--------|------|------------|------|
+| `SINGLE` | 単打 | ○ | ○ |
+| `DOUBLE` | 二塁打 | ○ | ○ |
+| `TRIPLE` | 三塁打 | ○ | ○ |
+| `HOMERUN` | 本塁打 | ○ | ○ |
+| `GROUND_OUT` | ゴロアウト | ○ | × |
+| `FLY_OUT` | フライアウト | ○ | × |
+| `LINE_OUT` | ライナーアウト | ○ | × |
+| `STRIKEOUT` | 三振 | ○ | × |
+| `DOUBLE_PLAY` | 併殺打 | ○ | × |
+| `FIELDERS_CHOICE` | フィールダースチョイス | ○ | × |
+| `ERROR` | エラー出塁 | ○ | ○ |
+| `WALK` | 四球 | × | ○ |
+| `HIT_BY_PITCH` | 死球 | × | ○ |
+| `SAC_BUNT` | 犠打 | × | × |
+| `SAC_FLY` | 犠飛 | × | × |
+
+### pitching_stats（投手成績）
+
+登板ごとの投手成績。
+
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| id | UUID PK | |
+| game_id | UUID FK → games | |
+| member_id | UUID FK → members | |
+| role | TEXT NOT NULL | `STARTER` / `RELIEVER` / `CLOSER` |
+| innings_pitched | NUMERIC(3,1) | 投球回（例: 5.2 = 5回2/3） |
+| hits_allowed | INTEGER DEFAULT 0 | 被安打 |
+| runs_allowed | INTEGER DEFAULT 0 | 失点 |
+| earned_runs | INTEGER DEFAULT 0 | 自責点 |
+| strikeouts | INTEGER DEFAULT 0 | 奪三振 |
+| walks | INTEGER DEFAULT 0 | 与四球 |
+| hit_batters | INTEGER DEFAULT 0 | 与死球 |
+| is_winning_pitcher | BOOLEAN DEFAULT false | 勝利投手 |
+| is_losing_pitcher | BOOLEAN DEFAULT false | 敗戦投手 |
+| note | TEXT | |
+| created_at | TIMESTAMPTZ | |
+
+### fielding_entries（守備出場）
+
+試合ごとの守備ポジション記録。
+
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| id | UUID PK | |
+| game_id | UUID FK → games | |
+| member_id | UUID FK → members | |
+| position | TEXT NOT NULL | `P` / `C` / `1B` / `2B` / `3B` / `SS` / `LF` / `CF` / `RF` |
+| innings_from | INTEGER | 何イニングから |
+| innings_to | INTEGER | 何イニングまで |
+| created_at | TIMESTAMPTZ | |
+
+### 自動集計できる個人成績
+
+`at_bats` と `pitching_stats` のデータから以下を全てクエリで算出可能:
+
+**打撃成績:**
+- 打率 (AVG) = 安打 ÷ 打数
+- 出塁率 (OBP) = (安打+四死球) ÷ (打数+四死球+犠飛)
+- 長打率 (SLG) = 塁打 ÷ 打数
+- OPS = OBP + SLG
+- 打球方向分布（スプレーチャート）= hit_direction集計
+- ゴロ/フライ比率 = hit_type集計
+- 得点圏打率 = 将来拡張（走者状況の記録追加時）
+- 猛打賞回数 = 1試合3安打以上のカウント
+- 連続出塁記録
+
+**投手成績:**
+- 防御率 (ERA) = 自責点 × 7 ÷ 投球回（草野球は7イニング基準）
+- 勝利数/敗戦数
+- 奪三振率 = 奪三振 × 7 ÷ 投球回
+- WHIP = (被安打+与四球) ÷ 投球回
+
+**守備:**
+- ポジション別出場回数
+- 最多出場ポジション
+
+---
+
+## 9. 監査ログ
 
 ### audit_logs（監査ログ）
 
@@ -489,4 +609,8 @@ grounds
 | — | **settlements** | **新規** |
 | confirmations | **削除** | gamesのstatus遷移に統合 |
 | — | **notification_logs** | **新規** |
+| — | **game_results** | **新規**（試合結果） |
+| — | **at_bats** | **新規**（打席結果。個人打撃成績の基礎） |
+| — | **pitching_stats** | **新規**（投手成績） |
+| — | **fielding_entries** | **新規**（守備出場記録） |
 | audit_logs | audit_logs | 変更なし |

@@ -24,9 +24,16 @@ erDiagram
     games ||--o{ expenses : "has"
     games ||--o| settlements : "has"
     games ||--o{ notification_logs : "has"
+    games ||--o| game_results : "has"
+    games ||--o{ at_bats : "has"
+    games ||--o{ pitching_stats : "has"
+    games ||--o{ fielding_entries : "has"
 
     members ||--o{ rsvps : "responds"
     members ||--o{ attendances : "attends"
+    members ||--o{ at_bats : "bats"
+    members ||--o{ pitching_stats : "pitches"
+    members ||--o{ fielding_entries : "fields"
 
     helpers ||--o{ helper_requests : "requested"
     helpers ||--o{ attendances : "attends"
@@ -256,6 +263,66 @@ erDiagram
     games ||--o{ expenses : "has"
     games ||--o| settlements : "has"
     members ||--o{ expenses : "paid_by"
+```
+
+### 1.8 個人成績コンテキスト
+
+```mermaid
+erDiagram
+    game_results {
+        uuid id PK
+        uuid game_id FK "UNIQUE"
+        int our_score
+        int opponent_score
+        text result "WIN | LOSE | DRAW"
+        int innings
+        text note
+    }
+
+    at_bats {
+        uuid id PK
+        uuid game_id FK
+        uuid member_id FK
+        int inning
+        int batting_order
+        text result "SINGLE | DOUBLE | TRIPLE | HOMERUN | GROUND_OUT | FLY_OUT | ..."
+        text hit_direction "LEFT | LEFT_CENTER | CENTER | RIGHT_CENTER | RIGHT"
+        text hit_type "GROUND | FLY | LINE | BUNT"
+        int rbi
+        boolean runs_scored
+        boolean stolen_base
+    }
+
+    pitching_stats {
+        uuid id PK
+        uuid game_id FK
+        uuid member_id FK
+        text role "STARTER | RELIEVER | CLOSER"
+        numeric innings_pitched
+        int hits_allowed
+        int earned_runs
+        int strikeouts
+        int walks
+        boolean is_winning_pitcher
+        boolean is_losing_pitcher
+    }
+
+    fielding_entries {
+        uuid id PK
+        uuid game_id FK
+        uuid member_id FK
+        text position "P | C | 1B | 2B | 3B | SS | LF | CF | RF"
+        int innings_from
+        int innings_to
+    }
+
+    games ||--o| game_results : "has"
+    games ||--o{ at_bats : "has"
+    games ||--o{ pitching_stats : "has"
+    games ||--o{ fielding_entries : "has"
+    members ||--o{ at_bats : "bats"
+    members ||--o{ pitching_stats : "pitches"
+    members ||--o{ fielding_entries : "fields"
 ```
 
 ---
