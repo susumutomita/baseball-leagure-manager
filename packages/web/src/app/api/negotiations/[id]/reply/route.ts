@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { writeAuditLog } from "@match-engine/core";
 import { assertNegotiationTransition } from "@match-engine/core";
 import type { NegotiationStatus } from "@match-engine/core";
@@ -10,7 +10,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const body = await request.json();
 
   const { data: negotiation, error: fetchError } = await supabase

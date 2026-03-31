@@ -1,10 +1,10 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** POST /api/grounds/watch-targets — 監視対象グラウンド登録 */
 export async function POST(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const body = await request.json();
 
   const { data, error } = await supabase
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
 /** GET /api/grounds/watch-targets?team_id=xxx */
 export async function GET(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const teamId = searchParams.get("team_id");
 

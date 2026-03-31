@@ -1,62 +1,5 @@
+import { createClient } from "@/lib/supabase/server";
 import type { AvailabilityResponseType } from "@match-engine/core";
-
-// MVP: デモデータ
-const DEMO_MEMBERS = [
-  {
-    id: "m1",
-    name: "田中太郎",
-    position: "ピッチャー",
-    response: "AVAILABLE" as AvailabilityResponseType,
-  },
-  {
-    id: "m2",
-    name: "鈴木一郎",
-    position: "キャッチャー",
-    response: "AVAILABLE" as AvailabilityResponseType,
-  },
-  {
-    id: "m3",
-    name: "佐藤次郎",
-    position: "ショート",
-    response: "MAYBE" as AvailabilityResponseType,
-  },
-  {
-    id: "m4",
-    name: "山田三郎",
-    position: "外野手",
-    response: "UNAVAILABLE" as AvailabilityResponseType,
-  },
-  {
-    id: "m5",
-    name: "高橋四郎",
-    position: "一塁手",
-    response: "UNKNOWN" as AvailabilityResponseType,
-  },
-  {
-    id: "m6",
-    name: "中村五郎",
-    position: "二塁手",
-    response: "AVAILABLE" as AvailabilityResponseType,
-  },
-  {
-    id: "m7",
-    name: "小林六郎",
-    position: "三塁手",
-    response: "UNKNOWN" as AvailabilityResponseType,
-  },
-  {
-    id: "m8",
-    name: "加藤七郎",
-    position: "外野手",
-    response: "AVAILABLE" as AvailabilityResponseType,
-  },
-  {
-    id: "m9",
-    name: "吉田八郎",
-    position: "外野手",
-    response: "UNKNOWN" as AvailabilityResponseType,
-  },
-];
 
 const RESPONSE_LABELS: Record<AvailabilityResponseType, string> = {
   UNKNOWN: "未回答",
@@ -72,17 +15,53 @@ const RESPONSE_COLORS: Record<AvailabilityResponseType, string> = {
   MAYBE: "bg-yellow-100 text-yellow-700",
 };
 
-export default function AvailabilityPage() {
-  const available = DEMO_MEMBERS.filter(
-    (m) => m.response === "AVAILABLE",
-  ).length;
-  const unknown = DEMO_MEMBERS.filter((m) => m.response === "UNKNOWN").length;
+export default async function AvailabilityPage() {
+  const supabase = await createClient();
+
+  // 最新の進行中リクエストを取得して出欠表示
+  const DEFAULT_TEAM_ID = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
+  const { data: latestRequest } = await supabase
+    .from("match_requests")
+    .select("id, title")
+    .eq("team_id", DEFAULT_TEAM_ID!)
+    .in("status", ["OPEN", "NEGOTIATING", "MATCH_CANDIDATE_FOUND"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!latestRequest) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">出欠管理</h1>
+        <p className="text-sm text-gray-500">
+          進行中の試合リクエストがありません
+        </p>
+      </div>
+    );
+  }
+
+  const { data: responses } = await supabase
+    .from("availability_responses")
+    .select("*, members(*)")
+    .eq("match_request_id", latestRequest.id);
+
+  const members = (responses ?? []).map((r) => ({
+    id: r.id as string,
+    name: (r.members as { name: string })?.name ?? "不明",
+    position:
+      ((r.members as { positions_json: string[] })?.positions_json ?? [])[0] ??
+      "",
+    response: r.response as AvailabilityResponseType,
+  }));
+
+  const available = members.filter((m) => m.response === "AVAILABLE").length;
+  const unknown = members.filter((m) => m.response === "UNKNOWN").length;
   const minPlayers = 9;
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">出欠管理</h1>
-      <p className="text-sm text-gray-500">5月第2週 練習試合</p>
+      <p className="text-sm text-gray-500">{latestRequest.title}</p>
 
       {/* サマリー */}
       <div className="flex gap-4">
@@ -118,7 +97,7 @@ export default function AvailabilityPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {DEMO_MEMBERS.map((m) => (
+            {members.map((m) => (
               <tr key={m.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">{m.name}</td>
                 <td className="px-4 py-3">{m.position}</td>

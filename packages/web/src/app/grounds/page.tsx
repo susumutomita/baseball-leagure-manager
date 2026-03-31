@@ -1,24 +1,42 @@
-// MVP: デモデータ
-const DEMO_GROUNDS = [
-  {
-    id: "g1",
-    name: "世田谷区立総合運動場",
-    area: "東京都・世田谷区",
-    active: true,
-    last_checked: "2026-03-29 10:00",
-    available_slots: 2,
-  },
-  {
-    id: "g2",
-    name: "砧公園野球場",
-    area: "東京都・世田谷区",
-    active: true,
-    last_checked: "2026-03-29 10:00",
-    available_slots: 0,
-  },
-];
+import { createClient } from "@/lib/supabase/server";
 
-export default function GroundsPage() {
+const DEFAULT_TEAM_ID = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
+
+export default async function GroundsPage() {
+  const supabase = await createClient();
+
+  const { data: targets } = await supabase
+    .from("ground_watch_targets")
+    .select(
+      "*, ground_availability_snapshots(snapshot_time, availability_json)",
+    )
+    .eq("team_id", DEFAULT_TEAM_ID!)
+    .order("created_at", { ascending: false });
+
+  const grounds = (targets ?? []).map((g) => {
+    const snapshots = (
+      g.ground_availability_snapshots as {
+        snapshot_time: string;
+        availability_json: { slots?: unknown[] };
+      }[]
+    ).sort(
+      (a, b) =>
+        new Date(b.snapshot_time).getTime() -
+        new Date(a.snapshot_time).getTime(),
+    );
+    const latest = snapshots[0];
+    return {
+      id: g.id as string,
+      name: g.name as string,
+      area: g.area as string,
+      active: g.active as boolean,
+      last_checked: latest?.snapshot_time
+        ? new Date(latest.snapshot_time).toLocaleString("ja-JP")
+        : "未チェック",
+      available_slots: latest?.availability_json?.slots?.length ?? 0,
+    };
+  });
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">グラウンド監視</h1>
@@ -35,7 +53,7 @@ export default function GroundsPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {DEMO_GROUNDS.map((g) => (
+            {grounds.map((g) => (
               <tr key={g.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">{g.name}</td>
                 <td className="px-4 py-3">{g.area}</td>

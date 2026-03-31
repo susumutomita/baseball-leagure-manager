@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { writeAuditLog } from "@match-engine/core";
 import { assertTransition } from "@match-engine/core";
 import type { MatchRequestStatus } from "@match-engine/core";
@@ -6,7 +6,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 /** POST /api/negotiations — 交渉作成 */
 export async function POST(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const body = await request.json();
 
   // MatchRequest の状態を確認・遷移
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
 /** GET /api/negotiations?match_request_id=xxx */
 export async function GET(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const matchRequestId = searchParams.get("match_request_id");
 

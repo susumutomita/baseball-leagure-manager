@@ -1,43 +1,50 @@
 import { ConfidenceBar } from "@/components/ConfidenceBar";
 import { MatchStatusBadge } from "@/components/StatusBadge";
+import { createClient } from "@/lib/supabase/server";
 import type { MatchRequestStatus } from "@match-engine/core";
 
-// MVP段階ではデモデータで表示。Supabase接続後にAPIから取得に切り替え。
-const DEMO_REQUESTS = [
-  {
-    id: "1",
-    title: "5月第2週 練習試合",
-    status: "NEGOTIATING" as MatchRequestStatus,
-    area: "東京都・世田谷区",
-    desired_dates_json: ["2026-05-09", "2026-05-10"],
-    confidence_score: 55,
-    review_required: false,
-  },
-  {
-    id: "2",
-    title: "5月第3週 対戦希望",
-    status: "OPEN" as MatchRequestStatus,
-    area: "東京都・杉並区",
-    desired_dates_json: ["2026-05-16", "2026-05-17"],
-    confidence_score: 10,
-    review_required: false,
-  },
-  {
-    id: "3",
-    title: "4月 確定済み試合",
-    status: "CONFIRMED" as MatchRequestStatus,
-    area: "東京都・大田区",
-    desired_dates_json: ["2026-04-12"],
-    confidence_score: 100,
-    review_required: false,
-  },
-];
+const DEFAULT_TEAM_ID = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
 
-export default function DashboardPage() {
-  const pending = DEMO_REQUESTS.filter(
+export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  const { data: requests } = await supabase
+    .from("match_requests")
+    .select("*")
+    .eq("team_id", DEFAULT_TEAM_ID!)
+    .order("created_at", { ascending: false });
+
+  const allRequests = (requests ?? []) as {
+    id: string;
+    title: string;
+    status: MatchRequestStatus;
+    area: string;
+    desired_dates_json: string[];
+    confidence_score: number;
+    review_required: boolean;
+  }[];
+
+  const pending = allRequests.filter(
     (r) => !["CONFIRMED", "CANCELLED", "FAILED"].includes(r.status),
   );
-  const confirmed = DEMO_REQUESTS.filter((r) => r.status === "CONFIRMED");
+  const confirmed = allRequests.filter((r) => r.status === "CONFIRMED");
+
+  // 未返信メンバー数を集計
+  const { count: unknownCount } = await supabase
+    .from("availability_responses")
+    .select("*", { count: "exact", head: true })
+    .eq("response", "UNKNOWN")
+    .in(
+      "match_request_id",
+      pending.map((r) => r.id),
+    );
+
+  // 監視中グラウンド数
+  const { count: groundCount } = await supabase
+    .from("ground_watch_targets")
+    .select("*", { count: "exact", head: true })
+    .eq("team_id", DEFAULT_TEAM_ID!)
+    .eq("active", true);
 
   return (
     <div className="space-y-8">
@@ -52,8 +59,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <SummaryCard label="進行中" value={pending.length} />
         <SummaryCard label="確定済み" value={confirmed.length} />
-        <SummaryCard label="未返信メンバー" value={3} warn />
-        <SummaryCard label="監視中グラウンド" value={2} />
+        <SummaryCard label="未返信メンバー" value={unknownCount ?? 0} warn />
+        <SummaryCard label="監視中グラウンド" value={groundCount ?? 0} />
       </div>
 
       {/* 試合候補一覧 */}
@@ -71,7 +78,7 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {DEMO_REQUESTS.map((r) => (
+              {allRequests.map((r) => (
                 <tr key={r.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">
                     <a
