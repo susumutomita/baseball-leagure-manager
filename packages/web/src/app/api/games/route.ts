@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createGameSchema } from "@/lib/validations";
 import { writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -7,19 +8,25 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
 
+  const parsed = createGameSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0].message },
+      { status: 400 },
+    );
+  }
+
   const { data, error } = await supabase
     .from("games")
     .insert({
-      team_id: body.team_id,
-      title: body.title,
-      game_type: body.game_type ?? "FRIENDLY",
-      game_date: body.game_date ?? null,
-      start_time: body.start_time ?? null,
-      end_time: body.end_time ?? null,
-      ground_name: body.ground_name ?? null,
-      min_players: body.min_players ?? 9,
-      rsvp_deadline: body.rsvp_deadline ?? null,
-      note: body.note ?? null,
+      team_id: parsed.data.team_id,
+      title: parsed.data.title,
+      game_type: parsed.data.game_type,
+      game_date: parsed.data.game_date ?? null,
+      start_time: parsed.data.start_time ?? null,
+      ground_name: parsed.data.ground_name ?? null,
+      min_players: parsed.data.min_players,
+      note: parsed.data.note ?? null,
       status: "DRAFT",
     })
     .select()
@@ -31,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   await writeAuditLog(supabase, {
     actor_type: "USER",
-    actor_id: body.team_id,
+    actor_id: parsed.data.team_id,
     action: "CREATE_GAME",
     target_type: "game",
     target_id: data.id,

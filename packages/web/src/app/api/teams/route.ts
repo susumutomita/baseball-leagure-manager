@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createTeamSchema } from "@/lib/validations";
 import { writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -7,14 +8,21 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
 
+  const parsed = createTeamSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0].message },
+      { status: 400 },
+    );
+  }
+
   const { data, error } = await supabase
     .from("teams")
     .insert({
-      name: body.name,
-      home_area: body.home_area,
-      level_band: body.level_band,
-      payment_method: body.payment_method ?? null,
-      policy_json: body.policy_json ?? null,
+      name: parsed.data.name,
+      home_area: parsed.data.home_area,
+      level_band: parsed.data.level_band,
+      payment_method: parsed.data.payment_method ?? null,
     })
     .select()
     .single();

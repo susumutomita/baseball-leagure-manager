@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: "草野球チーム向け試合成立エンジン SaaS",
 };
 
+const NAV_ITEMS = [
+  { href: "/", label: "ダッシュボード" },
+  { href: "/games/new", label: "試合作成" },
+  { href: "/teams", label: "チーム" },
+] as const;
+
 export default function RootLayout({
   children,
 }: {
@@ -20,12 +26,15 @@ export default function RootLayout({
               試合成立エンジン
             </a>
             <nav className="flex gap-4 text-sm">
-              <a href="/" className="hover:text-blue-600">
-                ダッシュボード
-              </a>
-              <a href="/games/new" className="hover:text-blue-600">
-                試合作成
-              </a>
+              {NAV_ITEMS.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="text-gray-600 hover:text-blue-600"
+                >
+                  {item.label}
+                </a>
+              ))}
             </nav>
           </div>
         </header>

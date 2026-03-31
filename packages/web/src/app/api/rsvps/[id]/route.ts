@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { updateRsvpSchema } from "@/lib/validations";
 import { writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -11,10 +12,10 @@ export async function PATCH(
   const supabase = await createClient();
   const body = await request.json();
 
-  const validResponses = ["AVAILABLE", "UNAVAILABLE", "MAYBE"];
-  if (!validResponses.includes(body.response)) {
+  const parsed = updateRsvpSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: `response は ${validResponses.join(", ")} のいずれかです` },
+      { error: parsed.error.issues[0].message },
       { status: 400 },
     );
   }
@@ -32,9 +33,9 @@ export async function PATCH(
   const { data, error } = await supabase
     .from("rsvps")
     .update({
-      response: body.response,
+      response: parsed.data.response,
       responded_at: new Date().toISOString(),
-      response_channel: body.channel ?? "WEB",
+      response_channel: parsed.data.channel ?? "WEB",
     })
     .eq("id", id)
     .select()
@@ -51,7 +52,7 @@ export async function PATCH(
     target_type: "rsvp",
     target_id: id,
     before_json: { response: before.response },
-    after_json: { response: body.response },
+    after_json: { response: parsed.data.response },
   });
 
   return NextResponse.json(data);
