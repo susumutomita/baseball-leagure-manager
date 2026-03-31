@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { writeAuditLog } from "@match-engine/core";
 import { canConfirm } from "@match-engine/core";
 import { assertTransition } from "@match-engine/core";
@@ -11,7 +11,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const body = await request.json();
 
   // MatchRequest取得

@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** GET /api/grounds/watch-targets/:id/snapshots — スナップショット一覧 */
@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("ground_availability_snapshots")

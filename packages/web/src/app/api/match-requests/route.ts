@@ -1,10 +1,10 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** POST /api/match-requests — 試合リクエスト作成 */
 export async function POST(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const body = await request.json();
 
   const { data, error } = await supabase
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
 /** GET /api/match-requests — 試合リクエスト一覧 */
 export async function GET(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const teamId = searchParams.get("team_id");
 

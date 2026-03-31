@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("match_requests")
@@ -29,7 +29,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const body = await request.json();
 
   // 現在のデータを取得

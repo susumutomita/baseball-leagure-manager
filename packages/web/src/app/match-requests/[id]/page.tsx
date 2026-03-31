@@ -1,39 +1,8 @@
 import { ConfidenceBar } from "@/components/ConfidenceBar";
 import { MatchStatusBadge } from "@/components/StatusBadge";
+import { createClient } from "@/lib/supabase/server";
 import { getAvailableTransitions } from "@match-engine/core";
 import type { MatchRequestStatus } from "@match-engine/core";
-
-// MVP: デモデータ。Supabase接続後にAPIから取得に切り替え。
-const DEMO: Record<
-  string,
-  {
-    id: string;
-    title: string;
-    status: MatchRequestStatus;
-    area: string;
-    desired_dates_json: string[];
-    preferred_time_slots_json: string[];
-    level_requirement: string;
-    needs_ground: boolean;
-    budget_limit: number | null;
-    confidence_score: number;
-    review_required: boolean;
-  }
-> = {
-  "1": {
-    id: "1",
-    title: "5月第2週 練習試合",
-    status: "NEGOTIATING",
-    area: "東京都・世田谷区",
-    desired_dates_json: ["2026-05-09", "2026-05-10"],
-    preferred_time_slots_json: ["9:00-12:00"],
-    level_requirement: "INTERMEDIATE",
-    needs_ground: true,
-    budget_limit: 5000,
-    confidence_score: 55,
-    review_required: false,
-  },
-};
 
 export default async function MatchRequestDetailPage({
   params,
@@ -41,9 +10,15 @@ export default async function MatchRequestDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const mr = DEMO[id];
+  const supabase = await createClient();
 
-  if (!mr) {
+  const { data: mr, error } = await supabase
+    .from("match_requests")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error || !mr) {
     return (
       <div className="py-12 text-center text-gray-500">
         試合リクエストが見つかりません
@@ -51,14 +26,14 @@ export default async function MatchRequestDetailPage({
     );
   }
 
-  const transitions = getAvailableTransitions(mr.status);
+  const transitions = getAvailableTransitions(mr.status as MatchRequestStatus);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{mr.title}</h1>
         <div className="mt-2 flex items-center gap-3">
-          <MatchStatusBadge status={mr.status} />
+          <MatchStatusBadge status={mr.status as MatchRequestStatus} />
           <ConfidenceBar score={mr.confidence_score} />
           {mr.review_required && (
             <span className="text-xs text-orange-600">要レビュー</span>
@@ -68,9 +43,12 @@ export default async function MatchRequestDetailPage({
 
       <dl className="grid grid-cols-2 gap-4 rounded-lg border bg-white p-4 text-sm">
         <Dt label="エリア" value={mr.area} />
-        <Dt label="レベル" value={mr.level_requirement} />
+        <Dt label="レベル" value={mr.level_requirement ?? "指定なし"} />
         <Dt label="候補日" value={mr.desired_dates_json.join(", ")} />
-        <Dt label="時間帯" value={mr.preferred_time_slots_json.join(", ")} />
+        <Dt
+          label="時間帯"
+          value={mr.preferred_time_slots_json.join(", ") || "指定なし"}
+        />
         <Dt
           label="グラウンド"
           value={mr.needs_ground ? "要確保" : "確保済み"}
