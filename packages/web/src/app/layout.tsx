@@ -23,17 +23,8 @@ export default function RootLayout({
               <a href="/" className="hover:text-blue-600">
                 ダッシュボード
               </a>
-              <a href="/match-requests/new" className="hover:text-blue-600">
+              <a href="/games/new" className="hover:text-blue-600">
                 試合作成
-              </a>
-              <a href="/negotiations" className="hover:text-blue-600">
-                交渉管理
-              </a>
-              <a href="/grounds" className="hover:text-blue-600">
-                グラウンド監視
-              </a>
-              <a href="/availability" className="hover:text-blue-600">
-                出欠管理
               </a>
             </nav>
           </div>

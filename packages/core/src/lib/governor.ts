@@ -1,21 +1,12 @@
 // ============================================================
-// ルールエンジン (Governor)
-// 状態遷移の決定・暴走防止・確定前チェックを担う
+// ルールエンジン (Governor) v2
+// Game ライフサイクルの各遷移判定を担う
 // ============================================================
-import type {
-  AvailabilityResponse,
-  MatchRequest,
-  Negotiation,
-} from "../types/domain";
+import type { Game, HelperRequest, Negotiation, Rsvp } from "../types/domain";
 
-export interface GovernorContext {
-  matchRequest: MatchRequest;
-  negotiations: Negotiation[];
-  availabilities: AvailabilityResponse[];
-  memberCount: number;
-  minPlayers: number;
-  hasGround: boolean;
-}
+// ============================================================
+// 共通型
+// ============================================================
 
 export interface GovernorResult {
   allowed: boolean;
@@ -23,92 +14,200 @@ export interface GovernorResult {
   reviewRequired: boolean;
 }
 
-/** 確定 (READY_TO_CONFIRM → CONFIRMED) 可否を判定 */
-export function canConfirm(ctx: GovernorContext): GovernorResult {
-  const reasons: string[] = [];
-  let reviewRequired = false;
+// ============================================================
+// COLLECTING → ASSESSING 判定
+// 出欠収集が完了したか（締切到来 or 全員回答済み）
+// ============================================================
 
-  // 最低人数チェック
-  const availableCount = ctx.availabilities.filter(
-    (a) => a.response === "AVAILABLE",
+export interface AssessmentContext {
+  game: Game;
+  rsvps: Rsvp[];
+  totalMembers: number;
+}
+
+export function canAssess(ctx: AssessmentContext): GovernorResult {
+  const reasons: string[] = [];
+  const reviewRequired = false;
+
+  const responded = ctx.rsvps.filter(
+    (r) => r.response !== "NO_RESPONSE",
   ).length;
-  if (availableCount < ctx.minPlayers) {
+
+  // 全員回答済み or 締切到来
+  const allResponded = responded >= ctx.totalMembers;
+  const deadlinePassed = ctx.game.rsvp_deadline
+    ? new Date(ctx.game.rsvp_deadline) <= new Date()
+    : false;
+
+  if (!allResponded && !deadlinePassed) {
     reasons.push(
-      `参加可能人数が不足しています (${availableCount}/${ctx.minPlayers})`,
+      `未回答者がいます (${responded}/${ctx.totalMembers})。締切前です`,
     );
   }
 
-  // 相手チーム承諾チェック
-  const accepted = ctx.negotiations.filter((n) => n.status === "ACCEPTED");
-  if (accepted.length === 0) {
-    reasons.push("承諾済みの対戦相手がいません");
+  return { allowed: reasons.length === 0, reasons, reviewRequired };
+}
+
+// ============================================================
+// ASSESSING → ARRANGING 判定
+// 人数が足りているか（メンバー + 承諾済み助っ人）
+// ============================================================
+
+export interface ArrangingContext {
+  game: Game;
+  rsvps: Rsvp[];
+  helperRequests: HelperRequest[];
+}
+
+export function canArrange(ctx: ArrangingContext): GovernorResult {
+  const reasons: string[] = [];
+  let reviewRequired = false;
+
+  const availableMembers = ctx.rsvps.filter(
+    (r) => r.response === "AVAILABLE",
+  ).length;
+  const acceptedHelpers = ctx.helperRequests.filter(
+    (h) => h.status === "ACCEPTED",
+  ).length;
+  const totalAvailable = availableMembers + acceptedHelpers;
+
+  if (totalAvailable < ctx.game.min_players) {
+    reasons.push(
+      `参加可能人数が不足しています (${totalAvailable}/${ctx.game.min_players})`,
+    );
   }
 
-  // グラウンド確保チェック
-  if (ctx.matchRequest.needs_ground && !ctx.hasGround) {
-    reasons.push("グラウンドが未確保です");
-  }
-
-  // 人数がギリギリの場合はレビュー必須
+  // ギリギリの場合はレビュー必須
   if (
-    availableCount >= ctx.minPlayers &&
-    availableCount <= ctx.minPlayers + 1
+    totalAvailable >= ctx.game.min_players &&
+    totalAvailable <= ctx.game.min_players + 1
   ) {
     reviewRequired = true;
   }
 
+  return { allowed: reasons.length === 0, reasons, reviewRequired };
+}
+
+// ============================================================
+// ARRANGING → CONFIRMED 判定
+// 相手チーム・グラウンド・人数がすべて揃っているか
+// ============================================================
+
+export interface ConfirmContext {
+  game: Game;
+  rsvps: Rsvp[];
+  helperRequests: HelperRequest[];
+  negotiations: Negotiation[];
+  hasGround: boolean;
+}
+
+export function canConfirm(ctx: ConfirmContext): GovernorResult {
+  const reasons: string[] = [];
+  let reviewRequired = false;
+
+  // 人数チェック
+  const availableMembers = ctx.rsvps.filter(
+    (r) => r.response === "AVAILABLE",
+  ).length;
+  const acceptedHelpers = ctx.helperRequests.filter(
+    (h) => h.status === "ACCEPTED",
+  ).length;
+  const totalAvailable = availableMembers + acceptedHelpers;
+
+  if (totalAvailable < ctx.game.min_players) {
+    reasons.push(
+      `参加可能人数が不足しています (${totalAvailable}/${ctx.game.min_players})`,
+    );
+  }
+
+  // 対戦相手チェック（練習以外）
+  if (ctx.game.game_type !== "PRACTICE") {
+    const accepted = ctx.negotiations.filter((n) => n.status === "ACCEPTED");
+    if (accepted.length === 0) {
+      reasons.push("承諾済みの対戦相手がいません");
+    }
+  }
+
+  // グラウンドチェック
+  if (!ctx.hasGround && !ctx.game.ground_id && !ctx.game.ground_name) {
+    reasons.push("グラウンドが未確保です");
+  }
+
+  // ギリギリの場合はレビュー必須
+  if (
+    totalAvailable >= ctx.game.min_players &&
+    totalAvailable <= ctx.game.min_players + 1
+  ) {
+    reviewRequired = true;
+  }
+
+  return { allowed: reasons.length === 0, reasons, reviewRequired };
+}
+
+// ============================================================
+// 助っ人充足判定
+// 必要人数を満たしたらPENDINGの打診を自動キャンセル
+// ============================================================
+
+export interface FulfillmentContext {
+  game: Game;
+  availableMembers: number;
+  helperRequests: HelperRequest[];
+}
+
+export interface FulfillmentResult {
+  fulfilled: boolean;
+  totalAvailable: number;
+  needed: number;
+  toCancel: string[];
+}
+
+export function checkHelperFulfillment(
+  ctx: FulfillmentContext,
+): FulfillmentResult {
+  const acceptedHelpers = ctx.helperRequests.filter(
+    (h) => h.status === "ACCEPTED",
+  ).length;
+  const totalAvailable = ctx.availableMembers + acceptedHelpers;
+  const fulfilled = totalAvailable >= ctx.game.min_players;
+
+  // 充足したら PENDING の打診をキャンセル対象にする
+  const toCancel = fulfilled
+    ? ctx.helperRequests.filter((h) => h.status === "PENDING").map((h) => h.id)
+    : [];
+
   return {
-    allowed: reasons.length === 0,
-    reasons,
-    reviewRequired,
+    fulfilled,
+    totalAvailable,
+    needed: ctx.game.min_players,
+    toCancel,
   };
 }
 
-/** OPEN に戻す際の停止条件チェック */
-export function checkStopConditions(ctx: GovernorContext): string[] {
+// ============================================================
+// 停止条件チェック
+// ============================================================
+
+export interface StopConditionContext {
+  game: Game;
+  negotiations: Negotiation[];
+}
+
+export function checkStopConditions(ctx: StopConditionContext): string[] {
   const warnings: string[] = [];
 
-  // 候補日不足
-  const mr = ctx.matchRequest;
-  if (!mr.desired_dates_json || mr.desired_dates_json.length === 0) {
-    warnings.push("希望日が設定されていません");
+  if (!ctx.game.game_date) {
+    warnings.push("試合日が設定されていません");
   }
 
-  // 全交渉が失敗
   if (
     ctx.negotiations.length > 0 &&
-    ctx.negotiations.every((n) => n.status === "DECLINED")
+    ctx.negotiations.every(
+      (n) => n.status === "DECLINED" || n.status === "CANCELLED",
+    )
   ) {
     warnings.push("すべての交渉が不成立です");
   }
 
   return warnings;
-}
-
-/** 信頼度スコアを算出 (0-100) */
-export function calculateConfidence(ctx: GovernorContext): number {
-  let score = 0;
-
-  // 対戦相手が承諾済み (+40)
-  if (ctx.negotiations.some((n) => n.status === "ACCEPTED")) {
-    score += 40;
-  } else if (ctx.negotiations.some((n) => n.status === "REPLIED")) {
-    score += 20;
-  } else if (ctx.negotiations.some((n) => n.status === "SENT")) {
-    score += 5;
-  }
-
-  // グラウンド確保済み (+30)
-  if (!ctx.matchRequest.needs_ground || ctx.hasGround) {
-    score += 30;
-  }
-
-  // 出欠 (+30)
-  const availableCount = ctx.availabilities.filter(
-    (a) => a.response === "AVAILABLE",
-  ).length;
-  const ratio = ctx.minPlayers > 0 ? availableCount / ctx.minPlayers : 0;
-  score += Math.min(30, Math.round(ratio * 30));
-
-  return Math.min(100, score);
 }
