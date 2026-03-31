@@ -610,7 +610,241 @@ graph TB
 
 ---
 
-## 6. 次のステップ
+## 6. 非機能要件
+
+### 6.1 スケーラビリティ目標
+
+| フェーズ | チーム数 | メンバー数 | 月間試合数 | 同時接続 |
+|---------|---------|-----------|-----------|---------|
+| Phase 1（MVP） | 1〜10 | 〜200 | 〜50 | 〜10 |
+| Phase 2（初期ユーザー） | 10〜1,000 | 〜20,000 | 〜5,000 | 〜500 |
+| Phase 3（成長期） | 1,000〜10,000 | 〜200,000 | 〜50,000 | 〜5,000 |
+| Phase 4（スケール） | 10,000〜100,000 | 〜2,000,000 | 〜500,000 | 〜50,000 |
+
+### 6.2 パフォーマンス要件
+
+| 操作 | 目標レスポンス | 備考 |
+|------|--------------|------|
+| 出欠回答（タップ→完了） | < 200ms | メンバー体験の最重要指標 |
+| ダッシュボード表示 | < 500ms | 代表が毎日見る画面 |
+| 試合一覧取得 | < 300ms | ページネーション必須（20件/ページ） |
+| 出欠集計・人数判定 | < 500ms | DB側集約関数使用 |
+| 監査ログ取得 | < 1s | 直近30日のみデフォルト |
+| グラウンド空き通知 | < 5min | Cronスクレイピング → プッシュ |
+
+### 6.3 可用性・信頼性
+
+| 項目 | 目標 | 根拠 |
+|------|------|------|
+| SLA | 99.5%（月間ダウンタイム 3.6時間以内） | 草野球の調整は平日夜〜週末。平日昼間のメンテ許容 |
+| RTO（復旧目標時間） | 1時間 | Supabase のリストア + Vercel の再デプロイ |
+| RPO（復旧目標地点） | 24時間 | Supabase の日次バックアップ。Pro プランで PITR（秒単位） |
+| データ保持期間 | 監査ログ: 2年、試合データ: 無期限 | 個人成績は永続保存 |
+
+### 6.4 DB スケーラビリティ対策
+
+#### フェーズ別のインデックス戦略
+
+**Phase 1（MVP）: 現行で十分**
+```sql
+-- 既存インデックスで対応可能
+idx_members_team_id
+idx_match_requests_team_id
+idx_match_requests_status
+```
+
+**Phase 2（1,000チーム〜）: 複合インデックス追加**
+```sql
+-- 「チームの進行中試合」を高速取得
+CREATE INDEX idx_games_team_status ON games(team_id, status);
+
+-- 「試合の参加可能人数」を高速集計
+CREATE INDEX idx_rsvps_game_response ON rsvps(game_id, response);
+
+-- 「メンバーの未回答出欠」を高速取得
+CREATE INDEX idx_rsvps_member_response ON rsvps(member_id, response);
+
+-- 監査ログの直近取得
+CREATE INDEX idx_audit_logs_created_desc ON audit_logs(created_at DESC);
+
+-- 通知ログの試合別取得
+CREATE INDEX idx_notification_logs_game ON notification_logs(game_id, sent_at DESC);
+```
+
+**Phase 3（10,000チーム〜）: 楽観的ロック + 集約値キャッシュ**
+```sql
+-- 楽観的ロック（同時更新の競合防止）
+ALTER TABLE games ADD COLUMN version INTEGER DEFAULT 0;
+-- UPDATE games SET status=?, version=version+1 WHERE id=? AND version=?
+
+-- 出欠集計キャッシュ（毎回COUNT不要に）
+ALTER TABLE games ADD COLUMN available_count INTEGER DEFAULT 0;
+ALTER TABLE games ADD COLUMN unavailable_count INTEGER DEFAULT 0;
+ALTER TABLE games ADD COLUMN maybe_count INTEGER DEFAULT 0;
+-- rsvps UPSERT 時にトリガーで自動更新
+```
+
+**Phase 4（100,000チーム〜）: パーティション + 読み取りレプリカ**
+```sql
+-- 監査ログの月別パーティション（年間6,000万行対策）
+CREATE TABLE audit_logs (
+  ...
+) PARTITION BY RANGE (created_at);
+
+CREATE TABLE audit_logs_2026_q1 PARTITION OF audit_logs
+  FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+
+-- 通知ログも同様にパーティション
+-- 読み取りレプリカでレポート系クエリを分離
+```
+
+#### ページネーション方針
+
+全 LIST 系 API はカーソルベースページネーションを使用する。
+
+```
+GET /api/games?team_id=xxx&cursor=xxx&limit=20
+```
+
+- `limit` デフォルト 20、最大 100
+- `cursor` は `created_at` + `id` の複合キー（オフセットは行数増加で劣化するため不使用）
+- レスポンスに `next_cursor` を含める
+
+#### 同時実行制御
+
+| 操作 | 制御方式 | Phase |
+|------|---------|-------|
+| 試合ステータス遷移 | 楽観的ロック（version カラム） | Phase 3〜 |
+| 出欠回答 | UPSERT（UNIQUE制約） | Phase 1〜 |
+| 精算確定 | Supabase RPC + トランザクション | Phase 2〜 |
+| グラウンド予約 | `SELECT ... FOR UPDATE` | Phase 3〜 |
+
+### 6.5 セキュリティ
+
+| 対策 | 実装 | Phase |
+|------|------|-------|
+| 認証 | Supabase Auth（Google / Apple / LINE） | Phase 1 |
+| 認可 | Supabase RLS（チーム単位のデータ分離） | Phase 1 |
+| API レート制限 | Vercel Edge Middleware（100 req/min/IP） | Phase 2 |
+| 入力バリデーション | Zod スキーマ（全エンドポイント） | Phase 1 |
+| SQLインジェクション | Supabase クライアント（パラメータバインド） | Phase 1 |
+| XSS | React の自動エスケープ + CSP ヘッダー | Phase 1 |
+| CSRF | SameSite Cookie + Origin チェック | Phase 1 |
+| シークレット管理 | 環境変数（.env）+ GitHub Secrets | Phase 1 |
+| 個人情報 | 最小限保持（名前 + LINE ID のみ） | Phase 1 |
+| 監査 | 全状態遷移を audit_logs に記録 | Phase 1 |
+| Webhook 検証 | LINE 署名検証（X-Line-Signature） | Phase 2 |
+| サプライチェーン | GitHub Actions SHA pinning + trustedDependencies | Phase 1 |
+
+### 6.6 可観測性
+
+| 対象 | ツール | Phase |
+|------|-------|-------|
+| アプリケーションログ | Vercel Logs / exe.dev ログ | Phase 1 |
+| エラー追跡 | Sentry | Phase 2 |
+| パフォーマンスモニタリング | Supabase Dashboard（クエリ統計） | Phase 1 |
+| 通知成功率 | notification_logs テーブルの delivered 集計 | Phase 2 |
+| Cron ジョブ監視 | Cronitor / Better Uptime | Phase 2 |
+| ユーザー行動分析 | Supabase Realtime + 自前ダッシュボード | Phase 3 |
+
+### 6.7 テスト戦略
+
+| レイヤー | テスト種別 | ツール | カバレッジ目標 |
+|---------|-----------|-------|--------------|
+| ドメインロジック (core) | ユニットテスト | Bun test（BDD / t-wada スタイル） | 100% |
+| API Routes | 統合テスト | Bun test + モック Supabase | 80% |
+| DB マイグレーション | スキーマテスト | Supabase CLI + pgTAP | — |
+| E2E | スモークテスト | Playwright（主要フロー3本） | — |
+| パフォーマンス | 負荷テスト | k6（Phase 3〜） | — |
+
+---
+
+## 7. インフラコスト見積もり
+
+### 7.1 Phase 1（MVP: 1〜10チーム）
+
+| サービス | プラン | 月額 | 備考 |
+|---------|-------|------|------|
+| Supabase | Free | ¥0 | 500MB DB、50,000行Auth、50 req/s |
+| Vercel | Hobby | ¥0 | 100GB帯域 |
+| GitHub Actions | Free | ¥0 | 2,000分/月 |
+| LINE Messaging API | Free | ¥0 | 月200通 |
+| Expo (EAS Build) | Free | ¥0 | 月15ビルド |
+| ドメイン | — | ¥1,500/年 | .jp or .com |
+| **合計** | | **¥0/月** | ドメイン費用のみ |
+
+### 7.2 Phase 2（初期ユーザー: 10〜1,000チーム）
+
+| サービス | プラン | 月額 | 備考 |
+|---------|-------|------|------|
+| Supabase | Pro | $25 (¥3,800) | 8GB DB、100k Auth、500 req/s |
+| Vercel | Pro | $20 (¥3,000) | 1TB帯域、Serverless無制限 |
+| GitHub Actions | Free | ¥0 | 十分 |
+| LINE Messaging API | Light | ¥5,000 | 月15,000通 |
+| Expo (EAS Build) | Production | $99 (¥15,000) | 無制限ビルド |
+| Sentry | Team | $26 (¥4,000) | 50kイベント/月 |
+| exe.dev | 契約済み | ¥0 | Cron Worker 稼働 |
+| **合計** | | **〜¥31,000/月** | |
+
+### 7.3 Phase 3（成長期: 1,000〜10,000チーム）
+
+| サービス | プラン | 月額 | 備考 |
+|---------|-------|------|------|
+| Supabase | Pro + アドオン | $75 (¥11,500) | 50GB DB、PITR、Read Replica |
+| Vercel | Pro | $20 (¥3,000) | |
+| LINE Messaging API | Standard | ¥15,000 | 月45,000通 |
+| Expo (EAS Build) | Enterprise | $99 (¥15,000) | |
+| Sentry | Business | $80 (¥12,000) | |
+| Redis (Upstash) | Pay-as-you-go | $10 (¥1,500) | キャッシュ層 |
+| exe.dev | 契約済み | ¥0 | |
+| **合計** | | **〜¥58,000/月** | |
+
+### 7.4 Phase 4（スケール: 10,000〜100,000チーム）
+
+| サービス | プラン | 月額 | 備考 |
+|---------|-------|------|------|
+| Supabase | Team/Enterprise | $599+ (¥90,000) | 500GB+、Read Replica×2、PITR |
+| Vercel | Enterprise | $400+ (¥60,000) | SLA 99.99% |
+| LINE Messaging API | — | ¥150,000+ | 月500,000通〜 |
+| Expo (EAS Build) | Enterprise | $200+ (¥30,000) | |
+| Sentry | Enterprise | $200+ (¥30,000) | |
+| Redis (Upstash) | Pro | $100 (¥15,000) | |
+| CDN + WAF | Cloudflare Pro | $20 (¥3,000) | DDoS 防護 |
+| exe.dev | 契約済み | ¥0 | |
+| **合計** | | **〜¥378,000/月** | |
+
+### 7.5 コスト最適化の方針
+
+| 方針 | 詳細 |
+|------|------|
+| **無料枠を使い切る** | Phase 1 は全サービス無料枠で運用 |
+| **LINE通数を節約** | 初回通知のみLINE、リマインドはメール+アプリプッシュ |
+| **アプリプッシュ優先** | Expo Push は無料・無制限。メンバーのアプリ導入率が上がるほどコスト減 |
+| **DB集約クエリ** | アプリ側でフィルタせず、DB側で `COUNT`/`SUM` を実行 |
+| **キャッシュ層は後から** | Phase 3 まで Redis 不要。Supabase のクエリ性能で十分 |
+| **読み取りレプリカは後から** | Phase 4 でレポート系クエリを分離。それまでは不要 |
+
+### 7.6 損益分岐点（課金開始の判断）
+
+```
+Phase 2 のインフラ費: ¥31,000/月
+月額課金 ¥500/チーム の場合: 62チームで損益分岐
+月額課金 ¥1,000/チーム の場合: 31チームで損益分岐
+月額課金 ¥2,000/チーム の場合: 16チームで損益分岐
+
+Phase 3 のインフラ費: ¥58,000/月
+¥1,000 × 1,000チーム = ¥1,000,000/月（利益率 94%）
+
+Phase 4 のインフラ費: ¥378,000/月
+¥1,000 × 10,000チーム = ¥10,000,000/月（利益率 96%）
+```
+
+SaaS の特性上、チーム数に対してインフラ費は対数的にしか増えない。
+1,000チームを超えた時点で非常に高い利益率が実現できる。
+
+---
+
+## 8. 次のステップ
 
 1. **データモデル設計** — ドメイン層のエンティティをSQLスキーマに落とす → ✅ `docs/data-model.md`
 2. **LINE Bot設計** — Flex Message, Webhook, リッチメニューの設計
