@@ -7,7 +7,9 @@ export default async function GroundsPage() {
 
   const { data: targets } = await supabase
     .from("ground_watch_targets")
-    .select("*, ground_availability_snapshots(snapshot_time, availability_json)")
+    .select(
+      "*, ground_availability_snapshots(snapshot_time, availability_json)",
+    )
     .eq("team_id", DEFAULT_TEAM_ID!)
     .order("created_at", { ascending: false });
 
