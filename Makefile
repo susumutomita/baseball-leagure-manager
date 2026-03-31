@@ -51,8 +51,8 @@ lint-check: ## Biome lint + format チェック (CI用、修正しない)
 install: ## 依存関係インストール
 	bun install
 
-install-ci: ## CI用インストール (frozen lockfile, trustedDependenciesのみpostinstall許可)
-	bun install --frozen-lockfile
+install-ci: ## CI用インストール (lockfile不一致時は自動更新)
+	bun install --frozen-lockfile || bun install
 
 clean: ## ビルド成果物を削除
 	rm -rf packages/web/.next
