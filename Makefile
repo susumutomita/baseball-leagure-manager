@@ -51,8 +51,9 @@ lint-check: ## Biome lint + format チェック (CI用、修正しない)
 install: ## 依存関係インストール
 	bun install
 
-install-ci: ## CI用インストール (frozen lockfile, trustedDependenciesのみpostinstall許可)
-	bun install --frozen-lockfile
+install-ci: ## CI用インストール (install後にlockfile差分チェック)
+	bun install
+	git diff --exit-code bun.lock || (echo "ERROR: bun.lock is out of date. Run 'bun install' locally and commit bun.lock." && exit 1)
 
 clean: ## ビルド成果物を削除
 	rm -rf packages/web/.next
