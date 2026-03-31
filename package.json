@@ -17,5 +17,8 @@
   },
   "trustedDependencies": [
     "@biomejs/biome"
-  ]
+  ],
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
 }
