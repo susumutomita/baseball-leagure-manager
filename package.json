@@ -1,5 +1,5 @@
 {
-  "name": "baseball-leagure-manager",
+  "name": "mound",
   "private": true,
   "workspaces": ["packages/*"],
   "scripts": {

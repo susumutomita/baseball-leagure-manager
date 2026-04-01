@@ -40,7 +40,7 @@ test-coverage: ## テスト + カバレッジ
 check: lint typecheck test ## lint + typecheck + test 一括実行
 	@echo "✅ All checks passed"
 
-before-commit: lint-fix typecheck test-coverage ## コミット前チェック (自動修正 + typecheck + テスト + カバレッジ)
+before-commit: format lint-fix typecheck test-coverage ## コミット前チェック (自動修正 + typecheck + テスト + カバレッジ)
 	@echo "✅ Ready to commit"
 
 lint-check: ## Biome lint + format チェック (CI用、修正しない)

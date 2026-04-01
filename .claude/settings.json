@@ -1,6 +1,6 @@
 {
   "hooks": {
-    "stop": [
+    "TaskCompleted": [
       {
         "matcher": "",
         "hooks": [

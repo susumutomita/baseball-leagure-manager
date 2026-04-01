@@ -2,110 +2,66 @@
 
 ## プロジェクト概要
 
-草野球チーム向け **試合成立エンジン SaaS**。
-試合の日程調整・対戦相手交渉・グラウンド確保・出欠管理を状態管理付きで自動化する。
+草野球チーム向け試合成立エンジン SaaS。仕様は [SPEC.md](./SPEC.md) を参照。
 
-仕様書は [SPEC.md](./SPEC.md) を参照。
-
-## 技術スタック
-
-| レイヤー | 技術 |
-|----------|------|
-| ランタイム | [Bun](https://bun.sh/) |
-| パッケージ管理 | Bun workspaces (モノレポ) |
-| フロントエンド | Next.js (App Router) + React + Tailwind CSS |
-| バックエンド | Next.js API Routes |
-| DB | Supabase (Postgres) |
-| Auth | Supabase Auth |
-| リンター/フォーマッター | [Biome](https://biomejs.dev/) |
-| テスト | Bun test (BDD スタイル) |
-| 言語 | TypeScript (strict mode) |
-
-## モノレポ構成
-
-```
-packages/
-  core/   — ドメイン型・ステートマシン・ルールエンジン・監査ログ
-  web/    — Next.js アプリ (UI + API Routes)
-supabase/
-  migrations/ — DBスキーマ (SQL)
-```
-
-## コマンド (Makefile)
+## コマンド
 
 ```bash
-make start          # ローカル開発サーバー起動 (install + dev)
-make lint           # Biome lint チェック
-make lint-fix       # Biome lint 自動修正
-make format         # Biome フォーマット
-make typecheck      # TypeScript 型チェック
+make check          # lint + typecheck + test (変更後に必ず実行)
+make lint-fix       # 自動修正
 make test           # テスト実行
-make test-coverage  # テスト + カバレッジ表示
-make check          # lint + typecheck + test 一括実行
-make build          # プロダクションビルド
-make clean          # ビルド成果物削除
+make start          # 開発サーバー起動
 make help           # 全コマンド一覧
 ```
 
 ## 開発ルール
 
-### コード品質
+### 変更後は必ず `make before-commit` を通す
 
-- **変更後は必ず `bun run check` を実行**して lint・型チェック・テストが全て通ることを確認する
-- Biome による自動フォーマット・import整理を利用する (`bun run lint:fix`)
-- TypeScript strict mode を維持する
+lint・型チェック・テストが全て通ることを確認してからコミットする。
 
-### テストの書き方 — BDD / t-wada スタイル
+### テスト — BDD スタイル
 
-テストは **日本語の `describe` / `it` で振る舞いを記述する** BDD スタイルで書く。
-[t-wada (和田卓人)](https://twitter.com/t_wada) 氏の提唱するスタイルに従い、以下を守る。
+日本語の `describe` / `it` で振る舞いを記述する。テスト名は「〜のとき」「〜する」形式。
 
-1. **テスト名は「〜のとき」「〜する」の形で書く**
-   ```ts
-   describe("canConfirm", () => {
-     describe("すべての条件を満たしているとき", () => {
-       it("確定を許可する", () => { ... });
-     });
-   });
-   ```
+```ts
+describe("canConfirm", () => {
+  describe("すべての条件を満たしているとき", () => {
+    it("確定を許可する", () => { ... });
+  });
+});
+```
 
-2. **Arrange-Act-Assert パターン**を守る
-   - テストデータの準備 → 実行 → 検証 の順に書く
+- Arrange-Act-Assert パターンを守る
+- 1つの `it` で1つの振る舞いのみテストする
+- ファクトリ関数 (`createMatchRequest()` など) でデフォルト値付きテストデータを用意し、差分だけ `overrides` で渡す
+- テストファイルは `src/__tests__/*.test.ts` に配置する
 
-3. **テストヘルパーでファクトリ関数を用意する**
-   - `createMatchRequest()`, `createNegotiation()` のようにデフォルト値付きのヘルパーを作り、
-     テストごとに必要な差分だけ `overrides` で渡す
+### 禁止事項
 
-4. **1つの `it` で1つの振る舞いだけテストする**
-
-5. **テストファイルの配置**: `src/__tests__/` ディレクトリに `*.test.ts` で配置する
-
-### セキュリティ
-
-- 認証情報・秘密鍵をハードコードしない。環境変数 (`.env`) を使用する
-- ユーザー入力は必ず検証する
-- 最小権限の原則に従う
+- 認証情報・秘密鍵のハードコード禁止 → `.env` を使用
+- TypeScript strict mode の無効化禁止
+- ユーザー入力の無検証での使用禁止 (必ず Zod スキーマで検証)
 
 ### Git コミット
 
-- コミットメッセージは変更の意図が明確に伝わるように書く
-- `feat:` / `fix:` / `refactor:` / `docs:` / `test:` / `chore:` のプレフィックスを使用する
+`feat:` / `fix:` / `refactor:` / `docs:` / `test:` / `chore:` のプレフィックスを使用する。
 
-### CI/CD
+## ドキュメント
 
-- **CI** (GitHub Actions): PR・pushごとに lint → typecheck → test → build を実行
-  - 全ジョブが通らないとマージ不可
-- **CD** (Vercel): main へのプッシュで自動デプロイ
-  - デプロイ前にも lint + typecheck + test を実行
-- **必要な Secrets** (GitHub リポジトリ設定):
-  - `VERCEL_TOKEN` — Vercel API トークン
-  - `NEXT_PUBLIC_SUPABASE_URL` — Supabase プロジェクト URL
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase Anon Key
+| ファイル | 内容 |
+| --- | --- |
+| [SPEC.md](./SPEC.md) | 機能仕様・ドメインモデル |
+| [docs/architecture.md](./docs/architecture.md) | アーキテクチャ設計・通知戦略 |
+| [docs/data-model.md](./docs/data-model.md) | データモデル・ER図・DFD |
+| [docs/agent-protocol.md](./docs/agent-protocol.md) | AI エージェントプロトコル |
+| [docs/diagrams.md](./docs/diagrams.md) | システム図 |
+| [docs/migration-strategy.md](./docs/migration-strategy.md) | v1→v2 マイグレーション戦略 |
+| [docs/operations-reality.md](./docs/operations-reality.md) | 運用上の現実・制約 |
 
-### 設計思想
+## 設計思想
 
-- AI は **提案** する (Planner)
-- システムは **状態を持つ** (State Machine)
-- ルールエンジンが **暴走を防ぐ** (Governor)
-- 人が **最後に承認する**
-- ログを残して **改善する** (Audit Log)
+- AI は **提案** する (Planner) — AI が勝手に確定・実行しない
+- システムは **状態を持つ** (State Machine) — 状態遷移は `packages/core/lib/state-machine.ts` が正本
+- ルールエンジンが **暴走を防ぐ** (Governor) — `packages/core/lib/governor.ts` で成立条件を判定
+- 人が **最後に承認する** — CONFIRMED 遷移は必ず人間のアクションを要求する
