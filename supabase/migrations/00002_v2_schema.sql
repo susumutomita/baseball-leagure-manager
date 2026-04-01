@@ -3,6 +3,27 @@
 -- data-model.md に基づく全面リビルド
 -- ============================================================
 
+-- ===== 0. v1 テーブルを削除 (依存関係順) =====
+DROP TRIGGER IF EXISTS trg_ground_watch_targets_updated_at ON ground_watch_targets;
+DROP TRIGGER IF EXISTS trg_negotiations_updated_at ON negotiations;
+DROP TRIGGER IF EXISTS trg_opponent_teams_updated_at ON opponent_teams;
+DROP TRIGGER IF EXISTS trg_match_requests_updated_at ON match_requests;
+DROP TRIGGER IF EXISTS trg_members_updated_at ON members;
+DROP TRIGGER IF EXISTS trg_teams_updated_at ON teams;
+
+DROP TABLE IF EXISTS confirmations CASCADE;
+DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS availability_responses CASCADE;
+DROP TABLE IF EXISTS ground_availability_snapshots CASCADE;
+DROP TABLE IF EXISTS ground_watch_targets CASCADE;
+DROP TABLE IF EXISTS negotiations CASCADE;
+DROP TABLE IF EXISTS opponent_teams CASCADE;
+DROP TABLE IF EXISTS match_requests CASCADE;
+DROP TABLE IF EXISTS members CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
+
+DROP FUNCTION IF EXISTS update_updated_at_column();
+
 -- ===== 1. チーム管理 =====
 
 CREATE TABLE teams (

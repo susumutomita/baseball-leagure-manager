@@ -1,21 +1,8 @@
+import { RsvpTable } from "@/components/RsvpTable";
 import { GameStatusBadge } from "@/components/StatusBadge";
 import { createClient } from "@/lib/supabase/server";
 import { getAvailableTransitions } from "@match-engine/core";
-import type { GameStatus, RsvpResponse } from "@match-engine/core";
-
-const RSVP_LABELS: Record<RsvpResponse, string> = {
-  AVAILABLE: "参加",
-  UNAVAILABLE: "不参加",
-  MAYBE: "未定",
-  NO_RESPONSE: "未回答",
-};
-
-const RSVP_COLORS: Record<RsvpResponse, string> = {
-  AVAILABLE: "bg-green-100 text-green-700",
-  UNAVAILABLE: "bg-red-100 text-red-700",
-  MAYBE: "bg-yellow-100 text-yellow-700",
-  NO_RESPONSE: "bg-gray-100 text-gray-600",
-};
+import type { GameStatus } from "@match-engine/core";
 
 export default async function GameDetailPage({
   params,
@@ -90,39 +77,14 @@ export default async function GameDetailPage({
 
       {/* 出欠一覧 */}
       {rsvps && rsvps.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-sm font-semibold">出欠状況</h2>
-          <div className="overflow-hidden rounded-lg border bg-white">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b bg-gray-50 text-xs text-gray-500">
-                <tr>
-                  <th className="px-4 py-2">名前</th>
-                  <th className="px-4 py-2">区分</th>
-                  <th className="px-4 py-2">回答</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {rsvps.map((r) => (
-                  <tr key={r.id}>
-                    <td className="px-4 py-2 font-medium">
-                      {(r.members as { name: string })?.name ?? "—"}
-                    </td>
-                    <td className="px-4 py-2 text-gray-500">
-                      {(r.members as { tier: string })?.tier ?? "—"}
-                    </td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${RSVP_COLORS[r.response as RsvpResponse] ?? ""}`}
-                      >
-                        {RSVP_LABELS[r.response as RsvpResponse] ?? r.response}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <RsvpTable
+          initialRsvps={rsvps.map((r) => ({
+            id: r.id,
+            response: r.response,
+            members: r.members as { name: string; tier: string } | null,
+          }))}
+          gameStatus={game.status}
+        />
       )}
     </div>
   );
