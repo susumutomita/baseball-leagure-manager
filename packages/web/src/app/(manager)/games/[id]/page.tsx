@@ -1,5 +1,6 @@
 import { RsvpTable } from "@/components/RsvpTable";
 import { GameStatusBadge } from "@/components/StatusBadge";
+import { TransitionButtons } from "@/components/TransitionButtons";
 import { createClient } from "@/lib/supabase/server";
 import { getAvailableTransitions } from "@match-engine/core";
 import type { GameStatus } from "@match-engine/core";
@@ -56,23 +57,12 @@ export default async function GameDetailPage({
 
       {/* 状態遷移 */}
       <section className="rounded-lg border bg-white p-4">
-        <h2 className="mb-3 text-sm font-semibold">遷移可能なアクション</h2>
-        {transitions.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            この状態からの遷移はありません
-          </p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {transitions.map((t) => (
-              <span
-                key={t}
-                className="rounded border border-gray-300 px-3 py-1 text-xs"
-              >
-                → {t}
-              </span>
-            ))}
-          </div>
-        )}
+        <h2 className="mb-3 text-sm font-semibold">アクション</h2>
+        <TransitionButtons
+          gameId={game.id}
+          currentStatus={game.status}
+          transitions={transitions}
+        />
       </section>
 
       {/* 出欠一覧 */}

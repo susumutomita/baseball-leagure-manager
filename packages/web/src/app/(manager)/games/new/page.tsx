@@ -1,9 +1,11 @@
 "use client";
 
 import type { GameType } from "@match-engine/core";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function NewGamePage() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [gameType, setGameType] = useState<GameType>("FRIENDLY");
   const [gameDate, setGameDate] = useState("");
@@ -37,11 +39,11 @@ export default function NewGamePage() {
 
       if (res.ok) {
         const data = await res.json();
-        setResult(`作成しました (ID: ${data.id})`);
-      } else {
-        const err = await res.json();
-        setResult(`エラー: ${err.error}`);
+        router.push(`/games/${data.data.id}`);
+        return;
       }
+      const err = await res.json();
+      setResult(`エラー: ${err.error}`);
     } catch {
       setResult("通信エラーが発生しました");
     } finally {
