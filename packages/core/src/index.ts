@@ -47,16 +47,12 @@ export {
 
 // Governor
 export {
-  canAssess,
-  canArrange,
   canConfirm,
   checkHelperFulfillment,
   checkStopConditions,
 } from "./lib/governor";
 export type {
   GovernorResult,
-  AssessmentContext,
-  ArrangingContext,
   ConfirmContext,
   FulfillmentContext,
   FulfillmentResult,

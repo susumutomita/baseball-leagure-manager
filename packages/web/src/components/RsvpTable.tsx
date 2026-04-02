@@ -60,7 +60,7 @@ export function RsvpTable({ initialRsvps, gameStatus }: RsvpTableProps) {
   const router = useRouter();
   const [rsvps, setRsvps] = useState(initialRsvps);
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const canRespond = ["COLLECTING", "ASSESSING"].includes(gameStatus);
+  const canRespond = gameStatus === "COLLECTING";
 
   const handleResponse = async (rsvpId: string, response: RsvpResponse) => {
     setPendingId(rsvpId);

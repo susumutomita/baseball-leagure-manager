@@ -8,8 +8,6 @@ const DOW_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 const STATUS_DOT_COLORS: Record<string, string> = {
   DRAFT: "bg-gray-400",
   COLLECTING: "bg-blue-500",
-  ASSESSING: "bg-indigo-500",
-  ARRANGING: "bg-yellow-500",
   CONFIRMED: "bg-green-500",
   COMPLETED: "bg-emerald-500",
   SETTLED: "bg-teal-500",

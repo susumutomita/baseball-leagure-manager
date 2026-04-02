@@ -63,6 +63,41 @@ export async function POST(request: NextRequest) {
     after_json: data,
   });
 
+  // 全メンバー分のRSVPを自動作成
+  const { data: members } = await supabase
+    .from("members")
+    .select("id")
+    .eq("team_id", input.team_id)
+    .eq("status", "ACTIVE");
+
+  if (members && members.length > 0) {
+    const rows = members.map((m) => ({
+      game_id: data.id,
+      member_id: m.id,
+      response: "NO_RESPONSE",
+    }));
+    await supabase
+      .from("rsvps")
+      .upsert(rows, { onConflict: "game_id,member_id" });
+
+    // DRAFT → COLLECTING に自動遷移
+    await supabase
+      .from("games")
+      .update({ status: "COLLECTING", version: data.version + 1 })
+      .eq("id", data.id);
+
+    data.status = "COLLECTING";
+
+    await writeAuditLog(supabase, {
+      actor_type: "SYSTEM",
+      actor_id: "SYSTEM",
+      action: "TRANSITION:DRAFT→COLLECTING",
+      target_type: "game",
+      target_id: data.id,
+      after_json: { member_count: members.length },
+    });
+  }
+
   return NextResponse.json(apiSuccess(data, suggestAfterCreate(data)), {
     status: 201,
   });

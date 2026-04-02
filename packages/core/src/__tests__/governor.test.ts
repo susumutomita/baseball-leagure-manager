@@ -1,7 +1,5 @@
 import { describe, expect, it } from "bun:test";
 import {
-  canArrange,
-  canAssess,
   canConfirm,
   checkHelperFulfillment,
   checkStopConditions,
@@ -16,7 +14,7 @@ function createGame(overrides: Partial<Game> = {}): Game {
     team_id: "team-1",
     title: "テスト試合",
     game_type: "FRIENDLY",
-    status: "ARRANGING",
+    status: "COLLECTING",
     game_date: "2026-05-01",
     start_time: "09:00",
     end_time: "12:00",
@@ -90,116 +88,6 @@ function createNegotiation(overrides: Partial<Negotiation> = {}): Negotiation {
     ...overrides,
   };
 }
-
-// --- canAssess ---
-
-describe("canAssess", () => {
-  describe("全員回答済みのとき", () => {
-    it("判定を許可する", () => {
-      const result = canAssess({
-        game: createGame(),
-        rsvps: Array.from({ length: 15 }, (_, i) => createRsvp(`m-${i + 1}`)),
-        totalMembers: 15,
-      });
-      expect(result.allowed).toBe(true);
-    });
-  });
-
-  describe("締切が過ぎているとき", () => {
-    it("未回答者がいても判定を許可する", () => {
-      const result = canAssess({
-        game: createGame({ rsvp_deadline: "2020-01-01T00:00:00Z" }),
-        rsvps: [createRsvp("m-1"), createRsvp("m-2", "NO_RESPONSE")],
-        totalMembers: 15,
-      });
-      expect(result.allowed).toBe(true);
-    });
-  });
-
-  describe("未回答者がいて締切前のとき", () => {
-    it("判定を許可しない", () => {
-      const result = canAssess({
-        game: createGame({ rsvp_deadline: "2099-12-31T00:00:00Z" }),
-        rsvps: [createRsvp("m-1"), createRsvp("m-2", "NO_RESPONSE")],
-        totalMembers: 15,
-      });
-      expect(result.allowed).toBe(false);
-      expect(result.reasons[0]).toContain("未回答者");
-    });
-  });
-
-  describe("締切が未設定で未回答者がいるとき", () => {
-    it("判定を許可しない", () => {
-      const result = canAssess({
-        game: createGame({ rsvp_deadline: null }),
-        rsvps: [createRsvp("m-1"), createRsvp("m-2", "NO_RESPONSE")],
-        totalMembers: 15,
-      });
-      expect(result.allowed).toBe(false);
-    });
-  });
-});
-
-// --- canArrange ---
-
-describe("canArrange", () => {
-  describe("メンバーだけで人数が足りるとき", () => {
-    it("手配を許可する", () => {
-      const result = canArrange({
-        game: createGame({ min_players: 9 }),
-        rsvps: Array.from({ length: 9 }, (_, i) => createRsvp(`m-${i + 1}`)),
-        helperRequests: [],
-      });
-      expect(result.allowed).toBe(true);
-    });
-  });
-
-  describe("メンバー+助っ人で人数が足りるとき", () => {
-    it("手配を許可する", () => {
-      const result = canArrange({
-        game: createGame({ min_players: 9 }),
-        rsvps: Array.from({ length: 7 }, (_, i) => createRsvp(`m-${i + 1}`)),
-        helperRequests: [
-          createHelperRequest({ id: "hr-1", status: "ACCEPTED" }),
-          createHelperRequest({ id: "hr-2", status: "ACCEPTED" }),
-        ],
-      });
-      expect(result.allowed).toBe(true);
-    });
-  });
-
-  describe("人数が足りないとき", () => {
-    it("手配を許可しない", () => {
-      const result = canArrange({
-        game: createGame({ min_players: 9 }),
-        rsvps: Array.from({ length: 5 }, (_, i) => createRsvp(`m-${i + 1}`)),
-        helperRequests: [],
-      });
-      expect(result.allowed).toBe(false);
-      expect(result.reasons[0]).toContain("参加可能人数が不足");
-    });
-  });
-
-  describe("人数がギリギリのとき", () => {
-    it("reviewRequiredをtrueにする", () => {
-      const result = canArrange({
-        game: createGame({ min_players: 9 }),
-        rsvps: Array.from({ length: 9 }, (_, i) => createRsvp(`m-${i + 1}`)),
-        helperRequests: [],
-      });
-      expect(result.reviewRequired).toBe(true);
-    });
-
-    it("余裕があればreviewRequiredはfalse", () => {
-      const result = canArrange({
-        game: createGame({ min_players: 9 }),
-        rsvps: Array.from({ length: 12 }, (_, i) => createRsvp(`m-${i + 1}`)),
-        helperRequests: [],
-      });
-      expect(result.reviewRequired).toBe(false);
-    });
-  });
-});
 
 // --- canConfirm ---
 

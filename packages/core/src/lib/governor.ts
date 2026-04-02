@@ -15,82 +15,8 @@ export interface GovernorResult {
 }
 
 // ============================================================
-// COLLECTING → ASSESSING 判定
-// 出欠収集が完了したか（締切到来 or 全員回答済み）
-// ============================================================
-
-export interface AssessmentContext {
-  game: Game;
-  rsvps: Rsvp[];
-  totalMembers: number;
-}
-
-export function canAssess(ctx: AssessmentContext): GovernorResult {
-  const reasons: string[] = [];
-  const reviewRequired = false;
-
-  const responded = ctx.rsvps.filter(
-    (r) => r.response !== "NO_RESPONSE",
-  ).length;
-
-  // 全員回答済み or 締切到来
-  const allResponded = responded >= ctx.totalMembers;
-  const deadlinePassed = ctx.game.rsvp_deadline
-    ? new Date(ctx.game.rsvp_deadline) <= new Date()
-    : false;
-
-  if (!allResponded && !deadlinePassed) {
-    reasons.push(
-      `未回答者がいます (${responded}/${ctx.totalMembers})。締切前です`,
-    );
-  }
-
-  return { allowed: reasons.length === 0, reasons, reviewRequired };
-}
-
-// ============================================================
-// ASSESSING → ARRANGING 判定
-// 人数が足りているか（メンバー + 承諾済み助っ人）
-// ============================================================
-
-export interface ArrangingContext {
-  game: Game;
-  rsvps: Rsvp[];
-  helperRequests: HelperRequest[];
-}
-
-export function canArrange(ctx: ArrangingContext): GovernorResult {
-  const reasons: string[] = [];
-  let reviewRequired = false;
-
-  const availableMembers = ctx.rsvps.filter(
-    (r) => r.response === "AVAILABLE",
-  ).length;
-  const acceptedHelpers = ctx.helperRequests.filter(
-    (h) => h.status === "ACCEPTED",
-  ).length;
-  const totalAvailable = availableMembers + acceptedHelpers;
-
-  if (totalAvailable < ctx.game.min_players) {
-    reasons.push(
-      `参加可能人数が不足しています (${totalAvailable}/${ctx.game.min_players})`,
-    );
-  }
-
-  // ギリギリの場合はレビュー必須
-  if (
-    totalAvailable >= ctx.game.min_players &&
-    totalAvailable <= ctx.game.min_players + 1
-  ) {
-    reviewRequired = true;
-  }
-
-  return { allowed: reasons.length === 0, reasons, reviewRequired };
-}
-
-// ============================================================
-// ARRANGING → CONFIRMED 判定
-// 相手チーム・グラウンド・人数がすべて揃っているか
+// COLLECTING → CONFIRMED 判定
+// マネージャーが「やる」と判断した際の確認チェック
 // ============================================================
 
 export interface ConfirmContext {

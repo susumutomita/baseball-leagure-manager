@@ -25,14 +25,14 @@ describe("Game ステートマシン", () => {
         expect(canTransition("DRAFT", "CANCELLED")).toBe(true);
       });
 
-      it("ASSESSINGには遷移できない", () => {
-        expect(canTransition("DRAFT", "ASSESSING")).toBe(false);
+      it("COMPLETEDには遷移できない", () => {
+        expect(canTransition("DRAFT", "COMPLETED")).toBe(false);
       });
     });
 
     describe("COLLECTING状態のとき", () => {
-      it("ASSESSINGに遷移できる", () => {
-        expect(canTransition("COLLECTING", "ASSESSING")).toBe(true);
+      it("CONFIRMEDに遷移できる", () => {
+        expect(canTransition("COLLECTING", "CONFIRMED")).toBe(true);
       });
 
       it("CANCELLEDに遷移できる", () => {
@@ -41,26 +41,6 @@ describe("Game ステートマシン", () => {
 
       it("DRAFTには戻れない", () => {
         expect(canTransition("COLLECTING", "DRAFT")).toBe(false);
-      });
-    });
-
-    describe("ASSESSING状態のとき", () => {
-      it("ARRANGINGに遷移できる", () => {
-        expect(canTransition("ASSESSING", "ARRANGING")).toBe(true);
-      });
-
-      it("CANCELLEDに遷移できる", () => {
-        expect(canTransition("ASSESSING", "CANCELLED")).toBe(true);
-      });
-    });
-
-    describe("ARRANGING状態のとき", () => {
-      it("CONFIRMEDに遷移できる", () => {
-        expect(canTransition("ARRANGING", "CONFIRMED")).toBe(true);
-      });
-
-      it("CANCELLEDに遷移できる", () => {
-        expect(canTransition("ARRANGING", "CANCELLED")).toBe(true);
       });
     });
 
@@ -125,6 +105,13 @@ describe("Game ステートマシン", () => {
       expect(transitions).toContain("CONFIRMED");
       expect(transitions).toContain("CANCELLED");
       expect(transitions).toHaveLength(3);
+    });
+
+    it("COLLECTING状態からの遷移先を返す", () => {
+      const transitions = getAvailableTransitions("COLLECTING");
+      expect(transitions).toContain("CONFIRMED");
+      expect(transitions).toContain("CANCELLED");
+      expect(transitions).toHaveLength(2);
     });
 
     it("終端状態では空配列を返す", () => {

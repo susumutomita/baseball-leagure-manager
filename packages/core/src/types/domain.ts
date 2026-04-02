@@ -7,8 +7,6 @@
 export const GAME_STATUSES = [
   "DRAFT",
   "COLLECTING",
-  "ASSESSING",
-  "ARRANGING",
   "CONFIRMED",
   "COMPLETED",
   "SETTLED",

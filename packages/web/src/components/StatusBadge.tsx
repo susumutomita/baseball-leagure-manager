@@ -3,8 +3,6 @@ import type { GameStatus, NegotiationStatus } from "@match-engine/core";
 const GAME_STATUS_COLORS: Record<GameStatus, string> = {
   DRAFT: "bg-gray-100 text-gray-700",
   COLLECTING: "bg-blue-100 text-blue-700",
-  ASSESSING: "bg-indigo-100 text-indigo-700",
-  ARRANGING: "bg-yellow-100 text-yellow-700",
   CONFIRMED: "bg-green-200 text-green-800",
   COMPLETED: "bg-emerald-100 text-emerald-700",
   SETTLED: "bg-teal-100 text-teal-700",
@@ -14,8 +12,6 @@ const GAME_STATUS_COLORS: Record<GameStatus, string> = {
 const GAME_STATUS_LABELS: Record<GameStatus, string> = {
   DRAFT: "下書き",
   COLLECTING: "出欠収集中",
-  ASSESSING: "人数判定中",
-  ARRANGING: "手配中",
   CONFIRMED: "確定",
   COMPLETED: "完了",
   SETTLED: "精算済み",

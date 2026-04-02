@@ -26,12 +26,6 @@ export function suggestNextActions(ctx: GameContext): NextAction[] {
     case "COLLECTING":
       actions.push(...suggestCollectingActions(ctx));
       break;
-    case "ASSESSING":
-      actions.push(...suggestAssessingActions(ctx));
-      break;
-    case "ARRANGING":
-      actions.push(...suggestArrangingActions(ctx));
-      break;
     case "CONFIRMED":
       actions.push(...suggestConfirmedActions(ctx));
       break;
@@ -118,82 +112,8 @@ function suggestCollectingActions(ctx: GameContext): NextAction[] {
     actions.push({
       action: "transition_game",
       reason: deadlinePassed
-        ? "出欠締切が到来しました。ASSESSINGに進めてください"
-        : "全員が回答済みです。ASSESSINGに進めてください",
-      priority: "high",
-      suggested_params: { new_status: "ASSESSING" },
-    });
-  }
-
-  return actions;
-}
-
-function suggestAssessingActions(ctx: GameContext): NextAction[] {
-  const actions: NextAction[] = [];
-  const { game, rsvps = [], helperRequests = [] } = ctx;
-
-  const available = rsvps.filter((r) => r.response === "AVAILABLE").length;
-  const acceptedHelpers = helperRequests.filter(
-    (h) => h.status === "ACCEPTED",
-  ).length;
-  const total = available + acceptedHelpers;
-
-  if (total < game.min_players) {
-    const shortage = game.min_players - total;
-    actions.push({
-      action: "create_helper_requests",
-      reason: `人数不足です (${total}/${game.min_players})。助っ人${shortage}人の打診を推奨`,
-      priority: "high",
-      suggested_params: { game_id: game.id },
-    });
-  }
-
-  actions.push({
-    action: "transition_game",
-    reason:
-      total >= game.min_players
-        ? "人数が揃っています。ARRANGINGに進めてください"
-        : "人数が揃ったらARRANGINGに進めてください",
-    priority: total >= game.min_players ? "high" : "low",
-    suggested_params: { new_status: "ARRANGING" },
-  });
-
-  return actions;
-}
-
-function suggestArrangingActions(ctx: GameContext): NextAction[] {
-  const actions: NextAction[] = [];
-  const { game, negotiations = [] } = ctx;
-
-  if (game.game_type !== "PRACTICE") {
-    const accepted = negotiations.filter((n) => n.status === "ACCEPTED");
-    if (accepted.length === 0) {
-      actions.push({
-        action: "create_negotiation",
-        reason: "対戦相手が未確定です。交渉を開始してください",
-        priority: "high",
-        suggested_params: { game_id: game.id },
-      });
-    }
-  }
-
-  if (!game.ground_id && !game.ground_name) {
-    actions.push({
-      action: "update_game",
-      reason: "グラウンドが未確保です",
-      priority: "high",
-    });
-  }
-
-  const hasOpponent =
-    game.game_type === "PRACTICE" ||
-    negotiations.some((n) => n.status === "ACCEPTED");
-  const hasGround = !!(game.ground_id || game.ground_name);
-
-  if (hasOpponent && hasGround) {
-    actions.push({
-      action: "transition_game",
-      reason: "条件が揃っています。CONFIRMEDに進めてください",
+        ? "出欠締切が到来しました。試合を確定できます"
+        : "全員が回答済みです。試合を確定できます",
       priority: "high",
       suggested_params: { new_status: "CONFIRMED" },
     });
