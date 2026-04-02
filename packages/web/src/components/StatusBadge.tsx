@@ -1,12 +1,16 @@
+import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import type { GameStatus, NegotiationStatus } from "@match-engine/core";
 
-const GAME_STATUS_COLORS: Record<GameStatus, string> = {
-  DRAFT: "bg-gray-100 text-gray-700",
-  COLLECTING: "bg-blue-100 text-blue-700",
-  CONFIRMED: "bg-green-200 text-green-800",
-  COMPLETED: "bg-emerald-100 text-emerald-700",
-  SETTLED: "bg-teal-100 text-teal-700",
-  CANCELLED: "bg-red-100 text-red-700",
+const GAME_STATUS_TYPE: Record<
+  GameStatus,
+  "success" | "info" | "warning" | "error" | "stopped" | "pending"
+> = {
+  DRAFT: "pending",
+  COLLECTING: "info",
+  CONFIRMED: "success",
+  COMPLETED: "success",
+  SETTLED: "stopped",
+  CANCELLED: "error",
 };
 
 const GAME_STATUS_LABELS: Record<GameStatus, string> = {
@@ -18,13 +22,16 @@ const GAME_STATUS_LABELS: Record<GameStatus, string> = {
   CANCELLED: "中止",
 };
 
-const NEGOTIATION_STATUS_COLORS: Record<NegotiationStatus, string> = {
-  DRAFT: "bg-gray-100 text-gray-700",
-  SENT: "bg-blue-100 text-blue-700",
-  REPLIED: "bg-yellow-100 text-yellow-700",
-  ACCEPTED: "bg-green-100 text-green-700",
-  DECLINED: "bg-red-100 text-red-700",
-  CANCELLED: "bg-gray-200 text-gray-600",
+const NEGOTIATION_STATUS_TYPE: Record<
+  NegotiationStatus,
+  "success" | "info" | "warning" | "error" | "stopped" | "pending"
+> = {
+  DRAFT: "pending",
+  SENT: "info",
+  REPLIED: "warning",
+  ACCEPTED: "success",
+  DECLINED: "error",
+  CANCELLED: "stopped",
 };
 
 const NEGOTIATION_STATUS_LABELS: Record<NegotiationStatus, string> = {
@@ -38,11 +45,9 @@ const NEGOTIATION_STATUS_LABELS: Record<NegotiationStatus, string> = {
 
 export function GameStatusBadge({ status }: { status: GameStatus }) {
   return (
-    <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${GAME_STATUS_COLORS[status] ?? ""}`}
-    >
+    <StatusIndicator type={GAME_STATUS_TYPE[status] ?? "info"}>
       {GAME_STATUS_LABELS[status] ?? status}
-    </span>
+    </StatusIndicator>
   );
 }
 
@@ -52,10 +57,8 @@ export function NegotiationStatusBadge({
   status: NegotiationStatus;
 }) {
   return (
-    <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${NEGOTIATION_STATUS_COLORS[status] ?? ""}`}
-    >
+    <StatusIndicator type={NEGOTIATION_STATUS_TYPE[status] ?? "info"}>
       {NEGOTIATION_STATUS_LABELS[status] ?? status}
-    </span>
+    </StatusIndicator>
   );
 }

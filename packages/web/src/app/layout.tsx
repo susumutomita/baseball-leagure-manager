@@ -1,3 +1,4 @@
+import { CloudscapeProvider } from "@/components/CloudscapeProvider";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-gray-50 text-gray-900">{children}</body>
+      <body className="min-h-screen">
+        <CloudscapeProvider>{children}</CloudscapeProvider>
+      </body>
     </html>
   );
 }

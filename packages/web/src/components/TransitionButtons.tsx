@@ -1,5 +1,9 @@
 "use client";
 
+import Box from "@cloudscape-design/components/box";
+import Button from "@cloudscape-design/components/button";
+import Flashbar from "@cloudscape-design/components/flashbar";
+import SpaceBetween from "@cloudscape-design/components/space-between";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,13 +15,10 @@ const TRANSITION_LABELS: Record<string, string> = {
   CANCELLED: "中止",
 };
 
-const TRANSITION_STYLES: Record<string, string> = {
-  CONFIRMED: "bg-green-600 text-white hover:bg-green-700",
-  CANCELLED: "bg-red-100 text-red-700 hover:bg-red-200",
-  COMPLETED: "bg-emerald-600 text-white hover:bg-emerald-700",
+const TRANSITION_VARIANT: Record<string, "primary" | "normal" | "link"> = {
+  CONFIRMED: "primary",
+  COMPLETED: "primary",
 };
-
-const DEFAULT_STYLE = "bg-blue-600 text-white hover:bg-blue-700";
 
 interface TransitionButtonsProps {
   gameId: string;
@@ -61,28 +62,40 @@ export function TransitionButtons({
 
   if (transitions.length === 0) {
     return (
-      <p className="text-sm text-gray-500">この状態からの遷移はありません</p>
+      <Box color="text-status-inactive">この状態からの遷移はありません</Box>
     );
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
+    <SpaceBetween size="s">
+      {error && (
+        <Flashbar
+          items={[
+            {
+              type: "error",
+              content: error,
+              dismissible: true,
+              onDismiss: () => setError(null),
+              id: "transition-error",
+            },
+          ]}
+        />
+      )}
+      <SpaceBetween direction="horizontal" size="xs">
         {transitions.map((t) => (
-          <button
+          <Button
             key={t}
-            type="button"
-            disabled={pending !== null}
+            variant={
+              t === "CANCELLED" ? "normal" : (TRANSITION_VARIANT[t] ?? "normal")
+            }
+            loading={pending === t}
+            disabled={pending !== null && pending !== t}
             onClick={() => handleTransition(t)}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
-              TRANSITION_STYLES[t] ?? DEFAULT_STYLE
-            }`}
           >
-            {pending === t ? "処理中..." : (TRANSITION_LABELS[t] ?? `→ ${t}`)}
-          </button>
+            {TRANSITION_LABELS[t] ?? `→ ${t}`}
+          </Button>
         ))}
-      </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-    </div>
+      </SpaceBetween>
+    </SpaceBetween>
   );
 }
