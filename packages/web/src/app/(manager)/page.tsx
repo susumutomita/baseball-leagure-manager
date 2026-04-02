@@ -1,5 +1,10 @@
 import { DashboardView } from "@/components/DashboardView";
 import { createClient } from "@/lib/supabase/server";
+import Box from "@cloudscape-design/components/box";
+import ColumnLayout from "@cloudscape-design/components/column-layout";
+import Container from "@cloudscape-design/components/container";
+import ContentLayout from "@cloudscape-design/components/content-layout";
+import Header from "@cloudscape-design/components/header";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -27,19 +32,20 @@ export default async function DashboardPage() {
   const confirmed = games?.filter((g) => g.status === "CONFIRMED") ?? [];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">ダッシュボード</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          試合成立エンジン — 現在の状況
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <SummaryCard label="進行中" value={active.length} />
-        <SummaryCard label="確定済み" value={confirmed.length} />
-        <SummaryCard label="全試合" value={games?.length ?? 0} />
-      </div>
+    <ContentLayout
+      header={
+        <Header variant="h1" description="試合成立エンジン — 現在の状況">
+          ダッシュボード
+        </Header>
+      }
+    >
+      <Box margin={{ bottom: "l" }}>
+        <ColumnLayout columns={3}>
+          <KpiCard label="進行中" value={active.length} />
+          <KpiCard label="確定済み" value={confirmed.length} />
+          <KpiCard label="全試合" value={games?.length ?? 0} />
+        </ColumnLayout>
+      </Box>
 
       <DashboardView
         games={(games ?? []).map((g) => ({
@@ -60,15 +66,17 @@ export default async function DashboardPage() {
           game_type: g.game_type,
         }))}
       />
-    </div>
+    </ContentLayout>
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: number }) {
+function KpiCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
-    </div>
+    <Container>
+      <Box variant="awsui-key-label">{label}</Box>
+      <Box variant="h1" tagOverride="p">
+        {value}
+      </Box>
+    </Container>
   );
 }
