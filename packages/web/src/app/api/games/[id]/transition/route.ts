@@ -1,5 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
-import { assertTransition, writeAuditLog } from "@match-engine/core";
+import {
+  apiError,
+  apiSuccess,
+  assertTransition,
+  getAvailableTransitions,
+  suggestNextActions,
+  suggestOnTransitionError,
+  transitionGameSchema,
+  writeAuditLog,
+  zodToValidationError,
+} from "@match-engine/core";
 import type { GameStatus } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -11,7 +21,18 @@ export async function POST(
   const { id } = await params;
   const supabase = await createClient();
   const body = await request.json();
-  const newStatus = body.status as GameStatus;
+
+  const parsed = transitionGameSchema.safeParse(body);
+  if (!parsed.success) {
+    const ve = zodToValidationError(parsed.error);
+    return NextResponse.json(
+      apiError("VALIDATION_ERROR", ve.issues.map((i) => i.message).join("; ")),
+      { status: 400 },
+    );
+  }
+
+  const input = parsed.data;
+  const newStatus = input.status as GameStatus;
 
   const { data: game, error: fetchError } = await supabase
     .from("games")
@@ -20,17 +41,31 @@ export async function POST(
     .single();
 
   if (fetchError) {
-    return NextResponse.json({ error: fetchError.message }, { status: 404 });
+    return NextResponse.json(apiError("NOT_FOUND", "試合が見つかりません"), {
+      status: 404,
+    });
   }
 
   try {
     assertTransition(game.status as GameStatus, newStatus);
-  } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 422 });
+  } catch (_e) {
+    const available = getAvailableTransitions(game.status as GameStatus);
+    return NextResponse.json(
+      apiError(
+        "INVALID_TRANSITION",
+        `状態遷移が不正です: ${game.status} → ${newStatus}`,
+        suggestOnTransitionError(game.status, available),
+        {
+          current_status: game.status,
+          available_transitions: available,
+        },
+      ),
+      { status: 422 },
+    );
   }
 
   // 楽観的ロック
-  const expectedVersion = body.version ?? game.version;
+  const expectedVersion = input.version ?? game.version;
   const { data, error } = await supabase
     .from("games")
     .update({ status: newStatus, version: game.version + 1 })
@@ -41,14 +76,21 @@ export async function POST(
 
   if (error || !data) {
     return NextResponse.json(
-      { error: "他のユーザーが更新しました。リロードしてください" },
+      apiError("CONFLICT", "他のユーザーが更新しました。リロードしてください", [
+        {
+          action: "get_game",
+          reason: "最新の状態を取得してください",
+          priority: "high",
+          suggested_params: { game_id: id },
+        },
+      ]),
       { status: 409 },
     );
   }
 
   await writeAuditLog(supabase, {
     actor_type: "USER",
-    actor_id: body.actor_id ?? "SYSTEM",
+    actor_id: input.actor_id,
     action: `TRANSITION:${game.status}→${newStatus}`,
     target_type: "game",
     target_id: id,
@@ -56,5 +98,7 @@ export async function POST(
     after_json: { status: newStatus, version: data.version },
   });
 
-  return NextResponse.json(data);
+  const nextActions = suggestNextActions({ game: data });
+
+  return NextResponse.json(apiSuccess(data, nextActions));
 }
