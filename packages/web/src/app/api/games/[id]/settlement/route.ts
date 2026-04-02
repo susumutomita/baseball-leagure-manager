@@ -1,3 +1,4 @@
+import { requireAuth, requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, apiSuccess, writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
@@ -7,6 +8,11 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const roleCheck = requireRole(authResult, "ADMIN");
+  if (roleCheck) return roleCheck;
+
   const { id } = await params;
   const supabase = await createClient();
 

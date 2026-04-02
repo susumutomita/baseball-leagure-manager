@@ -56,6 +56,10 @@ export type HelperRequestStatus = (typeof HELPER_REQUEST_STATUSES)[number];
 export const MEMBER_TIERS = ["PRO", "LITE"] as const;
 export type MemberTier = (typeof MEMBER_TIERS)[number];
 
+// --- メンバー Role ---
+export const MEMBER_ROLES = ["SUPER_ADMIN", "ADMIN", "MEMBER"] as const;
+export type MemberRole = (typeof MEMBER_ROLES)[number];
+
 // ============================================================
 // エンティティ
 // ============================================================
@@ -89,6 +93,7 @@ export interface Member {
   jersey_number: number | null;
   attendance_rate: number;
   no_show_rate: number;
+  role: MemberRole;
   status: "ACTIVE" | "INACTIVE" | "PENDING";
   joined_at: string | null;
   created_at: string;
