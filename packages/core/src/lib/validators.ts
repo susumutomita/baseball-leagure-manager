@@ -29,8 +29,6 @@ export const transitionGameSchema = z.object({
   status: z.enum([
     "DRAFT",
     "COLLECTING",
-    "ASSESSING",
-    "ARRANGING",
     "CONFIRMED",
     "COMPLETED",
     "SETTLED",

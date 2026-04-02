@@ -2,8 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   apiError,
   apiSuccess,
-  canArrange,
-  canAssess,
   canConfirm,
   checkStopConditions,
   suggestNextActions,
@@ -31,26 +29,16 @@ export async function POST(
     });
   }
 
-  const [rsvpsRes, helpersRes, negotiationsRes, membersRes] = await Promise.all(
-    [
-      supabase.from("rsvps").select("*").eq("game_id", id),
-      supabase.from("helper_requests").select("*").eq("game_id", id),
-      supabase.from("negotiations").select("*").eq("game_id", id),
-      supabase
-        .from("members")
-        .select("id")
-        .eq("team_id", game.team_id)
-        .eq("status", "ACTIVE"),
-    ],
-  );
+  const [rsvpsRes, helpersRes, negotiationsRes] = await Promise.all([
+    supabase.from("rsvps").select("*").eq("game_id", id),
+    supabase.from("helper_requests").select("*").eq("game_id", id),
+    supabase.from("negotiations").select("*").eq("game_id", id),
+  ]);
 
   const rsvps = rsvpsRes.data ?? [];
   const helperRequests = helpersRes.data ?? [];
   const negotiations = negotiationsRes.data ?? [];
-  const totalMembers = membersRes.data?.length ?? 0;
 
-  const assessCheck = canAssess({ game, rsvps, totalMembers });
-  const arrangeCheck = canArrange({ game, rsvps, helperRequests });
   const confirmCheck = canConfirm({
     game,
     rsvps,
@@ -65,14 +53,11 @@ export async function POST(
     rsvps,
     helperRequests,
     negotiations,
-    totalMembers,
   });
 
   return NextResponse.json(
     apiSuccess(
       {
-        canAssess: assessCheck,
-        canArrange: arrangeCheck,
         canConfirm: confirmCheck,
         stopConditions,
       },

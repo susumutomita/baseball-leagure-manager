@@ -10,8 +10,8 @@ import {
 
 describe("ドメイン定数", () => {
   describe("GAME_STATUSES", () => {
-    it("8つの状態を持つ", () => {
-      expect(GAME_STATUSES).toHaveLength(8);
+    it("6つの状態を持つ", () => {
+      expect(GAME_STATUSES).toHaveLength(6);
     });
 
     it("DRAFTで始まりCANCELLEDで終わる", () => {
@@ -19,12 +19,10 @@ describe("ドメイン定数", () => {
       expect(GAME_STATUSES[GAME_STATUSES.length - 1]).toBe("CANCELLED");
     });
 
-    it("新しいライフサイクル順に並んでいる", () => {
+    it("ライフサイクル順に並んでいる", () => {
       expect([...GAME_STATUSES]).toEqual([
         "DRAFT",
         "COLLECTING",
-        "ASSESSING",
-        "ARRANGING",
         "CONFIRMED",
         "COMPLETED",
         "SETTLED",

@@ -1,6 +1,7 @@
 // ============================================================
-// Game ステートマシン (v2)
-// DRAFT → COLLECTING → ASSESSING → ARRANGING → CONFIRMED → COMPLETED → SETTLED
+// Game ステートマシン (v2 簡素化版)
+// DRAFT → COLLECTING → CONFIRMED → COMPLETED → SETTLED
+// マネージャーが出欠を見て「やる/やらない」を判断する
 // ============================================================
 import type {
   GameStatus,
@@ -11,16 +12,12 @@ import type {
 /** 許可される状態遷移のマップ */
 const GAME_TRANSITIONS: Record<GameStatus, GameStatus[]> = {
   DRAFT: ["COLLECTING", "CONFIRMED", "CANCELLED"],
-  COLLECTING: ["ASSESSING", "CANCELLED"],
-  ASSESSING: ["ARRANGING", "CANCELLED"],
-  ARRANGING: ["CONFIRMED", "CANCELLED"],
+  COLLECTING: ["CONFIRMED", "CANCELLED"],
   CONFIRMED: ["COMPLETED", "CANCELLED"],
   COMPLETED: ["SETTLED"],
   SETTLED: [],
   CANCELLED: [],
 };
-
-// 注: DRAFT → CONFIRMED は練習(PRACTICE)の簡略フロー
 
 export function canTransition(from: GameStatus, to: GameStatus): boolean {
   return GAME_TRANSITIONS[from]?.includes(to) ?? false;

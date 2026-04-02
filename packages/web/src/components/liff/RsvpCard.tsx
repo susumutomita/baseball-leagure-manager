@@ -52,7 +52,7 @@ export function RsvpCard({
 }: RsvpCardProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const canRespond = ["COLLECTING", "ASSESSING"].includes(gameStatus);
+  const canRespond = gameStatus === "COLLECTING";
 
   const handleResponse = async (response: RsvpResponse) => {
     if (!canRespond || response === currentResponse) return;

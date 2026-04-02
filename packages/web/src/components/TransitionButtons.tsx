@@ -5,8 +5,6 @@ import { useState } from "react";
 
 const TRANSITION_LABELS: Record<string, string> = {
   COLLECTING: "出欠収集開始",
-  ASSESSING: "人数判定へ",
-  ARRANGING: "手配開始",
   CONFIRMED: "試合確定",
   COMPLETED: "試合完了",
   SETTLED: "精算済みへ",
