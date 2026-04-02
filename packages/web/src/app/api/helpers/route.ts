@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { writeAuditLog } from "@match-engine/core";
+import {
+  apiError,
+  apiSuccess,
+  createHelperSchema,
+  writeAuditLog,
+  zodToValidationError,
+} from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** POST /api/helpers — 助っ人登録 */
@@ -7,32 +13,53 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
 
+  const parsed = createHelperSchema.safeParse(body);
+  if (!parsed.success) {
+    const ve = zodToValidationError(parsed.error);
+    return NextResponse.json(
+      apiError("VALIDATION_ERROR", ve.issues.map((i) => i.message).join("; ")),
+      { status: 400 },
+    );
+  }
+
+  const input = parsed.data;
   const { data, error } = await supabase
     .from("helpers")
     .insert({
-      team_id: body.team_id,
-      name: body.name,
-      line_user_id: body.line_user_id ?? null,
-      email: body.email ?? null,
-      note: body.note ?? null,
+      team_id: input.team_id,
+      name: input.name,
+      line_user_id: input.line_user_id,
+      email: input.email,
+      note: input.note,
     })
     .select()
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
   await writeAuditLog(supabase, {
     actor_type: "USER",
-    actor_id: body.team_id,
+    actor_id: input.team_id,
     action: "CREATE_HELPER",
     target_type: "helper",
     target_id: data.id,
     after_json: data,
   });
 
-  return NextResponse.json(data, { status: 201 });
+  return NextResponse.json(
+    apiSuccess(data, [
+      {
+        action: "create_helper_requests",
+        reason: "助っ人が登録されました。試合への打診ができます",
+        priority: "low",
+      },
+    ]),
+    { status: 201 },
+  );
 }
 
 /** GET /api/helpers?team_id=xxx */
@@ -53,8 +80,10 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(apiSuccess(data ?? [], []));
 }

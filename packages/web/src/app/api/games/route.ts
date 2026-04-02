@@ -1,5 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
-import { writeAuditLog } from "@match-engine/core";
+import {
+  apiError,
+  apiSuccess,
+  createGameSchema,
+  suggestAfterCreate,
+  writeAuditLog,
+  zodToValidationError,
+} from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** POST /api/games — 試合作成 */
@@ -7,38 +14,58 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
 
+  const parsed = createGameSchema.safeParse(body);
+  if (!parsed.success) {
+    const ve = zodToValidationError(parsed.error);
+    return NextResponse.json(
+      apiError("VALIDATION_ERROR", ve.issues.map((i) => i.message).join("; "), [
+        {
+          action: "create_game",
+          reason: "入力を修正して再試行してください",
+          priority: "high",
+        },
+      ]),
+      { status: 400 },
+    );
+  }
+
+  const input = parsed.data;
   const { data, error } = await supabase
     .from("games")
     .insert({
-      team_id: body.team_id,
-      title: body.title,
-      game_type: body.game_type ?? "FRIENDLY",
-      game_date: body.game_date ?? null,
-      start_time: body.start_time ?? null,
-      end_time: body.end_time ?? null,
-      ground_name: body.ground_name ?? null,
-      min_players: body.min_players ?? 9,
-      rsvp_deadline: body.rsvp_deadline ?? null,
-      note: body.note ?? null,
+      team_id: input.team_id,
+      title: input.title,
+      game_type: input.game_type,
+      game_date: input.game_date,
+      start_time: input.start_time,
+      end_time: input.end_time,
+      ground_name: input.ground_name,
+      min_players: input.min_players,
+      rsvp_deadline: input.rsvp_deadline,
+      note: input.note,
       status: "DRAFT",
     })
     .select()
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
   await writeAuditLog(supabase, {
     actor_type: "USER",
-    actor_id: body.team_id,
+    actor_id: input.team_id,
     action: "CREATE_GAME",
     target_type: "game",
     target_id: data.id,
     after_json: data,
   });
 
-  return NextResponse.json(data, { status: 201 });
+  return NextResponse.json(apiSuccess(data, suggestAfterCreate(data)), {
+    status: 201,
+  });
 }
 
 /** GET /api/games?team_id=xxx&cursor=xxx&limit=20 */
@@ -65,12 +92,14 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
   const hasMore = data && data.length > limit;
   const items = hasMore ? data.slice(0, limit) : (data ?? []);
   const nextCursor = hasMore ? items[items.length - 1]?.created_at : null;
 
-  return NextResponse.json({ data: items, next_cursor: nextCursor });
+  return NextResponse.json(apiSuccess(items, [], { next_cursor: nextCursor }));
 }

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { writeAuditLog } from "@match-engine/core";
+import { apiError, apiSuccess, writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** GET /api/games/:id/rsvps — 出欠一覧 */
@@ -16,10 +16,32 @@ export async function GET(
     .eq("game_id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
-  return NextResponse.json(data);
+  const rsvps = data ?? [];
+  const summary = {
+    available: rsvps.filter((r) => r.response === "AVAILABLE").length,
+    unavailable: rsvps.filter((r) => r.response === "UNAVAILABLE").length,
+    maybe: rsvps.filter((r) => r.response === "MAYBE").length,
+    no_response: rsvps.filter((r) => r.response === "NO_RESPONSE").length,
+    total: rsvps.length,
+  };
+
+  const nextActions =
+    summary.no_response > 0
+      ? [
+          {
+            action: "get_rsvps" as const,
+            reason: `${summary.no_response}人が未回答です`,
+            priority: "high" as const,
+          },
+        ]
+      : [];
+
+  return NextResponse.json(apiSuccess(rsvps, nextActions, { summary }));
 }
 
 /** POST /api/games/:id/rsvps — 出欠依頼作成（全メンバー分） */
@@ -37,7 +59,9 @@ export async function POST(
     .single();
 
   if (gameError) {
-    return NextResponse.json({ error: gameError.message }, { status: 404 });
+    return NextResponse.json(apiError("NOT_FOUND", "試合が見つかりません"), {
+      status: 404,
+    });
   }
 
   const { data: members, error: memberError } = await supabase
@@ -47,12 +71,20 @@ export async function POST(
     .eq("status", "ACTIVE");
 
   if (memberError) {
-    return NextResponse.json({ error: memberError.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", memberError.message), {
+      status: 400,
+    });
   }
 
   if (!members || members.length === 0) {
     return NextResponse.json(
-      { error: "アクティブなメンバーがいません" },
+      apiError("NO_MEMBERS", "アクティブなメンバーがいません", [
+        {
+          action: "list_members",
+          reason: "チームメンバーを確認してください",
+          priority: "high",
+        },
+      ]),
       { status: 422 },
     );
   }
@@ -69,7 +101,9 @@ export async function POST(
     .select();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
   await writeAuditLog(supabase, {
@@ -81,8 +115,14 @@ export async function POST(
     after_json: { member_count: members.length },
   });
 
-  return NextResponse.json({
-    created: data?.length ?? 0,
-    total_members: members.length,
-  });
+  return NextResponse.json(
+    apiSuccess({ created: data?.length ?? 0, total_members: members.length }, [
+      {
+        action: "get_rsvps",
+        reason: "出欠状況を確認してください",
+        priority: "medium",
+        suggested_params: { game_id: id },
+      },
+    ]),
+  );
 }
