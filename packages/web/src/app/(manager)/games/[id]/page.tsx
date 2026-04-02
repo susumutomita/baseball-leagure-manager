@@ -1,4 +1,3 @@
-import { RsvpTable } from "@/components/RsvpTable";
 import { GameStatusBadge } from "@/components/StatusBadge";
 import { TransitionButtons } from "@/components/TransitionButtons";
 import { createClient } from "@/lib/supabase/server";
@@ -65,16 +64,62 @@ export default async function GameDetailPage({
         />
       </section>
 
-      {/* 出欠一覧 */}
+      {/* 出欠一覧（閲覧のみ — 回答はLINEアプリから） */}
       {rsvps && rsvps.length > 0 && (
-        <RsvpTable
-          initialRsvps={rsvps.map((r) => ({
-            id: r.id,
-            response: r.response,
-            members: r.members as { name: string; tier: string } | null,
-          }))}
-          gameStatus={game.status}
-        />
+        <section>
+          <h2 className="mb-3 text-sm font-semibold">出欠状況</h2>
+          <div className="overflow-hidden rounded-lg border bg-white">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b bg-gray-50 text-xs text-gray-500">
+                <tr>
+                  <th className="px-4 py-2">名前</th>
+                  <th className="px-4 py-2">区分</th>
+                  <th className="px-4 py-2">回答</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {rsvps.map((r) => {
+                  const member = r.members as {
+                    name: string;
+                    tier: string;
+                  } | null;
+                  const labels: Record<string, string> = {
+                    AVAILABLE: "参加",
+                    UNAVAILABLE: "不参加",
+                    MAYBE: "未定",
+                    NO_RESPONSE: "未回答",
+                  };
+                  const colors: Record<string, string> = {
+                    AVAILABLE: "bg-green-100 text-green-700",
+                    UNAVAILABLE: "bg-red-100 text-red-700",
+                    MAYBE: "bg-yellow-100 text-yellow-700",
+                    NO_RESPONSE: "bg-gray-100 text-gray-600",
+                  };
+                  return (
+                    <tr key={r.id}>
+                      <td className="px-4 py-2 font-medium">
+                        {member?.name ?? "—"}
+                      </td>
+                      <td className="px-4 py-2 text-gray-500">
+                        {member?.tier ?? "—"}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${colors[r.response] ?? ""}`}
+                        >
+                          {labels[r.response] ?? r.response}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs text-gray-400">
+            出欠の回答はLINEアプリから行えます
+          </p>
+        </section>
       )}
     </div>
   );
