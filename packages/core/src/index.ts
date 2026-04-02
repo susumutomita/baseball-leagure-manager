@@ -89,6 +89,14 @@ export type {
   ApiErrorResponse,
 } from "./lib/response";
 
+// Next Actions
+export {
+  suggestNextActions,
+  suggestAfterCreate,
+  suggestOnTransitionError,
+} from "./lib/next-actions";
+export type { GameContext } from "./lib/next-actions";
+
 // Validators
 export {
   createGameSchema,

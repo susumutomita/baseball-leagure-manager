@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { writeAuditLog } from "@match-engine/core";
+import {
+  apiError,
+  apiSuccess,
+  respondRsvpSchema,
+  writeAuditLog,
+  zodToValidationError,
+} from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** PATCH /api/rsvps/:id — 出欠回答 */
@@ -11,13 +17,22 @@ export async function PATCH(
   const supabase = await createClient();
   const body = await request.json();
 
-  const validResponses = ["AVAILABLE", "UNAVAILABLE", "MAYBE"];
-  if (!validResponses.includes(body.response)) {
+  const parsed = respondRsvpSchema.safeParse(body);
+  if (!parsed.success) {
+    const ve = zodToValidationError(parsed.error);
     return NextResponse.json(
-      { error: `response は ${validResponses.join(", ")} のいずれかです` },
+      apiError("VALIDATION_ERROR", ve.issues.map((i) => i.message).join("; "), [
+        {
+          action: "respond_rsvp",
+          reason: "response は AVAILABLE, UNAVAILABLE, MAYBE のいずれかです",
+          priority: "high",
+        },
+      ]),
       { status: 400 },
     );
   }
+
+  const input = parsed.data;
 
   const { data: before, error: fetchError } = await supabase
     .from("rsvps")
@@ -26,22 +41,27 @@ export async function PATCH(
     .single();
 
   if (fetchError) {
-    return NextResponse.json({ error: fetchError.message }, { status: 404 });
+    return NextResponse.json(
+      apiError("NOT_FOUND", "出欠レコードが見つかりません"),
+      { status: 404 },
+    );
   }
 
   const { data, error } = await supabase
     .from("rsvps")
     .update({
-      response: body.response,
+      response: input.response,
       responded_at: new Date().toISOString(),
-      response_channel: body.channel ?? "WEB",
+      response_channel: input.channel,
     })
     .eq("id", id)
     .select()
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
   await writeAuditLog(supabase, {
@@ -51,8 +71,17 @@ export async function PATCH(
     target_type: "rsvp",
     target_id: id,
     before_json: { response: before.response },
-    after_json: { response: body.response },
+    after_json: { response: input.response },
   });
 
-  return NextResponse.json(data);
+  return NextResponse.json(
+    apiSuccess(data, [
+      {
+        action: "get_rsvps",
+        reason: "出欠状況の全体を確認してください",
+        priority: "low",
+        suggested_params: { game_id: before.game_id },
+      },
+    ]),
+  );
 }

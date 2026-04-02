@@ -1,7 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import {
+  apiError,
+  apiSuccess,
   assertHelperRequestTransition,
+  respondHelperRequestSchema,
   writeAuditLog,
+  zodToValidationError,
 } from "@match-engine/core";
 import type { HelperRequestStatus } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
@@ -15,6 +19,17 @@ export async function PATCH(
   const supabase = await createClient();
   const body = await request.json();
 
+  const parsed = respondHelperRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    const ve = zodToValidationError(parsed.error);
+    return NextResponse.json(
+      apiError("VALIDATION_ERROR", ve.issues.map((i) => i.message).join("; ")),
+      { status: 400 },
+    );
+  }
+
+  const input = parsed.data;
+
   const { data: hr, error: fetchError } = await supabase
     .from("helper_requests")
     .select("*")
@@ -22,14 +37,31 @@ export async function PATCH(
     .single();
 
   if (fetchError) {
-    return NextResponse.json({ error: fetchError.message }, { status: 404 });
+    return NextResponse.json(
+      apiError("NOT_FOUND", "助っ人打診が見つかりません"),
+      { status: 404 },
+    );
   }
 
-  const newStatus = body.status as HelperRequestStatus;
+  const newStatus = input.status as HelperRequestStatus;
   try {
     assertHelperRequestTransition(hr.status as HelperRequestStatus, newStatus);
-  } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 422 });
+  } catch (_e) {
+    return NextResponse.json(
+      apiError(
+        "INVALID_TRANSITION",
+        `状態遷移が不正です: ${hr.status} → ${newStatus}`,
+        [
+          {
+            action: "check_fulfillment",
+            reason: "助っ人充足状況を確認してください",
+            priority: "medium",
+            suggested_params: { game_id: hr.game_id },
+          },
+        ],
+      ),
+      { status: 422 },
+    );
   }
 
   const updateFields: Record<string, unknown> = { status: newStatus };
@@ -38,7 +70,7 @@ export async function PATCH(
   }
   if (newStatus === "CANCELLED") {
     updateFields.cancelled_at = new Date().toISOString();
-    updateFields.cancel_reason = body.cancel_reason ?? "FULFILLED";
+    updateFields.cancel_reason = input.cancel_reason ?? "FULFILLED";
   }
 
   const { data, error } = await supabase
@@ -49,12 +81,14 @@ export async function PATCH(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
+      status: 400,
+    });
   }
 
   await writeAuditLog(supabase, {
     actor_type: "USER",
-    actor_id: body.actor_id ?? "SYSTEM",
+    actor_id: input.actor_id,
     action: `HELPER_REQUEST:${hr.status}→${newStatus}`,
     target_type: "helper_request",
     target_id: id,
@@ -62,5 +96,14 @@ export async function PATCH(
     after_json: { status: newStatus },
   });
 
-  return NextResponse.json(data);
+  return NextResponse.json(
+    apiSuccess(data, [
+      {
+        action: "check_fulfillment",
+        reason: "助っ人の充足状況を確認してください",
+        priority: "high",
+        suggested_params: { game_id: hr.game_id },
+      },
+    ]),
+  );
 }

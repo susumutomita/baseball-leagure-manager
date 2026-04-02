@@ -1,9 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import {
+  apiError,
+  apiSuccess,
   canArrange,
   canAssess,
   canConfirm,
   checkStopConditions,
+  suggestNextActions,
 } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -23,7 +26,9 @@ export async function POST(
     .single();
 
   if (gameError) {
-    return NextResponse.json({ error: gameError.message }, { status: 404 });
+    return NextResponse.json(apiError("NOT_FOUND", "試合が見つかりません"), {
+      status: 404,
+    });
   }
 
   const [rsvpsRes, helpersRes, negotiationsRes, membersRes] = await Promise.all(
@@ -55,10 +60,23 @@ export async function POST(
   });
   const stopConditions = checkStopConditions({ game, negotiations });
 
-  return NextResponse.json({
-    canAssess: assessCheck,
-    canArrange: arrangeCheck,
-    canConfirm: confirmCheck,
-    stopConditions,
+  const nextActions = suggestNextActions({
+    game,
+    rsvps,
+    helperRequests,
+    negotiations,
+    totalMembers,
   });
+
+  return NextResponse.json(
+    apiSuccess(
+      {
+        canAssess: assessCheck,
+        canArrange: arrangeCheck,
+        canConfirm: confirmCheck,
+        stopConditions,
+      },
+      nextActions,
+    ),
+  );
 }
