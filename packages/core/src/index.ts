@@ -6,6 +6,7 @@ export type {
   NegotiationStatus,
   HelperRequestStatus,
   MemberTier,
+  MemberRole,
   Team,
   TeamSettings,
   Member,
@@ -31,6 +32,7 @@ export {
   NEGOTIATION_STATUSES,
   HELPER_REQUEST_STATUSES,
   MEMBER_TIERS,
+  MEMBER_ROLES,
 } from "./types/domain";
 
 // State Machine
@@ -92,6 +94,9 @@ export {
   suggestOnTransitionError,
 } from "./lib/next-actions";
 export type { GameContext } from "./lib/next-actions";
+
+// Auth
+export { hasRole, assertRole, InsufficientRoleError } from "./lib/auth";
 
 // Validators
 export {

@@ -8,16 +8,16 @@ INSERT INTO teams (id, name, home_area, activity_day) VALUES
   ('11111111-1111-4111-8111-111111111111', 'サンダーボルツ', '東京都・世田谷区', '日曜日');
 
 -- メンバー
-INSERT INTO members (id, team_id, name, tier, positions_json, attendance_rate, status) VALUES
-  ('aaaaaaaa-0001-4001-8001-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '田中太郎',   'PRO',  '["ピッチャー"]',  85.00, 'ACTIVE'),
-  ('aaaaaaaa-0002-4002-8002-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '鈴木一郎',   'PRO',  '["キャッチャー"]',90.00, 'ACTIVE'),
-  ('aaaaaaaa-0003-4003-8003-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '佐藤次郎',   'LITE', '["ショート"]',    75.00, 'ACTIVE'),
-  ('aaaaaaaa-0004-4004-8004-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '山田三郎',   'PRO',  '["外野手"]',      60.00, 'ACTIVE'),
-  ('aaaaaaaa-0005-4005-8005-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '高橋四郎',   'PRO',  '["一塁手"]',      80.00, 'ACTIVE'),
-  ('aaaaaaaa-0006-4006-8006-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '中村五郎',   'PRO',  '["二塁手"]',      88.00, 'ACTIVE'),
-  ('aaaaaaaa-0007-4007-8007-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '小林六郎',   'LITE', '["三塁手"]',      70.00, 'ACTIVE'),
-  ('aaaaaaaa-0008-4008-8008-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '加藤七郎',   'PRO',  '["外野手"]',      82.00, 'ACTIVE'),
-  ('aaaaaaaa-0009-4009-8009-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '吉田八郎',   'PRO',  '["外野手"]',      65.00, 'ACTIVE');
+INSERT INTO members (id, team_id, name, tier, role, positions_json, attendance_rate, status) VALUES
+  ('aaaaaaaa-0001-4001-8001-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '田中太郎',   'PRO',  'SUPER_ADMIN', '["ピッチャー"]',  85.00, 'ACTIVE'),
+  ('aaaaaaaa-0002-4002-8002-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '鈴木一郎',   'PRO',  'ADMIN',  '["キャッチャー"]',90.00, 'ACTIVE'),
+  ('aaaaaaaa-0003-4003-8003-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '佐藤次郎',   'LITE', 'MEMBER', '["ショート"]',    75.00, 'ACTIVE'),
+  ('aaaaaaaa-0004-4004-8004-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '山田三郎',   'PRO',  'MEMBER', '["外野手"]',      60.00, 'ACTIVE'),
+  ('aaaaaaaa-0005-4005-8005-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '高橋四郎',   'PRO',  'MEMBER', '["一塁手"]',      80.00, 'ACTIVE'),
+  ('aaaaaaaa-0006-4006-8006-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '中村五郎',   'PRO',  'MEMBER', '["二塁手"]',      88.00, 'ACTIVE'),
+  ('aaaaaaaa-0007-4007-8007-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '小林六郎',   'LITE', 'MEMBER', '["三塁手"]',      70.00, 'ACTIVE'),
+  ('aaaaaaaa-0008-4008-8008-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '加藤七郎',   'PRO',  'MEMBER', '["外野手"]',      82.00, 'ACTIVE'),
+  ('aaaaaaaa-0009-4009-8009-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', '吉田八郎',   'PRO',  'MEMBER', '["外野手"]',      65.00, 'ACTIVE');
 
 -- 助っ人
 INSERT INTO helpers (id, team_id, name, note, times_helped) VALUES

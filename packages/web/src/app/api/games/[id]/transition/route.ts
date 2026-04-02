@@ -1,3 +1,4 @@
+import { requireAuth, requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   apiError,
@@ -13,11 +14,16 @@ import {
 import type { GameStatus } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
-/** POST /api/games/:id/transition — 状態遷移 */
+/** POST /api/games/:id/transition — 状態遷移 (ADMIN以上) */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const roleCheck = requireRole(authResult, "ADMIN");
+  if (roleCheck) return roleCheck;
+
   const { id } = await params;
   const supabase = await createClient();
   const body = await request.json();

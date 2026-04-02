@@ -1,3 +1,4 @@
+import { requireAuth, requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   apiError,
@@ -57,11 +58,16 @@ export async function GET(
   );
 }
 
-/** PATCH /api/games/:id */
+/** PATCH /api/games/:id (ADMIN以上) */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const roleCheck = requireRole(authResult, "ADMIN");
+  if (roleCheck) return roleCheck;
+
   const { id } = await params;
   const supabase = await createClient();
   const body = await request.json();

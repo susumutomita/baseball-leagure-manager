@@ -1,3 +1,4 @@
+import { requireAuth, requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   apiError,
@@ -10,6 +11,11 @@ import { type NextRequest, NextResponse } from "next/server";
 
 /** POST /api/teams — チーム作成 */
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const roleCheck = requireRole(authResult, "ADMIN");
+  if (roleCheck) return roleCheck;
+
   const supabase = await createClient();
   const body = await request.json();
 
