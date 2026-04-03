@@ -106,6 +106,9 @@ export {
 } from "./lib/stats";
 export type { BattingStats, PitchingStats, TeamStats } from "./lib/stats";
 
+// PayPay
+export { generatePayPayLink } from "./lib/paypay";
+
 // Validators
 export {
   createGameSchema,
