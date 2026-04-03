@@ -98,6 +98,14 @@ export type { GameContext } from "./lib/next-actions";
 // Auth
 export { hasRole, assertRole, InsufficientRoleError } from "./lib/auth";
 
+// Stats
+export {
+  calculateBattingStats,
+  calculatePitchingStats,
+  calculateTeamStats,
+} from "./lib/stats";
+export type { BattingStats, PitchingStats, TeamStats } from "./lib/stats";
+
 // Validators
 export {
   createGameSchema,
