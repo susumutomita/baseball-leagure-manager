@@ -63,7 +63,7 @@ export default async function TeamDetailPage({
       breadcrumbs={
         <BreadcrumbGroup
           items={[
-            { text: "ダッシュボード", href: "/" },
+            { text: "ダッシュボード", href: "/dashboard" },
             { text: team.name, href: `/teams/${id}` },
           ]}
         />

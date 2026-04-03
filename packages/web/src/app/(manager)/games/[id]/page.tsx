@@ -88,7 +88,7 @@ export default async function GameDetailPage({
       breadcrumbs={
         <BreadcrumbGroup
           items={[
-            { text: "ダッシュボード", href: "/" },
+            { text: "ダッシュボード", href: "/dashboard" },
             { text: game.title, href: `/games/${id}` },
           ]}
         />
