@@ -6,6 +6,7 @@ import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
 import Header from "@cloudscape-design/components/header";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
+import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Table from "@cloudscape-design/components/table";
@@ -140,11 +141,16 @@ export default async function GameDetailPage({
         </Container>
 
         <Container header={<Header variant="h2">アクション</Header>}>
-          <TransitionButtons
-            gameId={game.id}
-            currentStatus={game.status}
-            transitions={transitions}
-          />
+          <SpaceBetween size="s">
+            <TransitionButtons
+              gameId={game.id}
+              currentStatus={game.status}
+              transitions={transitions}
+            />
+            {(game.status === "COMPLETED" || game.status === "SETTLED") && (
+              <Link href={`/games/${game.id}/expenses`}>支出・精算を管理</Link>
+            )}
+          </SpaceBetween>
         </Container>
 
         {rsvps && rsvps.length > 0 && (
