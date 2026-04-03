@@ -126,6 +126,26 @@ export {
 } from "./lib/stats";
 export type { BattingStats, PitchingStats, TeamStats } from "./lib/stats";
 
+// Negotiation Policy
+export {
+  getDefaultPolicy,
+  matchPolicy,
+  shouldAutoAccept,
+  shouldAutoDecline,
+  negotiationPolicySchema,
+  negotiationPolicyPatchSchema,
+  DAY_OF_WEEK,
+  TIME_SLOT,
+  COST_SPLIT,
+} from "./lib/negotiation-policy";
+export type {
+  NegotiationPolicy,
+  NegotiationProposal,
+  DayOfWeek,
+  TimeSlot,
+  CostSplit,
+} from "./lib/negotiation-policy";
+
 // iCal
 export { generateICalFeed, generateVEvent } from "./lib/ical";
 
@@ -160,3 +180,20 @@ export type {
   CreateTeamInput,
   SendNotificationInput,
 } from "./lib/validators";
+
+// AI Service
+export {
+  predictAttendance,
+  recommendHelpers,
+  generateNegotiationMessage,
+  generateWeeklyReport,
+} from "./lib/ai-service";
+export type {
+  AttendancePrediction,
+  HelperRecommendation,
+  PredictAttendanceInput,
+  PredictAttendanceGameInput,
+  RecommendHelpersInput,
+  WeeklyReportGameInput,
+  NegotiationMessageContext,
+} from "./lib/ai-service";
