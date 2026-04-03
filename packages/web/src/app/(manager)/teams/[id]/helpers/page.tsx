@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Cards from "@cloudscape-design/components/cards";
 import ContentLayout from "@cloudscape-design/components/content-layout";
 import Header from "@cloudscape-design/components/header";
@@ -28,6 +29,15 @@ export default async function HelpersPage({
 
   return (
     <ContentLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/" },
+            { text: team?.name ?? "チーム", href: `/teams/${id}` },
+            { text: "助っ人管理", href: `/teams/${id}/helpers` },
+          ]}
+        />
+      }
       header={
         <Header
           variant="h1"
