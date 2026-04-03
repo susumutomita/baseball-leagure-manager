@@ -67,6 +67,11 @@ export default function ManagerLayout({
                     text: "対戦相手",
                     href: `/teams/${DEFAULT_TEAM_ID}/opponents`,
                   },
+                  {
+                    type: "link",
+                    text: "成績・統計",
+                    href: `/teams/${DEFAULT_TEAM_ID}/stats`,
+                  },
                 ],
               },
             ]}
