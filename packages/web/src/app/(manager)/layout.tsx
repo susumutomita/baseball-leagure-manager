@@ -72,6 +72,11 @@ export default function ManagerLayout({
                     text: "成績・統計",
                     href: `/teams/${DEFAULT_TEAM_ID}/stats`,
                   },
+                  {
+                    type: "link",
+                    text: "設定",
+                    href: "/settings",
+                  },
                 ],
               },
             ]}
