@@ -8,7 +8,9 @@ import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Table from "@cloudscape-design/components/table";
 
+import { SettlementActions } from "@/components/SettlementActions";
 import { createClient } from "@/lib/supabase/server";
+import { generatePayPayLink } from "@match-engine/core";
 
 const CATEGORY_LABELS: Record<string, string> = {
   GROUND: "グラウンド",
@@ -131,43 +133,73 @@ export default async function ExpensesPage({
 
         {settlement ? (
           <Container header={<Header variant="h2">精算サマリ</Header>}>
-            <KeyValuePairs
-              items={[
-                {
-                  label: "合計費用",
-                  value: `¥${Number(settlement.total_cost).toLocaleString()}`,
-                },
-                {
-                  label: "対戦相手負担",
-                  value: `¥${Number(settlement.opponent_share).toLocaleString()}`,
-                },
-                {
-                  label: "チーム負担",
-                  value: `¥${Number(settlement.team_cost).toLocaleString()}`,
-                },
-                {
-                  label: "一人あたり",
-                  value: `¥${Number(settlement.per_member).toLocaleString()}`,
-                },
-                {
-                  label: "参加人数",
-                  value: `${settlement.member_count}人`,
-                },
-                {
-                  label: "ステータス",
-                  value: (
-                    <StatusIndicator
-                      type={
-                        SETTLEMENT_STATUS_TYPE[settlement.status] ?? "pending"
-                      }
-                    >
-                      {SETTLEMENT_STATUS_LABELS[settlement.status] ??
-                        settlement.status}
-                    </StatusIndicator>
-                  ),
-                },
-              ]}
-            />
+            <SpaceBetween size="l">
+              <KeyValuePairs
+                items={[
+                  {
+                    label: "合計費用",
+                    value: `¥${Number(settlement.total_cost).toLocaleString()}`,
+                  },
+                  {
+                    label: "対戦相手負担",
+                    value: `¥${Number(settlement.opponent_share).toLocaleString()}`,
+                  },
+                  {
+                    label: "チーム負担",
+                    value: `¥${Number(settlement.team_cost).toLocaleString()}`,
+                  },
+                  {
+                    label: "一人あたり",
+                    value: `¥${Number(settlement.per_member).toLocaleString()}`,
+                  },
+                  {
+                    label: "参加人数",
+                    value: `${settlement.member_count}人`,
+                  },
+                  {
+                    label: "ステータス",
+                    value: (
+                      <StatusIndicator
+                        type={
+                          SETTLEMENT_STATUS_TYPE[settlement.status] ?? "pending"
+                        }
+                      >
+                        {SETTLEMENT_STATUS_LABELS[settlement.status] ??
+                          settlement.status}
+                      </StatusIndicator>
+                    ),
+                  },
+                  ...((settlement.status === "NOTIFIED" ||
+                    settlement.status === "SETTLED") &&
+                  game.title
+                    ? [
+                        {
+                          label: "PayPay リンク",
+                          value: (
+                            <Link
+                              href={generatePayPayLink(
+                                settlement.per_member,
+                                `${game.title} 精算`,
+                              )}
+                              external
+                            >
+                              PayPay で ¥
+                              {Number(settlement.per_member).toLocaleString()}{" "}
+                              を支払う
+                            </Link>
+                          ),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+
+              <SettlementActions
+                gameId={id}
+                settlementStatus={settlement.status}
+                perMember={settlement.per_member}
+              />
+            </SpaceBetween>
           </Container>
         ) : (
           <Container header={<Header variant="h2">精算サマリ</Header>}>
