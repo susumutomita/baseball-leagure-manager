@@ -197,3 +197,55 @@ export type {
   WeeklyReportGameInput,
   NegotiationMessageContext,
 } from "./lib/ai-service";
+
+// LINE Messaging
+export {
+  pushMessage,
+  createLineSender,
+  buildRsvpReminderMessage,
+  buildRsvpReminderFlex,
+  buildGameConfirmedMessage,
+  buildSettlementRequestMessage,
+} from "./lib/line-messaging";
+export type {
+  LineTextMessage,
+  LineFlexMessage,
+  LineMessage,
+  LinePushResult,
+  RsvpReminderContext,
+  GameConfirmedContext,
+  SettlementRequestContext,
+} from "./lib/line-messaging";
+
+// Email Service
+export {
+  sendEmail,
+  createEmailSender,
+  buildRsvpReminderEmail,
+  buildGameConfirmedEmail,
+  buildSettlementRequestEmail,
+} from "./lib/email-service";
+export type {
+  EmailSendResult,
+  EmailSendOptions,
+  EmailContent,
+  EmailRsvpReminderContext,
+  EmailGameConfirmedContext,
+  EmailSettlementRequestContext,
+} from "./lib/email-service";
+
+// Notification Dispatcher
+export {
+  dispatchNotifications,
+  dispatchToMember,
+  resolveChannels,
+  getNotificationHistory,
+  dispatchNotificationSchema,
+  memberNotificationPreferenceSchema,
+} from "./lib/notification-dispatcher";
+export type {
+  DispatchNotificationInput,
+  MemberNotificationPreference,
+  DispatchResult,
+  RetryConfig,
+} from "./lib/notification-dispatcher";
