@@ -2,7 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 // 認証不要のパス
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/api/liff", "/liff"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/callback",
+  "/api/liff",
+  "/liff",
+  "/terms",
+  "/privacy",
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -36,7 +43,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 管理画面(/)へのアクセスで未ログインの場合、ログインページへリダイレクト
+  // 公開ランディングページ(/)は認証不要
+  if (pathname === "/") {
+    return response;
+  }
+
+  // 管理画面へのアクセスで未ログインの場合、ログインページへリダイレクト
   if (!user && !pathname.startsWith("/api")) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);

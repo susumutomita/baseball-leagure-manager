@@ -102,7 +102,7 @@ export default function NewGamePage() {
           submitButton: "試合を作成",
           optional: "任意",
         }}
-        onCancel={() => router.push("/")}
+        onCancel={() => router.push("/dashboard")}
         onNavigate={({ detail }) =>
           setActiveStepIndex(detail.requestedStepIndex)
         }

@@ -12,7 +12,7 @@ import { Suspense } from "react";
 
 function LoginContent() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") ?? "/";
+  const redirect = searchParams.get("redirect") ?? "/dashboard";
 
   const handleLogin = async () => {
     const supabase = createClient();

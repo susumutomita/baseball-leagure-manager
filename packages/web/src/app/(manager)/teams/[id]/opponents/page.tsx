@@ -31,7 +31,7 @@ export default async function OpponentsPage({
       breadcrumbs={
         <BreadcrumbGroup
           items={[
-            { text: "ダッシュボード", href: "/" },
+            { text: "ダッシュボード", href: "/dashboard" },
             { text: team?.name ?? "チーム", href: `/teams/${id}` },
             { text: "対戦相手", href: `/teams/${id}/opponents` },
           ]}

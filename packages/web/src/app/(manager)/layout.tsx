@@ -22,7 +22,7 @@ export default function ManagerLayout({
       <div id="top-nav">
         <TopNavigation
           identity={{
-            href: "/",
+            href: "/dashboard",
             title: "試合成立エンジン",
           }}
           utilities={[
@@ -43,9 +43,9 @@ export default function ManagerLayout({
               e.preventDefault();
               router.push(e.detail.href);
             }}
-            header={{ text: "メニュー", href: "/" }}
+            header={{ text: "メニュー", href: "/dashboard" }}
             items={[
-              { type: "link", text: "ダッシュボード", href: "/" },
+              { type: "link", text: "ダッシュボード", href: "/dashboard" },
               { type: "link", text: "試合作成", href: "/games/new" },
               { type: "divider" },
               {

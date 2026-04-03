@@ -32,7 +32,7 @@ export default async function HelpersPage({
       breadcrumbs={
         <BreadcrumbGroup
           items={[
-            { text: "ダッシュボード", href: "/" },
+            { text: "ダッシュボード", href: "/dashboard" },
             { text: team?.name ?? "チーム", href: `/teams/${id}` },
             { text: "助っ人管理", href: `/teams/${id}/helpers` },
           ]}
