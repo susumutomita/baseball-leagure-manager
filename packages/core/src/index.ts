@@ -95,6 +95,26 @@ export {
 } from "./lib/next-actions";
 export type { GameContext } from "./lib/next-actions";
 
+// Notification
+export {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_CHANNELS,
+  RECIPIENT_TYPES,
+  queueNotification,
+  sendNotification,
+  sendBulkNotifications,
+  createDefaultDispatchers,
+} from "./lib/notification";
+export type {
+  NotificationType,
+  NotificationChannel,
+  RecipientType,
+  NotificationEntry,
+  NotificationResult,
+  ChannelSender,
+  ChannelDispatchers,
+} from "./lib/notification";
+
 // Auth
 export { hasRole, assertRole, InsufficientRoleError } from "./lib/auth";
 
@@ -118,6 +138,7 @@ export {
   updateNegotiationSchema,
   createExpenseSchema,
   createTeamSchema,
+  sendNotificationSchema,
   zodToValidationError,
 } from "./lib/validators";
 export type {
@@ -131,4 +152,5 @@ export type {
   UpdateNegotiationInput,
   CreateExpenseInput,
   CreateTeamInput,
+  SendNotificationInput,
 } from "./lib/validators";
