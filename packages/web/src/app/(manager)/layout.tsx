@@ -6,6 +6,8 @@ import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
+const DEFAULT_TEAM_ID = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID ?? "";
+
 export default function ManagerLayout({
   children,
 }: {
@@ -48,10 +50,23 @@ export default function ManagerLayout({
               { type: "divider" },
               {
                 type: "section",
-                text: "管理",
+                text: "チーム管理",
                 items: [
-                  { type: "link", text: "チーム", href: "/teams" },
-                  { type: "link", text: "助っ人", href: "/helpers" },
+                  {
+                    type: "link",
+                    text: "メンバー",
+                    href: `/teams/${DEFAULT_TEAM_ID}`,
+                  },
+                  {
+                    type: "link",
+                    text: "助っ人",
+                    href: `/teams/${DEFAULT_TEAM_ID}/helpers`,
+                  },
+                  {
+                    type: "link",
+                    text: "対戦相手",
+                    href: `/teams/${DEFAULT_TEAM_ID}/opponents`,
+                  },
                 ],
               },
             ]}
