@@ -1,16 +1,22 @@
 // ============================================================
 // AI サービス — Claude API を利用した各種 AI 機能
 // ============================================================
-import Anthropic from "@anthropic-ai/sdk";
 
 const MODEL = "claude-sonnet-4-20250514";
 
-function createAnthropicClient(): Anthropic | null {
+// biome-ignore lint/suspicious/noExplicitAny: dynamic import for optional dependency
+function createAnthropicClient(): any | null {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return null;
   }
-  return new Anthropic({ apiKey });
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Anthropic = require("@anthropic-ai/sdk").default;
+    return new Anthropic({ apiKey });
+  } catch {
+    return null;
+  }
 }
 
 // --- 型定義 ---

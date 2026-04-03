@@ -319,7 +319,7 @@ server.tool(
     note: z.string().max(500).nullable().default(null).describe("備考"),
     actor_id: z.string().default("SYSTEM").describe("操作者 ID"),
   },
-  async ({ game_id, ...body }) => {
+  async ({ game_id, ...body }: { game_id: string; [key: string]: unknown }) => {
     const res = await post(`/api/games/${game_id}/expenses`, body);
     return toResult(res);
   },
@@ -331,7 +331,7 @@ server.tool(
   {
     game_id: z.string().uuid().describe("試合 ID"),
   },
-  async ({ game_id }) => {
+  async ({ game_id }: { game_id: string }) => {
     const res = await post(`/api/games/${game_id}/settlement`);
     return toResult(res);
   },
@@ -343,7 +343,7 @@ server.tool(
   {
     game_id: z.string().uuid().describe("試合 ID"),
   },
-  async ({ game_id }) => {
+  async ({ game_id }: { game_id: string }) => {
     const res = await get(`/api/games/${game_id}/expenses`);
     return toResult(res);
   },
