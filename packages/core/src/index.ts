@@ -106,6 +106,9 @@ export {
 } from "./lib/stats";
 export type { BattingStats, PitchingStats, TeamStats } from "./lib/stats";
 
+// iCal
+export { generateICalFeed, generateVEvent } from "./lib/ical";
+
 // Validators
 export {
   createGameSchema,
