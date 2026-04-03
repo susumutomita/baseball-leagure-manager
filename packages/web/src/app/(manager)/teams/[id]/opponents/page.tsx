@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import ContentLayout from "@cloudscape-design/components/content-layout";
 import Header from "@cloudscape-design/components/header";
 import Link from "@cloudscape-design/components/link";
@@ -27,6 +28,15 @@ export default async function OpponentsPage({
 
   return (
     <ContentLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/" },
+            { text: team?.name ?? "チーム", href: `/teams/${id}` },
+            { text: "対戦相手", href: `/teams/${id}/opponents` },
+          ]}
+        />
+      }
       header={
         <Header
           variant="h1"

@@ -1,6 +1,7 @@
 import { TransitionButtons } from "@/components/TransitionButtons";
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
@@ -84,6 +85,14 @@ export default async function GameDetailPage({
 
   return (
     <ContentLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/" },
+            { text: game.title, href: `/games/${id}` },
+          ]}
+        />
+      }
       header={
         <Header
           variant="h1"
