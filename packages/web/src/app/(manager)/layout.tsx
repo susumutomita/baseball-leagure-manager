@@ -82,6 +82,11 @@ export default function ManagerLayout({
                     text: "カレンダー",
                     href: `/teams/${DEFAULT_TEAM_ID}/calendar`,
                   },
+                  {
+                    type: "link",
+                    text: "設定",
+                    href: "/settings",
+                  },
                 ],
               },
             ]}
