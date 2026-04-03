@@ -69,6 +69,11 @@ export default function ManagerLayout({
                   },
                   {
                     type: "link",
+                    text: "グラウンド",
+                    href: `/teams/${DEFAULT_TEAM_ID}/grounds`,
+                  },
+                  {
+                    type: "link",
                     text: "成績・統計",
                     href: `/teams/${DEFAULT_TEAM_ID}/stats`,
                   },
