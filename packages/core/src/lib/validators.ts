@@ -128,6 +128,23 @@ export const createTeamSchema = z.object({
 });
 export type CreateTeamInput = z.infer<typeof createTeamSchema>;
 
+// --- Notification ---
+
+export const sendNotificationSchema = z.object({
+  game_id: uuidSchema,
+  notification_type: z.enum([
+    "RSVP_REQUEST",
+    "REMINDER",
+    "DEADLINE",
+    "HELPER_REQUEST",
+    "SETTLEMENT",
+    "CANCELLATION",
+    "GROUND_ALERT",
+  ]),
+  message: z.string().max(1000).nullable().default(null),
+});
+export type SendNotificationInput = z.infer<typeof sendNotificationSchema>;
+
 // --- Zod エラー → AppError 変換 ---
 
 import type { ValidationErr } from "./result";
