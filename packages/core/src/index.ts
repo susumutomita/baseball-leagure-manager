@@ -132,3 +132,20 @@ export type {
   CreateExpenseInput,
   CreateTeamInput,
 } from "./lib/validators";
+
+// AI Service
+export {
+  predictAttendance,
+  recommendHelpers,
+  generateNegotiationMessage,
+  generateWeeklyReport,
+} from "./lib/ai-service";
+export type {
+  AttendancePrediction,
+  HelperRecommendation,
+  PredictAttendanceInput,
+  PredictAttendanceGameInput,
+  RecommendHelpersInput,
+  WeeklyReportGameInput,
+  NegotiationMessageContext,
+} from "./lib/ai-service";
