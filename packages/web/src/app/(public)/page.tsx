@@ -123,15 +123,15 @@ export default function LandingPage() {
               </Box>
             </SpaceBetween>
             <SpaceBetween size="xs">
-              <Box variant="h3">代表の作業：10分の1</Box>
+              <Box variant="h3">チーム運営を丸ごと自動化</Box>
               <Box variant="p" color="text-body-secondary">
-                出欠の催促、人数の集計、助っ人への連絡、精算の計算。今まで代表が手作業でやっていたこと全てをシステムが代行します。
+                出欠の催促、人数の集計、助っ人への連絡、精算の計算、対戦チームとの交渉まで。代表が手作業でやっていたことをシステムが代行します。
               </Box>
             </SpaceBetween>
             <SpaceBetween size="xs">
-              <Box variant="h3">チーム運営を丸ごと自動化</Box>
+              <Box variant="h3">全ての記録がチームの資産になる</Box>
               <Box variant="p" color="text-body-secondary">
-                お金の精算、対戦チームとの交渉、助っ人の声掛けまで。人手を介さずにチーム運営が回ります。
+                連絡履歴・出欠履歴・精算記録が全てシステムに残ります。「去年の助っ人誰だっけ？」「先月のグラウンド代いくらだった？」がすぐわかります。
               </Box>
             </SpaceBetween>
             <SpaceBetween size="xs">
