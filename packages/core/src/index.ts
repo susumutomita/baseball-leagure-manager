@@ -278,6 +278,14 @@ export type {
   EmailSettlementRequestContext,
 } from "./lib/email-service";
 
+// Cron Logic
+export {
+  findGamesNeedingReminder,
+  findGamesPassedDeadline,
+  shouldSendReminder,
+} from "./lib/cron-logic";
+export type { CronGameInput } from "./lib/cron-logic";
+
 // Ground Monitor
 export {
   detectNewAvailability,

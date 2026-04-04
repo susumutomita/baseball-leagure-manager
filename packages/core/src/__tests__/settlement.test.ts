@@ -156,6 +156,119 @@ describe("calculateSettlement", () => {
       ).toThrow("参加人数は1以上である必要があります");
     });
   });
+
+  // --- 追加テスト: 複数の経費カテゴリ ---
+
+  describe("多くの経費カテゴリが混在するとき", () => {
+    it("折半と非折半が正しく集計される", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [
+            createExpense({ amount: 10000, split_with_opponent: true }), // グラウンド代
+            createExpense({ amount: 5000, split_with_opponent: true }), // 審判代
+            createExpense({ amount: 3000, split_with_opponent: false }), // ドリンク代
+            createExpense({ amount: 2000, split_with_opponent: false }), // ボール代
+          ],
+          memberCount: 15,
+        }),
+      );
+
+      // totalCost: 10000 + 5000 + 3000 + 2000 = 20000
+      expect(result.totalCost).toBe(20000);
+      // opponentShare: floor(10000/2) + floor(5000/2) = 5000 + 2500 = 7500
+      expect(result.opponentShare).toBe(7500);
+      // teamCost: 20000 - 7500 = 12500
+      expect(result.teamCost).toBe(12500);
+      // perMember: ceil(12500/15) = ceil(833.33) = 834
+      expect(result.perMember).toBe(834);
+    });
+  });
+
+  // --- 追加テスト: 端数の丸め ---
+
+  describe("perMember が割り切れるとき", () => {
+    it("切り上げの影響を受けない", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 10000 })],
+          memberCount: 10,
+        }),
+      );
+
+      expect(result.perMember).toBe(1000);
+    });
+  });
+
+  describe("perMember が割り切れないとき (小さい端数)", () => {
+    it("1円未満の端数でも切り上げる", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 10001 })],
+          memberCount: 10,
+        }),
+      );
+
+      // 10001 / 10 = 1000.1 → ceil → 1001
+      expect(result.perMember).toBe(1001);
+    });
+  });
+
+  describe("折半で奇数金額の経費が複数あるとき", () => {
+    it("各経費ごとに個別に切り捨てが適用される", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [
+            createExpense({ amount: 1001, split_with_opponent: true }),
+            createExpense({ amount: 2001, split_with_opponent: true }),
+          ],
+          memberCount: 2,
+        }),
+      );
+
+      // opponentShare: floor(1001/2) + floor(2001/2) = 500 + 1000 = 1500
+      expect(result.opponentShare).toBe(1500);
+      // totalCost: 3002, teamCost: 3002 - 1500 = 1502
+      expect(result.teamCost).toBe(1502);
+      // perMember: ceil(1502/2) = 751
+      expect(result.perMember).toBe(751);
+    });
+  });
+
+  describe("大きな金額の経費のとき", () => {
+    it("正しく計算される", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 1000000 })],
+          memberCount: 20,
+        }),
+      );
+
+      expect(result.totalCost).toBe(1000000);
+      expect(result.perMember).toBe(50000);
+    });
+  });
+
+  describe("経費が1円のとき", () => {
+    it("正しく計算される", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 1 })],
+          memberCount: 3,
+        }),
+      );
+
+      // 1 / 3 = 0.33 → ceil → 1
+      expect(result.perMember).toBe(1);
+    });
+  });
+
+  describe("memberCount の結果を返すとき", () => {
+    it("入力した参加人数がそのまま返される", () => {
+      const result = calculateSettlement(createInput({ memberCount: 15 }));
+
+      expect(result.memberCount).toBe(15);
+    });
+  });
 });
 
 describe("generatePayPayLink — 精算連携", () => {
