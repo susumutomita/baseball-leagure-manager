@@ -179,6 +179,42 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// API Handler
+export {
+  parseBody,
+  errorResponse,
+  notFound,
+  unauthorized,
+  conflict,
+} from "./lib/api-handler";
+export type { HandlerResult } from "./lib/api-handler";
+
+// Webhook Events
+export {
+  createWebhookEvent,
+  isGameTransitionEvent,
+  isRsvpRespondedEvent,
+  WEBHOOK_EVENT_TYPES,
+} from "./lib/webhook-events";
+export type {
+  WebhookEventType,
+  WebhookEvent,
+  GameTransitionPayload,
+  RsvpRespondedPayload,
+  NegotiationUpdatedPayload,
+  SettlementCompletedPayload,
+} from "./lib/webhook-events";
+
+// Availability Heatmap
+export {
+  analyzeMemberAvailability,
+  analyzeTeamAvailability,
+} from "./lib/availability-heatmap";
+export type {
+  DayOfWeekTrend,
+  MemberAvailabilityPattern,
+} from "./lib/availability-heatmap";
+
 // Cron Guard
 export {
   generateIdempotencyKey,
