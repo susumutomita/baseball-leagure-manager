@@ -55,10 +55,11 @@ export default function LandingPage() {
         <Box padding={{ top: "xxxl", bottom: "xxxl" }}>
           <SpaceBetween size="l">
             <Header variant="h1">
-              チームの連絡手段、そのままでいい。
+              全員が野球に集中できる環境をつくる。
             </Header>
             <Box variant="p" fontSize="heading-m" color="text-body-secondary">
-              メンバーはLINEで返事するだけ。新しいアプリを覚える必要なし。代表だけが管理画面を使えば、出欠・グラウンド・助っ人・精算が全て自動で回ります。
+              出欠の催促、助っ人探し、精算の計算——チーム運営の負担は代表に偏りがちです。mound
+              はその作業を自動化し、代表もメンバーも野球だけに集中できる環境をつくります。
             </Box>
             <Box>
               <Button variant="primary" onClick={() => router.push("/login")}>
@@ -73,7 +74,10 @@ export default function LandingPage() {
         {/* こんな悩み、ありませんか？ */}
         <Container
           header={
-            <Header variant="h2">
+            <Header
+              variant="h2"
+              description="ボランティアベースの運営。代表に負担が偏り、疲れてしまうことも。"
+            >
               チーム運営、こんなことに時間を取られていませんか？
             </Header>
           }
