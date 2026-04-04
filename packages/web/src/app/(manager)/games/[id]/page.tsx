@@ -166,6 +166,13 @@ export default async function GameDetailPage({
                   <Button>打席結果を入力</Button>
                 </Link>
               )}
+              {(game.status === "COMPLETED" ||
+                game.status === "CONFIRMED" ||
+                game.status === "SETTLED") && (
+                <Link href={`/games/${game.id}/pitching`}>
+                  <Button>投球成績を入力</Button>
+                </Link>
+              )}
               {(game.status === "COMPLETED" || game.status === "SETTLED") && (
                 <Link href={`/games/${game.id}/expenses`}>
                   <Button>支出・精算を管理</Button>
