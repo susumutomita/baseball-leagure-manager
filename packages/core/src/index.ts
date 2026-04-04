@@ -179,6 +179,23 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// Cost Estimator
+export { estimateGameCost } from "./lib/cost-estimator";
+export type { CostEstimate, CategoryEstimate } from "./lib/cost-estimator";
+
+// Invitation
+export {
+  generateInvitationToken,
+  decodeInvitationToken,
+  validateInvitation,
+  buildInvitationUrl,
+  createInvitationPayload,
+} from "./lib/invitation";
+export type {
+  InvitationPayload,
+  InvitationValidation,
+} from "./lib/invitation";
+
 // API Handler
 export {
   parseBody,
