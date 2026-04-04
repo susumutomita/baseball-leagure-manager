@@ -135,9 +135,9 @@ export default function LandingPage() {
               </Box>
             </SpaceBetween>
             <SpaceBetween size="xs">
-              <Box variant="h3">相手チームからの信頼UP</Box>
+              <Box variant="h3">相手への返信が早くなる</Box>
               <Box variant="p" color="text-body-secondary">
-                AIが連絡文を下書きし、返信を自動追跡。素早く丁寧な対応で「また試合したい」と思われるチームになれます。
+                AIが連絡文を下書きし、返信状況を自動追跡。対戦の誘いや助っ人の依頼に素早く返事ができるようになります。
               </Box>
             </SpaceBetween>
           </ColumnLayout>
