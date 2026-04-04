@@ -152,6 +152,13 @@ export { generateICalFeed, generateVEvent } from "./lib/ical";
 // PayPay
 export { generatePayPayLink } from "./lib/paypay";
 
+// Settlement
+export { calculateSettlement } from "./lib/settlement";
+export type {
+  SettlementCalculationInput,
+  SettlementCalculationResult,
+} from "./lib/settlement";
+
 // Validators
 export {
   createGameSchema,
