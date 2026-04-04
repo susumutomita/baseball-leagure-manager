@@ -147,6 +147,25 @@ export default async function GameDetailPage({
               <Link href={`/games/${game.id}/helpers`}>
                 <Button>助っ人を管理</Button>
               </Link>
+              {(game.status === "CONFIRMED" || game.status === "COMPLETED") && (
+                <Link href={`/games/${game.id}/attendance`}>
+                  <Button>出席を記録</Button>
+                </Link>
+              )}
+              {(game.status === "COMPLETED" ||
+                game.status === "CONFIRMED" ||
+                game.status === "SETTLED") && (
+                <Link href={`/games/${game.id}/result`}>
+                  <Button>試合結果を入力</Button>
+                </Link>
+              )}
+              {(game.status === "COMPLETED" ||
+                game.status === "CONFIRMED" ||
+                game.status === "SETTLED") && (
+                <Link href={`/games/${game.id}/at-bats`}>
+                  <Button>打席結果を入力</Button>
+                </Link>
+              )}
               {(game.status === "COMPLETED" || game.status === "SETTLED") && (
                 <Link href={`/games/${game.id}/expenses`}>
                   <Button>支出・精算を管理</Button>
