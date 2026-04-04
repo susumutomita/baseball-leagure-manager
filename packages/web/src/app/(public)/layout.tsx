@@ -7,25 +7,13 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className={styles.pageWrapper}>
       <header className={styles.header}>
         <Link href="/" className={styles.logo}>
           mound
         </Link>
         <Link href="/login">
-          <button
-            type="button"
-            style={{
-              background: "#0972d3",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "8px 20px",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
+          <button type="button" className={styles.loginButton}>
             ログイン
           </button>
         </Link>
@@ -37,7 +25,7 @@ export default function PublicLayout({
         <div className={styles.footerInner}>
           <div className={styles.footerSection}>
             <h4>mound</h4>
-            <p style={{ fontSize: 13, lineHeight: 1.6 }}>
+            <p>
               草野球チーム向け
               <br />
               試合成立エンジン
@@ -69,6 +57,6 @@ export default function PublicLayout({
           &copy; 2026 mound. All rights reserved.
         </div>
       </footer>
-    </>
+    </div>
   );
 }

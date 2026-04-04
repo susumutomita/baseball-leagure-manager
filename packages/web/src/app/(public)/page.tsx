@@ -23,22 +23,22 @@ export const metadata: Metadata = {
 
 const FEATURES = [
   {
-    icon: "\u{1F4CB}",
+    abbr: "出欠",
     title: "出欠管理",
     desc: "LINEで出欠を回収。リマインド自動送信で未回答者を減らし、試合成立の見通しをリアルタイムに把握できます。",
   },
   {
-    icon: "\u{1F3DF}\uFE0F",
+    abbr: "球場",
     title: "グラウンド監視",
     desc: "空きグラウンド情報を自動取得。抽選日程や空き状況をチームに通知し、確保のチャンスを逃しません。",
   },
   {
-    icon: "\u26BE",
+    abbr: "対戦",
     title: "対戦相手マッチング",
     desc: "日程・地域・レベルが合うチームを自動で提案。対戦相手探しの手間を大幅に削減します。",
   },
   {
-    icon: "\u{1F4B0}",
+    abbr: "精算",
     title: "精算・PayPay連携",
     desc: "参加費の自動計算とPayPayリンク送信。集金の手間とトラブルをゼロにします。",
   },
@@ -93,7 +93,7 @@ export default function LandingPage() {
         <div className={styles.featuresGrid}>
           {FEATURES.map((f) => (
             <div key={f.title} className={styles.featureCard}>
-              <div className={styles.featureIcon}>{f.icon}</div>
+              <div className={styles.featureIcon}>{f.abbr}</div>
               <h3 className={styles.featureTitle}>{f.title}</h3>
               <p className={styles.featureDesc}>{f.desc}</p>
             </div>
@@ -135,11 +135,7 @@ export default function LandingPage() {
                 <li>LINE通知</li>
                 <li>基本統計</li>
               </ul>
-              <Link
-                href="/login"
-                className={styles.ctaButton}
-                style={{ background: "#e9ebed", color: "#16191f" }}
-              >
+              <Link href="/login" className={styles.ctaButtonLite}>
                 無料ではじめる
               </Link>
             </div>
