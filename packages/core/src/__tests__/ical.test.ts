@@ -155,4 +155,45 @@ describe("generateVEvent", () => {
 
     expect(result).toContain("SUMMARY:春季リーグ第1戦");
   });
+
+  describe("試合が CANCELLED のとき", () => {
+    it("STATUS を CANCELLED にする", () => {
+      const game = createGame({ status: "CANCELLED" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("STATUS:CANCELLED");
+    });
+  });
+
+  describe("note が設定されているとき", () => {
+    it("DESCRIPTION を含む", () => {
+      const game = createGame({ note: "雨天時は中止" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("DESCRIPTION:雨天時は中止");
+    });
+  });
+
+  describe("note が null のとき", () => {
+    it("DESCRIPTION を含まない", () => {
+      const game = createGame({ note: null });
+      const result = generateVEvent(game);
+
+      expect(result).not.toContain("DESCRIPTION:");
+    });
+  });
+
+  it("DTSTAMP を含む", () => {
+    const game = createGame();
+    const result = generateVEvent(game);
+
+    expect(result).toContain("DTSTAMP:");
+  });
+
+  it("特殊文字をエスケープする", () => {
+    const game = createGame({ title: "試合; テスト, チーム" });
+    const result = generateVEvent(game);
+
+    expect(result).toContain("SUMMARY:試合\\; テスト\\, チーム");
+  });
 });

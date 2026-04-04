@@ -179,6 +179,29 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// Game Analytics
+export {
+  calculateWinLossRecord,
+  generateSeasonSummary,
+  generateMonthlyStats,
+  calculateStreak,
+} from "./lib/game-analytics";
+export type {
+  WinLossRecord,
+  SeasonSummary,
+  MonthlyStats,
+} from "./lib/game-analytics";
+
+// Opponent Matcher
+export {
+  scoreOpponent,
+  recommendOpponents,
+} from "./lib/opponent-matcher";
+export type {
+  OpponentRecommendation,
+  MatchingCriteria,
+} from "./lib/opponent-matcher";
+
 // Game Date
 export {
   daysUntilGame,
