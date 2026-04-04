@@ -132,6 +132,7 @@ export {
   matchPolicy,
   shouldAutoAccept,
   shouldAutoDecline,
+  cancelOtherNegotiations,
   negotiationPolicySchema,
   negotiationPolicyPatchSchema,
   DAY_OF_WEEK,
@@ -141,6 +142,7 @@ export {
 export type {
   NegotiationPolicy,
   NegotiationProposal,
+  NegotiationSummary,
   DayOfWeek,
   TimeSlot,
   CostSplit,
