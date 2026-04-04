@@ -10,6 +10,39 @@ interface Member {
   line_user_id: string | null;
 }
 
+function LoadingSpinner() {
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
+      <p className="text-sm text-gray-500">メンバー情報を読み込み中...</p>
+    </div>
+  );
+}
+
+function ErrorDisplay({
+  message,
+  onRetry,
+}: { message: string; onRetry?: () => void }) {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-red-50 p-6 text-center">
+        <div className="mb-3 text-3xl">&#9888;</div>
+        <p className="text-sm font-medium text-red-700">エラー</p>
+        <p className="mt-2 text-sm text-red-600">{message}</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-4 rounded-xl bg-red-100 px-6 py-2 text-sm font-medium text-red-700 active:bg-red-200"
+          >
+            再試行
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function LiffRegisterPage() {
   const { accessToken, profile } = useLiffContext();
   const searchParams = useSearchParams();
@@ -17,7 +50,9 @@ export default function LiffRegisterPage() {
 
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [registering, setRegistering] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [result, setResult] = useState<{
     success: boolean;
     message: string;
@@ -28,12 +63,18 @@ export default function LiffRegisterPage() {
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setFetchError(null);
     try {
-      // Supabase REST APIでメンバー一覧を取得
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey =
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
-      if (!supabaseUrl || !supabaseKey) return;
+      if (!supabaseUrl || !supabaseKey) {
+        setFetchError(
+          "設定エラーが発生しました。管理者にお問い合わせください。",
+        );
+        return;
+      }
 
       const membersRes = await fetch(
         `${supabaseUrl}/rest/v1/members?team_id=eq.${teamId}&status=eq.ACTIVE&select=id,name,line_user_id&order=name`,
@@ -44,9 +85,17 @@ export default function LiffRegisterPage() {
           },
         },
       );
-      if (membersRes.ok) {
-        setMembers((await membersRes.json()) as Member[]);
+      if (!membersRes.ok) {
+        if (membersRes.status === 404) {
+          setFetchError("指定されたチームが見つかりません。");
+        } else {
+          setFetchError("メンバー情報の取得に失敗しました。");
+        }
+        return;
       }
+      setMembers((await membersRes.json()) as Member[]);
+    } catch {
+      setFetchError("通信エラーが発生しました。電波状況をご確認ください。");
     } finally {
       setLoading(false);
     }
@@ -59,6 +108,7 @@ export default function LiffRegisterPage() {
   const handleRegister = async (memberId: string) => {
     if (!accessToken) return;
     setRegistering(true);
+    setSelectedId(memberId);
     setResult(null);
 
     try {
@@ -92,31 +142,29 @@ export default function LiffRegisterPage() {
       setResult({ success: false, message: "通信エラーが発生しました" });
     } finally {
       setRegistering(false);
+      setSelectedId(null);
     }
   };
 
   if (!teamId) {
     return (
-      <div className="p-4">
-        <div className="rounded-2xl bg-red-50 p-4 text-center">
-          <p className="text-sm text-red-600">チームIDが指定されていません</p>
-        </div>
-      </div>
+      <ErrorDisplay message="チーム ID が指定されていません。正しいリンクからアクセスしてください。" />
     );
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-sm text-gray-500">読み込み中...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
+  }
+
+  if (fetchError) {
+    return <ErrorDisplay message={fetchError} onRetry={fetchMembers} />;
   }
 
   if (result?.success) {
     return (
-      <div className="p-4">
-        <div className="rounded-2xl bg-green-50 p-6 text-center">
+      <div className="flex min-h-[50vh] items-center justify-center p-4">
+        <div className="w-full max-w-sm rounded-2xl bg-green-50 p-6 text-center">
+          <div className="mb-2 text-4xl">&#9989;</div>
           <p className="text-lg font-bold text-green-700">登録完了</p>
           <p className="mt-2 text-sm text-green-600">{result.message}</p>
           <p className="mt-4 text-xs text-gray-500">
@@ -127,8 +175,10 @@ export default function LiffRegisterPage() {
     );
   }
 
+  const availableMembers = members.filter((m) => !m.line_user_id);
+
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 p-4 pb-8">
       {/* ユーザー情報 */}
       <div className="flex items-center gap-3">
         {profile?.pictureUrl && (
@@ -152,23 +202,28 @@ export default function LiffRegisterPage() {
           あなたの名前を選んでください
         </p>
         <div className="divide-y">
-          {members
-            .filter((m) => !m.line_user_id)
-            .map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                disabled={registering}
-                onClick={() => handleRegister(m.id)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm active:bg-gray-50 disabled:opacity-50"
-              >
-                <span className="font-medium">{m.name}</span>
+          {availableMembers.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              disabled={registering}
+              onClick={() => handleRegister(m.id)}
+              className="flex w-full items-center justify-between px-4 py-3 text-left text-sm active:bg-gray-50 disabled:opacity-50"
+            >
+              <span className="font-medium">{m.name}</span>
+              {registering && selectedId === m.id ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
+              ) : (
                 <span className="text-xs text-blue-500">選択</span>
-              </button>
-            ))}
-          {members.filter((m) => !m.line_user_id).length === 0 && (
+              )}
+            </button>
+          ))}
+          {availableMembers.length === 0 && (
             <div className="px-4 py-6 text-center text-sm text-gray-400">
               登録可能なメンバーがいません
+              <p className="mt-1 text-xs">
+                すべてのメンバーが既に LINE 連携済みです
+              </p>
             </div>
           )}
         </div>

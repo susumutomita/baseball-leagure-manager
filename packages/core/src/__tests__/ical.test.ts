@@ -74,6 +74,58 @@ describe("generateICalFeed", () => {
       const eventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
       expect(eventCount).toBe(2);
     });
+
+    it("各ゲームのUID が個別に含まれる", () => {
+      const games = [
+        createGame({ id: "game-abc" }),
+        createGame({ id: "game-xyz" }),
+      ];
+      const result = generateICalFeed(games, "テストチーム");
+
+      expect(result).toContain("UID:game-abc");
+      expect(result).toContain("UID:game-xyz");
+    });
+
+    it("3つ以上の試合でも正しく生成される", () => {
+      const games = [
+        createGame({ id: "g1", title: "第1試合" }),
+        createGame({ id: "g2", title: "第2試合" }),
+        createGame({ id: "g3", title: "第3試合" }),
+        createGame({ id: "g4", title: "第4試合" }),
+      ];
+      const result = generateICalFeed(games, "チーム名");
+
+      const eventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
+      expect(eventCount).toBe(4);
+    });
+  });
+
+  describe("カレンダー名に特殊文字が含まれるとき", () => {
+    it("カンマがエスケープされる", () => {
+      const result = generateICalFeed([], "チームA,B");
+
+      expect(result).toContain("X-WR-CALNAME:チームA\\,B");
+    });
+
+    it("セミコロンがエスケープされる", () => {
+      const result = generateICalFeed([], "チーム;テスト");
+
+      expect(result).toContain("X-WR-CALNAME:チーム\\;テスト");
+    });
+  });
+
+  describe("出力フォーマットのとき", () => {
+    it("CRLF で改行される", () => {
+      const result = generateICalFeed([], "テスト");
+
+      expect(result).toContain("\r\n");
+    });
+
+    it("末尾が CRLF で終わる", () => {
+      const result = generateICalFeed([], "テスト");
+
+      expect(result.endsWith("\r\n")).toBe(true);
+    });
   });
 });
 
@@ -106,6 +158,20 @@ describe("generateVEvent", () => {
     });
   });
 
+  describe("end_time が null で start_time がある場合", () => {
+    it("end_time にデフォルト値 (12:00) が使われる", () => {
+      const game = createGame({
+        game_date: "2026-05-01",
+        start_time: "10:00",
+        end_time: null,
+      });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("DTSTART:20260501T100000");
+      expect(result).toContain("DTEND:20260501T120000");
+    });
+  });
+
   describe("試合が CONFIRMED のとき", () => {
     it("STATUS を CONFIRMED にする", () => {
       const game = createGame({ status: "CONFIRMED" });
@@ -121,6 +187,42 @@ describe("generateVEvent", () => {
       const result = generateVEvent(game);
 
       expect(result).toContain("STATUS:TENTATIVE");
+    });
+  });
+
+  describe("試合が COMPLETED のとき", () => {
+    it("STATUS を CONFIRMED にする", () => {
+      const game = createGame({ status: "COMPLETED" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("STATUS:CONFIRMED");
+    });
+  });
+
+  describe("試合が SETTLED のとき", () => {
+    it("STATUS を CONFIRMED にする", () => {
+      const game = createGame({ status: "SETTLED" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("STATUS:CONFIRMED");
+    });
+  });
+
+  describe("試合が DRAFT のとき", () => {
+    it("STATUS を TENTATIVE にする", () => {
+      const game = createGame({ status: "DRAFT" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("STATUS:TENTATIVE");
+    });
+  });
+
+  describe("試合が CANCELLED のとき", () => {
+    it("STATUS を CANCELLED にする", () => {
+      const game = createGame({ status: "CANCELLED" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("STATUS:CANCELLED");
     });
   });
 
@@ -142,6 +244,22 @@ describe("generateVEvent", () => {
     });
   });
 
+  describe("ground_name に特殊文字が含まれるとき", () => {
+    it("カンマがエスケープされる", () => {
+      const game = createGame({ ground_name: "球場A,B" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("LOCATION:球場A\\,B");
+    });
+
+    it("セミコロンがエスケープされる", () => {
+      const game = createGame({ ground_name: "球場;第1グラウンド" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("LOCATION:球場\\;第1グラウンド");
+    });
+  });
+
   it("UID にゲーム ID を設定する", () => {
     const game = createGame({ id: "abc-123" });
     const result = generateVEvent(game);
@@ -154,15 +272,6 @@ describe("generateVEvent", () => {
     const result = generateVEvent(game);
 
     expect(result).toContain("SUMMARY:春季リーグ第1戦");
-  });
-
-  describe("試合が CANCELLED のとき", () => {
-    it("STATUS を CANCELLED にする", () => {
-      const game = createGame({ status: "CANCELLED" });
-      const result = generateVEvent(game);
-
-      expect(result).toContain("STATUS:CANCELLED");
-    });
   });
 
   describe("note が設定されているとき", () => {
@@ -195,5 +304,38 @@ describe("generateVEvent", () => {
     const result = generateVEvent(game);
 
     expect(result).toContain("SUMMARY:試合\\; テスト\\, チーム");
+  });
+
+  describe("タイトルに特殊文字が含まれるとき", () => {
+    it("カンマがエスケープされる", () => {
+      const game = createGame({ title: "練習試合,ダブルヘッダー" });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("SUMMARY:練習試合\\,ダブルヘッダー");
+    });
+  });
+
+  describe("午後の時刻が設定されているとき", () => {
+    it("正しい時刻フォーマットで出力される", () => {
+      const game = createGame({
+        game_date: "2026-12-25",
+        start_time: "14:30",
+        end_time: "17:00",
+      });
+      const result = generateVEvent(game);
+
+      expect(result).toContain("DTSTART:20261225T143000");
+      expect(result).toContain("DTEND:20261225T170000");
+    });
+  });
+
+  describe("VEVENT ブロック構造のとき", () => {
+    it("BEGIN:VEVENT で始まり END:VEVENT で終わる", () => {
+      const game = createGame();
+      const result = generateVEvent(game);
+
+      expect(result.startsWith("BEGIN:VEVENT")).toBe(true);
+      expect(result.endsWith("END:VEVENT")).toBe(true);
+    });
   });
 });

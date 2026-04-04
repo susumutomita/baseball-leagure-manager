@@ -46,6 +46,7 @@ export default function ManagerLayout({
             header={{ text: "メニュー", href: "/dashboard" }}
             items={[
               { type: "link", text: "ダッシュボード", href: "/dashboard" },
+              { type: "link", text: "試合一覧", href: "/games" },
               { type: "link", text: "試合作成", href: "/games/new" },
               { type: "divider" },
               {

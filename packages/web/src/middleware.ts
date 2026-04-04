@@ -9,6 +9,10 @@ const PUBLIC_PATHS = [
   "/liff",
   "/terms",
   "/privacy",
+  "/help",
+  "/docs",
+  "/contact",
+  "/legal",
 ];
 
 export async function middleware(request: NextRequest) {

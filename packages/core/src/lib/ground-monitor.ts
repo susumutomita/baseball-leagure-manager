@@ -7,7 +7,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Ground, GroundSlot } from "../types/domain";
 import type { ScrapedSlot } from "./ground-scraper";
-import { scrapeGround } from "./ground-scraper";
+import { GroundScraper } from "./ground-scraper";
 
 // --- 空き検出 ---
 
@@ -148,7 +148,9 @@ async function checkSingleGround(
   ground: Ground,
 ): Promise<GroundCheckResult> {
   // スクレイピング実行
-  const scrapedSlots = await scrapeGround(ground.municipality, ground.name);
+  const scraper = new GroundScraper();
+  const result = await scraper.scrapeGround(ground.municipality, ground.name);
+  const scrapedSlots: ScrapedSlot[] = result.slots;
 
   // 既存スロットを取得
   const { data: existingSlots, error: slotsError } = await supabase
