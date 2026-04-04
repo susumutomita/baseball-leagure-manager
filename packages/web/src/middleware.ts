@@ -11,6 +11,8 @@ const PUBLIC_PATHS = [
   "/privacy",
   "/help",
   "/docs",
+  "/contact",
+  "/legal",
 ];
 
 export async function middleware(request: NextRequest) {
