@@ -40,6 +40,66 @@ const GAME_TYPE_LABELS: Record<string, string> = {
   TOURNAMENT: "大会",
 };
 
+function LoadingSpinner() {
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
+      <p className="text-sm text-gray-500">読み込み中...</p>
+    </div>
+  );
+}
+
+function ErrorDisplay({
+  message,
+  onRetry,
+}: { message: string; onRetry?: () => void }) {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-red-50 p-6 text-center">
+        <div className="mb-3 text-3xl">&#9888;</div>
+        <p className="text-sm font-medium text-red-700">エラー</p>
+        <p className="mt-2 text-sm text-red-600">{message}</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-4 rounded-xl bg-red-100 px-6 py-2 text-sm font-medium text-red-700 active:bg-red-200"
+          >
+            再試行
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ConfirmationBanner({ response }: { response: string }) {
+  const labels: Record<string, { text: string; color: string }> = {
+    AVAILABLE: {
+      text: "参加で回答しました",
+      color: "bg-green-50 text-green-700",
+    },
+    UNAVAILABLE: {
+      text: "不参加で回答しました",
+      color: "bg-red-50 text-red-700",
+    },
+    MAYBE: {
+      text: "未定で回答しました",
+      color: "bg-yellow-50 text-yellow-700",
+    },
+  };
+  const info = labels[response];
+  if (!info) return null;
+
+  return (
+    <div
+      className={`rounded-2xl p-3 text-center text-sm font-medium ${info.color}`}
+    >
+      {info.text}
+    </div>
+  );
+}
+
 export default function LiffGameRsvpPage() {
   const { id: gameId } = useParams<{ id: string }>();
   const { accessToken, profile, closeLiff } = useLiffContext();
@@ -47,28 +107,37 @@ export default function LiffGameRsvpPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentResponse, setCurrentResponse] = useState<string>("NO_RESPONSE");
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!accessToken) return;
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`/api/liff/games/${gameId}/my-rsvp`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      const json = (await res.json()) as MyRsvpResponse;
-      if (!res.ok) {
-        if (res.status === 404 && json.lineUserId) {
+      if (res.status === 404) {
+        const json = (await res.json()) as MyRsvpResponse;
+        if (json.lineUserId) {
           setError(
             "LINE アカウントがメンバーに紐付いていません。先にメンバー登録を行ってください。",
           );
         } else {
-          setError(json.error ?? "データの取得に失敗しました");
+          setError("指定された試合が見つかりません。URL をご確認ください。");
         }
         return;
       }
+      if (!res.ok) {
+        const json = (await res.json()) as MyRsvpResponse;
+        setError(json.error ?? "データの取得に失敗しました");
+        return;
+      }
+      const json = (await res.json()) as MyRsvpResponse;
       setData(json);
       setCurrentResponse(json.rsvp?.response ?? "NO_RESPONSE");
     } catch {
-      setError("通信エラーが発生しました");
+      setError("通信エラーが発生しました。電波状況をご確認ください。");
     } finally {
       setLoading(false);
     }
@@ -78,30 +147,33 @@ export default function LiffGameRsvpPage() {
     fetchData();
   }, [fetchData]);
 
+  const handleRsvpUpdated = (newResponse: string) => {
+    setCurrentResponse(newResponse);
+    setShowConfirmation(true);
+    setTimeout(() => setShowConfirmation(false), 3000);
+  };
+
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-sm text-gray-500">読み込み中...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {
-    return (
-      <div className="p-4">
-        <div className="rounded-2xl bg-red-50 p-4 text-center">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
-      </div>
-    );
+    return <ErrorDisplay message={error} onRetry={fetchData} />;
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <ErrorDisplay
+        message="データが取得できませんでした"
+        onRetry={fetchData}
+      />
+    );
+  }
 
   const { game, rsvp } = data;
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 p-4 pb-8">
       {/* ユーザー情報 */}
       <div className="flex items-center gap-3">
         {profile?.pictureUrl && (
@@ -116,6 +188,9 @@ export default function LiffGameRsvpPage() {
           <p className="text-xs text-gray-500">{profile?.displayName}</p>
         </div>
       </div>
+
+      {/* 確認フィードバック */}
+      {showConfirmation && <ConfirmationBanner response={currentResponse} />}
 
       {/* 試合情報カード */}
       <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -161,7 +236,7 @@ export default function LiffGameRsvpPage() {
           currentResponse={currentResponse}
           accessToken={accessToken ?? ""}
           gameStatus={game.status}
-          onUpdated={setCurrentResponse}
+          onUpdated={handleRsvpUpdated}
         />
       ) : (
         <div className="rounded-2xl bg-gray-50 p-4 text-center">
