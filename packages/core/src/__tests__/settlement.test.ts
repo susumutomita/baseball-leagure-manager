@@ -156,6 +156,67 @@ describe("calculateSettlement", () => {
       ).toThrow("参加人数は1以上である必要があります");
     });
   });
+
+  describe("参加人数が小数のとき", () => {
+    it("エラーをスローする", () => {
+      expect(() =>
+        calculateSettlement(createInput({ memberCount: 2.5 })),
+      ).toThrow("参加人数は整数である必要があります");
+    });
+  });
+
+  describe("経費に負の金額が含まれるとき", () => {
+    it("エラーをスローする", () => {
+      expect(() =>
+        calculateSettlement(
+          createInput({
+            expenses: [createExpense({ amount: -500 })],
+          }),
+        ),
+      ).toThrow("経費に負の金額が含まれています");
+    });
+  });
+
+  describe("合計金額が上限を超えるとき", () => {
+    it("エラーをスローする", () => {
+      expect(() =>
+        calculateSettlement(
+          createInput({
+            expenses: [
+              createExpense({ amount: 6_000_000 }),
+              createExpense({ amount: 5_000_000 }),
+            ],
+          }),
+        ),
+      ).toThrow("合計金額が上限を超えています");
+    });
+  });
+
+  describe("金額が0の経費のみのとき", () => {
+    it("一人あたり0円になる", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 0 })],
+          memberCount: 5,
+        }),
+      );
+      expect(result.totalCost).toBe(0);
+      expect(result.perMember).toBe(0);
+    });
+  });
+
+  describe("大人数での精算のとき", () => {
+    it("正しく計算される", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 10000 })],
+          memberCount: 30,
+        }),
+      );
+      // 10000 / 30 = 333.33 → ceil → 334
+      expect(result.perMember).toBe(334);
+    });
+  });
 });
 
 describe("generatePayPayLink — 精算連携", () => {

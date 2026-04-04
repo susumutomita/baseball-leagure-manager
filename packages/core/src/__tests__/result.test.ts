@@ -98,6 +98,37 @@ describe("formatError", () => {
     expect(formatError(error)).toContain("game");
     expect(formatError(error)).toContain("abc");
   });
+
+  it("CONFLICTのメッセージを生成する", () => {
+    const error: AppError = {
+      type: "CONFLICT",
+      entity: "game",
+      message: "他のユーザーが更新しました",
+    };
+    expect(formatError(error)).toContain("game");
+    expect(formatError(error)).toContain("他のユーザーが更新しました");
+  });
+
+  it("EXTERNAL_SERVICE_ERRORのメッセージを生成する", () => {
+    const error: AppError = {
+      type: "EXTERNAL_SERVICE_ERROR",
+      service: "LINE",
+      message: "タイムアウト",
+      retryable: true,
+    };
+    expect(formatError(error)).toContain("LINE");
+    expect(formatError(error)).toContain("タイムアウト");
+  });
+
+  it("AUTHORIZATION_ERRORのメッセージを生成する", () => {
+    const error: AppError = {
+      type: "AUTHORIZATION_ERROR",
+      requiredRole: "ADMIN",
+      actualRole: "MEMBER",
+    };
+    expect(formatError(error)).toContain("ADMIN");
+    expect(formatError(error)).toContain("MEMBER");
+  });
 });
 
 describe("httpStatus", () => {
@@ -144,5 +175,32 @@ describe("httpStatus", () => {
 
   it("NOT_FOUND\u306f404\u3092\u8fd4\u3059", () => {
     expect(httpStatus({ type: "NOT_FOUND", entity: "x", id: "y" })).toBe(404);
+  });
+
+  it("CONFLICTは409を返す", () => {
+    expect(
+      httpStatus({ type: "CONFLICT", entity: "game", message: "更新競合" }),
+    ).toBe(409);
+  });
+
+  it("EXTERNAL_SERVICE_ERRORは502を返す", () => {
+    expect(
+      httpStatus({
+        type: "EXTERNAL_SERVICE_ERROR",
+        service: "LINE",
+        message: "timeout",
+        retryable: true,
+      }),
+    ).toBe(502);
+  });
+
+  it("AUTHORIZATION_ERRORは403を返す", () => {
+    expect(
+      httpStatus({
+        type: "AUTHORIZATION_ERROR",
+        requiredRole: "ADMIN",
+        actualRole: "MEMBER",
+      }),
+    ).toBe(403);
   });
 });

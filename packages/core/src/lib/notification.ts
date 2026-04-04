@@ -121,15 +121,90 @@ export async function sendBulkNotifications(
   supabase: SupabaseClient,
   entries: readonly NotificationEntry[],
   dispatchers: ChannelDispatchers,
-): Promise<NotificationResult[]> {
-  const results: NotificationResult[] = [];
+): Promise<BulkNotificationResult> {
+  const succeeded: NotificationResult[] = [];
+  const failed: FailedNotification[] = [];
 
   for (const entry of entries) {
-    const result = await sendNotification(supabase, entry, dispatchers);
-    results.push(result);
+    try {
+      const result = await sendNotificationWithRetry(
+        supabase,
+        entry,
+        dispatchers,
+      );
+      if (result.delivered) {
+        succeeded.push(result);
+      } else {
+        failed.push({ entry, result, error: "配信失敗" });
+      }
+    } catch (error) {
+      failed.push({
+        entry,
+        result: {
+          recipient_id: entry.recipient_id,
+          channel: entry.channel,
+          delivered: false,
+        },
+        error: error instanceof Error ? error.message : "不明なエラー",
+      });
+    }
   }
 
-  return results;
+  return { succeeded, failed, total: entries.length };
+}
+
+/** 一括送信結果 */
+export interface BulkNotificationResult {
+  succeeded: NotificationResult[];
+  failed: FailedNotification[];
+  total: number;
+}
+
+/** 送信失敗情報 */
+export interface FailedNotification {
+  entry: NotificationEntry;
+  result: NotificationResult;
+  error: string;
+}
+
+/** リトライ設定 */
+export interface NotificationRetryConfig {
+  maxRetries: number;
+  baseDelayMs: number;
+}
+
+const DEFAULT_RETRY_CONFIG: NotificationRetryConfig = {
+  maxRetries: 3,
+  baseDelayMs: 500,
+};
+
+/**
+ * リトライ付きで通知を送信する
+ */
+export async function sendNotificationWithRetry(
+  supabase: SupabaseClient,
+  entry: NotificationEntry,
+  dispatchers: ChannelDispatchers,
+  retryConfig: NotificationRetryConfig = DEFAULT_RETRY_CONFIG,
+): Promise<NotificationResult> {
+  let lastResult: NotificationResult | null = null;
+
+  for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
+    const result = await sendNotification(supabase, entry, dispatchers);
+    lastResult = result;
+
+    if (result.delivered) {
+      return result;
+    }
+
+    // 最後の試行では待機しない
+    if (attempt < retryConfig.maxRetries) {
+      const delay = retryConfig.baseDelayMs * 2 ** attempt;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  return lastResult as NotificationResult;
 }
 
 /**

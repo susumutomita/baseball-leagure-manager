@@ -9,21 +9,86 @@ export const uuidSchema = z.string().uuid();
 
 // --- Game ---
 
-export const createGameSchema = z.object({
-  team_id: uuidSchema,
-  title: z.string().min(1, "タイトルは必須です").max(200),
-  game_type: z
-    .enum(["PRACTICE", "FRIENDLY", "LEAGUE", "TOURNAMENT"])
-    .default("FRIENDLY"),
-  game_date: z.string().date().nullable().default(null),
-  start_time: z.string().nullable().default(null),
-  end_time: z.string().nullable().default(null),
-  ground_name: z.string().nullable().default(null),
-  min_players: z.number().int().min(1).max(30).default(9),
-  rsvp_deadline: z.string().datetime().nullable().default(null),
-  note: z.string().max(1000).nullable().default(null),
-});
+/** HH:MM 形式の時刻文字列 */
+const timeStringSchema = z
+  .string()
+  .regex(/^\d{2}:\d{2}$/, "時刻はHH:MM形式で入力してください");
+
+export const createGameSchema = z
+  .object({
+    team_id: uuidSchema,
+    title: z.string().min(1, "タイトルは必須です").max(200),
+    game_type: z
+      .enum(["PRACTICE", "FRIENDLY", "LEAGUE", "TOURNAMENT"])
+      .default("FRIENDLY"),
+    game_date: z.string().date().nullable().default(null),
+    start_time: timeStringSchema.nullable().default(null),
+    end_time: timeStringSchema.nullable().default(null),
+    ground_name: z.string().nullable().default(null),
+    min_players: z.number().int().min(1).max(30).default(9),
+    rsvp_deadline: z.string().datetime().nullable().default(null),
+    note: z.string().max(1000).nullable().default(null),
+  })
+  .superRefine((data, ctx) => {
+    // start_time と end_time が両方指定されている場合、start < end を検証
+    if (data.start_time && data.end_time && data.start_time >= data.end_time) {
+      ctx.addIssue({
+        code: "custom",
+        message: "開始時刻は終了時刻より前である必要があります",
+        path: ["end_time"],
+      });
+    }
+    // rsvp_deadline と game_date が両方指定されている場合、deadline < game_date を検証
+    if (data.rsvp_deadline && data.game_date) {
+      const deadline = new Date(data.rsvp_deadline);
+      const gameDate = new Date(data.game_date);
+      if (deadline >= gameDate) {
+        ctx.addIssue({
+          code: "custom",
+          message: "出欠締切は試合日より前である必要があります",
+          path: ["rsvp_deadline"],
+        });
+      }
+    }
+  });
 export type CreateGameInput = z.infer<typeof createGameSchema>;
+
+export const updateGameSchema = z
+  .object({
+    title: z.string().min(1, "タイトルは必須です").max(200).optional(),
+    game_type: z
+      .enum(["PRACTICE", "FRIENDLY", "LEAGUE", "TOURNAMENT"])
+      .optional(),
+    game_date: z.string().date().nullable().optional(),
+    start_time: timeStringSchema.nullable().optional(),
+    end_time: timeStringSchema.nullable().optional(),
+    ground_name: z.string().nullable().optional(),
+    ground_id: z.string().uuid().nullable().optional(),
+    min_players: z.number().int().min(1).max(30).optional(),
+    rsvp_deadline: z.string().datetime().nullable().optional(),
+    note: z.string().max(1000).nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.start_time && data.end_time && data.start_time >= data.end_time) {
+      ctx.addIssue({
+        code: "custom",
+        message: "開始時刻は終了時刻より前である必要があります",
+        path: ["end_time"],
+      });
+    }
+    if (data.rsvp_deadline && data.game_date) {
+      const deadline = new Date(data.rsvp_deadline);
+      const gameDate = new Date(data.game_date);
+      if (deadline >= gameDate) {
+        ctx.addIssue({
+          code: "custom",
+          message: "出欠締切は試合日より前である必要があります",
+          path: ["rsvp_deadline"],
+        });
+      }
+    }
+  });
+export type UpdateGameInput = z.infer<typeof updateGameSchema>;
 
 export const transitionGameSchema = z.object({
   status: z.enum([
@@ -80,15 +145,29 @@ export type RespondHelperRequestInput = z.infer<
 
 // --- Negotiation ---
 
-export const createNegotiationSchema = z.object({
-  opponent_team_id: uuidSchema,
-  proposed_dates: z
-    .array(z.string().date())
-    .min(1, "候補日を1日以上指定してください"),
-  message: z.string().max(1000).nullable().default(null),
-  actor_id: z.string().default("SYSTEM"),
-  actor_type: z.enum(["USER", "SYSTEM", "AI"]).default("USER"),
-});
+export const createNegotiationSchema = z
+  .object({
+    opponent_team_id: uuidSchema,
+    proposed_dates: z
+      .array(z.string().date())
+      .min(1, "候補日を1日以上指定してください"),
+    message: z.string().max(1000).nullable().default(null),
+    actor_id: z.string().default("SYSTEM"),
+    actor_type: z.enum(["USER", "SYSTEM", "AI"]).default("USER"),
+  })
+  .superRefine((data, ctx) => {
+    // proposed_dates に過去日が含まれていないことを検証
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const pastDates = data.proposed_dates.filter((d) => new Date(d) < today);
+    if (pastDates.length > 0) {
+      ctx.addIssue({
+        code: "custom",
+        message: "候補日に過去の日付は指定できません",
+        path: ["proposed_dates"],
+      });
+    }
+  });
 export type CreateNegotiationInput = z.infer<typeof createNegotiationSchema>;
 
 export const updateNegotiationSchema = z.object({

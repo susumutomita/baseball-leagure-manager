@@ -38,6 +38,7 @@ export {
 // State Machine
 export {
   canTransition,
+  canTransitionWithContext,
   assertTransition,
   getAvailableTransitions,
   InvalidTransitionError,
@@ -45,6 +46,10 @@ export {
   assertNegotiationTransition,
   canHelperRequestTransition,
   assertHelperRequestTransition,
+} from "./lib/state-machine";
+export type {
+  TransitionContext,
+  TransitionCheckResult,
 } from "./lib/state-machine";
 
 // Governor
@@ -55,6 +60,7 @@ export {
 } from "./lib/governor";
 export type {
   GovernorResult,
+  GovernorSuggestion,
   ConfirmContext,
   FulfillmentContext,
   FulfillmentResult,
@@ -77,6 +83,9 @@ export type {
   ValidationErr,
   DatabaseErr,
   NotFoundErr,
+  ConflictErr,
+  ExternalServiceErr,
+  AuthorizationErr,
 } from "./lib/result";
 
 // Response
@@ -103,6 +112,7 @@ export {
   queueNotification,
   sendNotification,
   sendBulkNotifications,
+  sendNotificationWithRetry,
   createDefaultDispatchers,
 } from "./lib/notification";
 export type {
@@ -111,6 +121,9 @@ export type {
   RecipientType,
   NotificationEntry,
   NotificationResult,
+  BulkNotificationResult,
+  FailedNotification,
+  NotificationRetryConfig,
   ChannelSender,
   ChannelDispatchers,
 } from "./lib/notification";
@@ -161,9 +174,39 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// Game Summary
+export {
+  summarizeRsvps,
+  summarizeNegotiations,
+  summarizeHelperRequests,
+  assessReadiness,
+  createGameSummary,
+  countByStatus,
+} from "./lib/game-summary";
+export type {
+  RsvpSummary,
+  NegotiationSummary as NegotiationSummaryInfo,
+  HelperSummary,
+  GameSummary,
+  GameReadiness,
+} from "./lib/game-summary";
+
+// Deadline
+export {
+  checkDeadline,
+  shouldSendReminder,
+  filterExpiredGames,
+} from "./lib/deadline";
+export type {
+  DeadlineCheckResult,
+  ReminderCheckInput,
+  ReminderCheckResult,
+} from "./lib/deadline";
+
 // Validators
 export {
   createGameSchema,
+  updateGameSchema,
   transitionGameSchema,
   respondRsvpSchema,
   createHelperSchema,
@@ -180,6 +223,7 @@ export {
 } from "./lib/validators";
 export type {
   CreateGameInput,
+  UpdateGameInput,
   TransitionGameInput,
   RespondRsvpInput,
   CreateHelperInput,

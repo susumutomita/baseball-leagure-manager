@@ -22,7 +22,10 @@ export type AppError =
   | DeadlineNotReachedErr
   | ValidationErr
   | DatabaseErr
-  | NotFoundErr;
+  | NotFoundErr
+  | ConflictErr
+  | ExternalServiceErr
+  | AuthorizationErr;
 
 export interface InvalidTransitionErr {
   readonly type: "INVALID_TRANSITION";
@@ -69,24 +72,49 @@ export interface NotFoundErr {
   readonly id: string;
 }
 
+export interface ConflictErr {
+  readonly type: "CONFLICT";
+  readonly entity: string;
+  readonly message: string;
+}
+
+export interface ExternalServiceErr {
+  readonly type: "EXTERNAL_SERVICE_ERROR";
+  readonly service: string;
+  readonly message: string;
+  readonly retryable: boolean;
+}
+
+export interface AuthorizationErr {
+  readonly type: "AUTHORIZATION_ERROR";
+  readonly requiredRole: string;
+  readonly actualRole: string;
+}
+
 export function formatError(error: AppError): string {
   switch (error.type) {
     case "INVALID_TRANSITION":
-      return `\u72b6\u614b\u9077\u79fb\u304c\u4e0d\u6b63\u3067\u3059: ${error.from} \u2192 ${error.to}`;
+      return `状態遷移が不正です: ${error.from} → ${error.to}`;
     case "INSUFFICIENT_MEMBERS":
-      return `\u53c2\u52a0\u53ef\u80fd\u4eba\u6570\u304c\u4e0d\u8db3\u3057\u3066\u3044\u307e\u3059 (${error.actual}/${error.required})`;
+      return `参加可能人数が不足しています (${error.actual}/${error.required})`;
     case "MISSING_OPPONENT":
-      return "\u627f\u8afe\u6e08\u307f\u306e\u5bfe\u6226\u76f8\u624b\u304c\u3044\u307e\u305b\u3093";
+      return "承諾済みの対戦相手がいません";
     case "GROUND_NOT_CONFIRMED":
-      return "\u30b0\u30e9\u30a6\u30f3\u30c9\u304c\u672a\u78ba\u4fdd\u3067\u3059";
+      return "グラウンドが未確保です";
     case "DEADLINE_NOT_REACHED":
-      return `\u672a\u56de\u7b54\u8005\u304c\u3044\u307e\u3059 (${error.responded}/${error.total})\u3002\u7de0\u5207\u524d\u3067\u3059`;
+      return `未回答者がいます (${error.responded}/${error.total})。締切前です`;
     case "VALIDATION_ERROR":
       return error.issues.map((i) => `${i.path}: ${i.message}`).join(", ");
     case "DATABASE_ERROR":
-      return `\u30c7\u30fc\u30bf\u30d9\u30fc\u30b9\u30a8\u30e9\u30fc: ${error.message}`;
+      return `データベースエラー: ${error.message}`;
     case "NOT_FOUND":
-      return `${error.entity} \u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093 (id: ${error.id})`;
+      return `${error.entity} が見つかりません (id: ${error.id})`;
+    case "CONFLICT":
+      return `${error.entity}: ${error.message}`;
+    case "EXTERNAL_SERVICE_ERROR":
+      return `外部サービスエラー (${error.service}): ${error.message}`;
+    case "AUTHORIZATION_ERROR":
+      return `権限が不足しています (必要: ${error.requiredRole}, 現在: ${error.actualRole})`;
   }
 }
 
@@ -105,5 +133,11 @@ export function httpStatus(error: AppError): number {
       return 500;
     case "NOT_FOUND":
       return 404;
+    case "CONFLICT":
+      return 409;
+    case "EXTERNAL_SERVICE_ERROR":
+      return 502;
+    case "AUTHORIZATION_ERROR":
+      return 403;
   }
 }
