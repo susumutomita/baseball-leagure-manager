@@ -3,62 +3,62 @@ import Link from "next/link";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "mound - 草野球チームの試合運営を、もっとスマートに",
+  title: "mound - 金曜の夜、LINEの出欠まだ5人しか返事がない",
   description:
-    "出欠管理・グラウンド監視・対戦相手マッチング・精算まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
+    "出欠回収・グラウンド確保・対戦相手探し・集金まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
   openGraph: {
-    title: "mound - 草野球チームの試合運営を、もっとスマートに",
+    title: "mound - 金曜の夜、LINEの出欠まだ5人しか返事がない",
     description:
-      "出欠管理・グラウンド監視・対戦相手マッチング・精算まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
+      "出欠回収・グラウンド確保・対戦相手探し・集金まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
     type: "website",
     locale: "ja_JP",
   },
   twitter: {
     card: "summary_large_image",
-    title: "mound - 草野球チームの試合運営を、もっとスマートに",
+    title: "mound - 金曜の夜、LINEの出欠まだ5人しか返事がない",
     description:
-      "出欠管理・グラウンド監視・対戦相手マッチング・精算まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
+      "出欠回収・グラウンド確保・対戦相手探し・集金まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
   },
 };
 
 const FEATURES = [
   {
     abbr: "出欠",
-    title: "出欠管理",
-    desc: "LINEで出欠を回収。リマインド自動送信で未回答者を減らし、試合成立の見通しをリアルタイムに把握できます。",
+    title: "未読スルーされない出欠回収",
+    desc: "LINEで個別にリマインド自動送信。金曜夜に「あと3人！」がわかる。日曜朝の「やっぱ無理」も即反映。",
   },
   {
     abbr: "球場",
-    title: "グラウンド監視",
-    desc: "空きグラウンド情報を自動取得。抽選日程や空き状況をチームに通知し、確保のチャンスを逃しません。",
+    title: "グラウンド確保、もう抽選日を忘れない",
+    desc: "横浜市・藤沢市など6自治体の空き状況を毎日チェック。空きが出たらすぐ通知。",
   },
   {
     abbr: "対戦",
-    title: "対戦相手マッチング",
-    desc: "日程・地域・レベルが合うチームを自動で提案。対戦相手探しの手間を大幅に削減します。",
+    title: "対戦相手、探さなくていい",
+    desc: "日程と地域が合うチームを自動提案。メッセージ作成もAIがサポート。",
   },
   {
     abbr: "精算",
-    title: "精算・PayPay連携",
-    desc: "参加費の自動計算とPayPayリンク送信。集金の手間とトラブルをゼロにします。",
+    title: "集金のストレスをゼロに",
+    desc: "参加費を自動計算してPayPayリンクを送信。「誰が払った？」を管理画面で一目瞭然。",
   },
 ] as const;
 
 const STEPS = [
   {
     number: 1,
-    title: "チーム登録",
-    desc: "LINEグループと連携するだけ。メンバー情報は自動で取り込まれます。",
+    title: "LINEグループと連携",
+    desc: "チームのLINEグループを登録するだけ。メンバー一覧が自動で作成されます。",
   },
   {
     number: 2,
-    title: "試合作成",
-    desc: "日程と場所を入力するだけで、出欠回収から対戦相手探しまで自動で開始します。",
+    title: "試合を立てる",
+    desc: "日付と場所を入れたら、出欠回収が自動スタート。リマインドも全自動。",
   },
   {
     number: 3,
-    title: "自動運営",
-    desc: "AIが試合成立までの段取りを提案。あなたは最終確認するだけです。",
+    title: "試合成立",
+    desc: "人数OK・グラウンドOK・相手OK。確定ボタンひとつで全員に通知。",
   },
 ] as const;
 
@@ -69,14 +69,14 @@ export default function LandingPage() {
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <h1 className={styles.heroTitle}>
-            草野球チームの試合運営を、
+            金曜の夜。LINEの出欠、
             <br />
-            もっとスマートに
+            まだ5人しか返事がない。
           </h1>
           <p className={styles.heroSub}>
-            出欠管理・グラウンド確保・対戦相手探し・精算まで。
+            「9人集まるのか」「グラウンドどうする」「相手チームは」——
             <br />
-            試合成立に必要なすべてを、AIがサポートします。
+            全部、mound が解決します。
           </p>
           <Link href="/login" className={styles.ctaButton}>
             無料ではじめる

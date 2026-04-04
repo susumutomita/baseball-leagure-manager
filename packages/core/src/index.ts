@@ -198,6 +198,14 @@ export type {
   NegotiationMessageContext,
 } from "./lib/ai-service";
 
+// Modal AI Service
+export {
+  predictAttendanceModal,
+  recommendHelpersModal,
+  generateNegotiationMessageModal,
+  generateWeeklyReportModal,
+} from "./lib/modal-ai-service";
+
 // LINE Messaging
 export {
   pushMessage,
