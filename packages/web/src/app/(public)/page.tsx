@@ -129,9 +129,9 @@ export default function LandingPage() {
               </Box>
             </SpaceBetween>
             <SpaceBetween size="xs">
-              <Box variant="h3">既存アプリにない「運営の自動化」</Box>
+              <Box variant="h3">チーム運営を丸ごと自動化</Box>
               <Box variant="p" color="text-body-secondary">
-                成績管理だけのアプリとは違います。お金の精算、対戦チームとの交渉、助っ人の声掛けまで。人手を介さずにチーム運営が回ります。
+                お金の精算、対戦チームとの交渉、助っ人の声掛けまで。人手を介さずにチーム運営が回ります。
               </Box>
             </SpaceBetween>
             <SpaceBetween size="xs">
