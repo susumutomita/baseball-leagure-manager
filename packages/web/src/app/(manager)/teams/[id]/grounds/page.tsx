@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Cards from "@cloudscape-design/components/cards";
 import ContentLayout from "@cloudscape-design/components/content-layout";
 import Header from "@cloudscape-design/components/header";
-import Link from "@cloudscape-design/components/link";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
 
 const TIME_SLOT_LABELS: Record<string, string> = {
@@ -53,12 +53,17 @@ export default async function GroundsPage({
 
   return (
     <ContentLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/dashboard" },
+            { text: team?.name ?? "チーム", href: `/teams/${id}` },
+            { text: "グラウンド管理", href: `/teams/${id}/grounds` },
+          ]}
+        />
+      }
       header={
-        <Header
-          variant="h1"
-          description={team?.name ?? ""}
-          actions={<Link href={`/teams/${id}`}>チームに戻る</Link>}
-        >
+        <Header variant="h1" description={team?.name ?? ""}>
           グラウンド管理
         </Header>
       }

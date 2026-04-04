@@ -1,7 +1,9 @@
+import { RsvpTable } from "@/components/RsvpTable";
 import { TransitionButtons } from "@/components/TransitionButtons";
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
+import Button from "@cloudscape-design/components/button";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
@@ -10,7 +12,6 @@ import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
-import Table from "@cloudscape-design/components/table";
 import { getAvailableTransitions } from "@match-engine/core";
 import type { GameStatus } from "@match-engine/core";
 
@@ -33,23 +34,6 @@ const STATUS_LABELS: Record<string, string> = {
   COMPLETED: "完了",
   SETTLED: "精算済み",
   CANCELLED: "中止",
-};
-
-const RSVP_STATUS_TYPE: Record<
-  string,
-  "success" | "info" | "warning" | "error" | "stopped" | "pending"
-> = {
-  AVAILABLE: "success",
-  UNAVAILABLE: "error",
-  MAYBE: "warning",
-  NO_RESPONSE: "pending",
-};
-
-const RSVP_LABELS: Record<string, string> = {
-  AVAILABLE: "参加",
-  UNAVAILABLE: "不参加",
-  MAYBE: "未定",
-  NO_RESPONSE: "未回答",
 };
 
 export default async function GameDetailPage({
@@ -156,15 +140,21 @@ export default async function GameDetailPage({
               currentStatus={game.status}
               transitions={transitions}
             />
-            <Link href={`/games/${game.id}/negotiations`}>交渉を管理</Link>
-            {(game.status === "COMPLETED" || game.status === "SETTLED") && (
-              <Link href={`/games/${game.id}/expenses`}>支出・精算を管理</Link>
-            )}
+            <SpaceBetween direction="horizontal" size="xs">
+              <Link href={`/games/${game.id}/negotiations`}>
+                <Button>対戦交渉を管理</Button>
+              </Link>
+              {(game.status === "COMPLETED" || game.status === "SETTLED") && (
+                <Link href={`/games/${game.id}/expenses`}>
+                  <Button>支出・精算を管理</Button>
+                </Link>
+              )}
+            </SpaceBetween>
           </SpaceBetween>
         </Container>
 
         {rsvps && rsvps.length > 0 && (
-          <Table
+          <Container
             header={
               <Header
                 variant="h2"
@@ -174,44 +164,16 @@ export default async function GameDetailPage({
                 出欠状況
               </Header>
             }
-            columnDefinitions={[
-              {
-                id: "name",
-                header: "名前",
-                cell: (item) => {
-                  const member = item.members as {
-                    name: string;
-                    tier: string;
-                  } | null;
-                  return member?.name ?? "—";
-                },
-              },
-              {
-                id: "tier",
-                header: "区分",
-                cell: (item) => {
-                  const member = item.members as {
-                    name: string;
-                    tier: string;
-                  } | null;
-                  return member?.tier ?? "—";
-                },
-              },
-              {
-                id: "response",
-                header: "回答",
-                cell: (item) => (
-                  <StatusIndicator
-                    type={RSVP_STATUS_TYPE[item.response] ?? "pending"}
-                  >
-                    {RSVP_LABELS[item.response] ?? item.response}
-                  </StatusIndicator>
-                ),
-              },
-            ]}
-            items={rsvps}
-            variant="embedded"
-          />
+          >
+            <RsvpTable
+              initialRsvps={rsvps.map((r) => ({
+                id: r.id,
+                response: r.response,
+                members: r.members as { name: string; tier: string } | null,
+              }))}
+              gameStatus={game.status}
+            />
+          </Container>
         )}
       </SpaceBetween>
     </ContentLayout>

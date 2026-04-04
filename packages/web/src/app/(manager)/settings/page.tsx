@@ -1,5 +1,6 @@
 "use client";
 
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Button from "@cloudscape-design/components/button";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
@@ -193,6 +194,14 @@ export default function SettingsPage() {
 
   return (
     <ContentLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/dashboard" },
+            { text: "設定", href: "/settings" },
+          ]}
+        />
+      }
       header={
         <Header variant="h1" description="チームの交渉ポリシーを管理します">
           設定

@@ -1,6 +1,7 @@
 "use client";
 
 import Box from "@cloudscape-design/components/box";
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
@@ -77,7 +78,17 @@ export default function NewGamePage() {
     GAME_TYPE_OPTIONS.find((o) => o.value === gameType)?.label ?? gameType;
 
   return (
-    <ContentLayout header={<Header variant="h1">試合作成</Header>}>
+    <ContentLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/dashboard" },
+            { text: "試合作成", href: "/games/new" },
+          ]}
+        />
+      }
+      header={<Header variant="h1">試合作成</Header>}
+    >
       {error && (
         <Flashbar
           items={[
