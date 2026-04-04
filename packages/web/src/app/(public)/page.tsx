@@ -99,9 +99,6 @@ export default function LandingPage() {
               グラウンドの抽選日・予約状況を把握するのが大変。空きが出ても気づかない。
             </Box>
             <Box variant="p">
-              打順やスコアをノートに書いて、後からスプレッドシートに転記している。
-            </Box>
-            <Box variant="p">
               新しいツールを導入したいけど、チーム全員に浸透させるのが大変。趣味の草野球のために時間をかけて覚えたくない。
             </Box>
           </ColumnLayout>
