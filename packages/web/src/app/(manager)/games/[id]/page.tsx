@@ -144,6 +144,9 @@ export default async function GameDetailPage({
               <Link href={`/games/${game.id}/negotiations`}>
                 <Button>対戦交渉を管理</Button>
               </Link>
+              <Link href={`/games/${game.id}/helpers`}>
+                <Button>助っ人を管理</Button>
+              </Link>
               {(game.status === "COMPLETED" || game.status === "SETTLED") && (
                 <Link href={`/games/${game.id}/expenses`}>
                   <Button>支出・精算を管理</Button>
