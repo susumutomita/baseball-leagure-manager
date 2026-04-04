@@ -13,6 +13,8 @@ function mapGameStatusToIcalStatus(status: GameStatus): string {
     case "COMPLETED":
     case "SETTLED":
       return "CONFIRMED";
+    case "CANCELLED":
+      return "CANCELLED";
     default:
       return "TENTATIVE";
   }
@@ -73,6 +75,13 @@ export function generateVEvent(game: Game): string {
     lines.push(`LOCATION:${escapeText(game.ground_name)}`);
   }
 
+  if (game.note) {
+    lines.push(`DESCRIPTION:${escapeText(game.note)}`);
+  }
+
+  lines.push(
+    `DTSTAMP:${formatDateTime(game.created_at.slice(0, 10), game.created_at.slice(11, 16))}`,
+  );
   lines.push(`STATUS:${mapGameStatusToIcalStatus(game.status)}`);
   lines.push("END:VEVENT");
 

@@ -7,6 +7,7 @@ import {
   canHelperRequestTransition,
   canNegotiationTransition,
   canTransition,
+  canTransitionWithContext,
   getAvailableTransitions,
 } from "../lib/state-machine";
 
@@ -202,5 +203,103 @@ describe("HelperRequest ステートマシン", () => {
         assertHelperRequestTransition("DECLINED", "PENDING"),
       ).toThrow();
     });
+  });
+});
+
+// ============================================================
+// コンテキスト付き遷移判定
+// ============================================================
+
+describe("canTransitionWithContext", () => {
+  describe("コンテキストなしのとき", () => {
+    it("canTransitionと同じ結果を返す", () => {
+      const result = canTransitionWithContext("DRAFT", "COLLECTING");
+      expect(result.allowed).toBe(true);
+    });
+
+    it("不正な遷移は拒否する", () => {
+      const result = canTransitionWithContext("DRAFT", "SETTLED");
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toBeDefined();
+    });
+  });
+
+  describe("CONFIRMED → COMPLETED のとき", () => {
+    it("試合日が未来の場合は拒否する", () => {
+      const result = canTransitionWithContext("CONFIRMED", "COMPLETED", {
+        gameDate: "2099-12-31",
+      });
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toContain("試合日");
+    });
+
+    it("試合日が過去の場合は許可する", () => {
+      const result = canTransitionWithContext("CONFIRMED", "COMPLETED", {
+        gameDate: "2020-01-01",
+      });
+      expect(result.allowed).toBe(true);
+    });
+
+    it("試合日が未設定の場合は許可する", () => {
+      const result = canTransitionWithContext("CONFIRMED", "COMPLETED", {
+        gameDate: null,
+      });
+      expect(result.allowed).toBe(true);
+    });
+  });
+});
+
+// ============================================================
+// 全不正遷移の網羅テスト
+// ============================================================
+
+describe("Game — 全不正遷移の検証", () => {
+  const ALL_STATUSES = [
+    "DRAFT",
+    "COLLECTING",
+    "CONFIRMED",
+    "COMPLETED",
+    "SETTLED",
+    "CANCELLED",
+  ] as const;
+
+  const INVALID_TRANSITIONS: [string, string][] = [
+    ["COMPLETED", "DRAFT"],
+    ["COMPLETED", "COLLECTING"],
+    ["COMPLETED", "CONFIRMED"],
+    ["COMPLETED", "CANCELLED"],
+    ["SETTLED", "DRAFT"],
+    ["SETTLED", "COLLECTING"],
+    ["SETTLED", "CONFIRMED"],
+    ["SETTLED", "COMPLETED"],
+    ["SETTLED", "CANCELLED"],
+    ["CANCELLED", "DRAFT"],
+    ["CANCELLED", "COLLECTING"],
+    ["CANCELLED", "CONFIRMED"],
+    ["CANCELLED", "COMPLETED"],
+    ["CANCELLED", "SETTLED"],
+    ["COLLECTING", "DRAFT"],
+    ["COLLECTING", "COMPLETED"],
+    ["COLLECTING", "SETTLED"],
+    ["CONFIRMED", "DRAFT"],
+    ["CONFIRMED", "COLLECTING"],
+    ["CONFIRMED", "SETTLED"],
+  ];
+
+  for (const [from, to] of INVALID_TRANSITIONS) {
+    it(`${from} → ${to} は遷移できない`, () => {
+      expect(
+        canTransition(
+          from as (typeof ALL_STATUSES)[number],
+          to as (typeof ALL_STATUSES)[number],
+        ),
+      ).toBe(false);
+    });
+  }
+
+  it("自分自身への遷移はすべて不可", () => {
+    for (const status of ALL_STATUSES) {
+      expect(canTransition(status, status)).toBe(false);
+    }
   });
 });

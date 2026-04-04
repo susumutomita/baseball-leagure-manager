@@ -41,6 +41,59 @@ export function assertTransition(from: GameStatus, to: GameStatus): void {
 }
 
 // ============================================================
+// コンテキスト付き遷移判定 (ビジネスルール込み)
+// ============================================================
+
+export interface TransitionContext {
+  availableCount?: number;
+  minPlayers?: number;
+  gameDate?: string | null;
+}
+
+export interface TransitionCheckResult {
+  allowed: boolean;
+  reason?: string;
+}
+
+/**
+ * ビジネスルールを考慮した遷移チェック
+ * canTransition() のエッジチェックに加え、コンテキストのガード条件を検証する
+ */
+export function canTransitionWithContext(
+  from: GameStatus,
+  to: GameStatus,
+  context?: TransitionContext,
+): TransitionCheckResult {
+  if (!canTransition(from, to)) {
+    return {
+      allowed: false,
+      reason: `状態遷移が不正です: ${from} → ${to}`,
+    };
+  }
+
+  if (!context) {
+    return { allowed: true };
+  }
+
+  // CONFIRMED → COMPLETED: 試合日が過去であることを確認
+  if (from === "CONFIRMED" && to === "COMPLETED") {
+    if (context.gameDate) {
+      const gameDate = new Date(context.gameDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (gameDate > today) {
+        return {
+          allowed: false,
+          reason: "試合日がまだ到来していません",
+        };
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
+// ============================================================
 // Negotiation ステートマシン
 // ============================================================
 

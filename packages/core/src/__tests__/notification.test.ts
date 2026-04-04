@@ -182,8 +182,9 @@ describe("sendBulkNotifications", () => {
         dispatchers,
       );
 
-      expect(results).toHaveLength(3);
-      expect(results.every((r) => r.delivered)).toBe(true);
+      expect(results.total).toBe(3);
+      expect(results.succeeded).toHaveLength(3);
+      expect(results.failed).toHaveLength(0);
     });
   });
 
@@ -206,8 +207,10 @@ describe("sendBulkNotifications", () => {
         dispatchers,
       );
 
-      expect(results[0]?.delivered).toBe(false);
-      expect(results[1]?.delivered).toBe(true);
+      expect(results.failed).toHaveLength(1);
+      expect(results.failed[0]?.result.delivered).toBe(false);
+      expect(results.succeeded).toHaveLength(1);
+      expect(results.succeeded[0]?.delivered).toBe(true);
     });
   });
 });

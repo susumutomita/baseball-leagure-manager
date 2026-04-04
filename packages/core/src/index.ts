@@ -38,6 +38,7 @@ export {
 // State Machine
 export {
   canTransition,
+  canTransitionWithContext,
   assertTransition,
   getAvailableTransitions,
   InvalidTransitionError,
@@ -45,6 +46,10 @@ export {
   assertNegotiationTransition,
   canHelperRequestTransition,
   assertHelperRequestTransition,
+} from "./lib/state-machine";
+export type {
+  TransitionContext,
+  TransitionCheckResult,
 } from "./lib/state-machine";
 
 // Governor
@@ -55,6 +60,7 @@ export {
 } from "./lib/governor";
 export type {
   GovernorResult,
+  GovernorSuggestion,
   ConfirmContext,
   FulfillmentContext,
   FulfillmentResult,
@@ -62,7 +68,12 @@ export type {
 } from "./lib/governor";
 
 // Audit
-export { writeAuditLog } from "./lib/audit";
+export {
+  writeAuditLog,
+  auditGameTransition,
+  AUDIT_ACTIONS,
+} from "./lib/audit";
+export type { AuditEntry, AuditResult, AuditAction } from "./lib/audit";
 
 // Result
 export { ok, err, formatError, httpStatus } from "./lib/result";
@@ -77,6 +88,9 @@ export type {
   ValidationErr,
   DatabaseErr,
   NotFoundErr,
+  ConflictErr,
+  ExternalServiceErr,
+  AuthorizationErr,
 } from "./lib/result";
 
 // Response
@@ -103,6 +117,7 @@ export {
   queueNotification,
   sendNotification,
   sendBulkNotifications,
+  sendNotificationWithRetry,
   createDefaultDispatchers,
 } from "./lib/notification";
 export type {
@@ -111,6 +126,9 @@ export type {
   RecipientType,
   NotificationEntry,
   NotificationResult,
+  BulkNotificationResult,
+  FailedNotification,
+  NotificationRetryConfig,
   ChannelSender,
   ChannelDispatchers,
 } from "./lib/notification";
@@ -161,9 +179,203 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// Cost Estimator
+export { estimateGameCost } from "./lib/cost-estimator";
+export type { CostEstimate, CategoryEstimate } from "./lib/cost-estimator";
+
+// Invitation
+export {
+  generateInvitationToken,
+  decodeInvitationToken,
+  validateInvitation,
+  buildInvitationUrl,
+  createInvitationPayload,
+} from "./lib/invitation";
+export type {
+  InvitationPayload,
+  InvitationValidation,
+} from "./lib/invitation";
+
+// API Handler
+export {
+  parseBody,
+  errorResponse,
+  notFound,
+  unauthorized,
+  conflict,
+} from "./lib/api-handler";
+export type { HandlerResult } from "./lib/api-handler";
+
+// Webhook Events
+export {
+  createWebhookEvent,
+  isGameTransitionEvent,
+  isRsvpRespondedEvent,
+  WEBHOOK_EVENT_TYPES,
+} from "./lib/webhook-events";
+export type {
+  WebhookEventType,
+  WebhookEvent,
+  GameTransitionPayload,
+  RsvpRespondedPayload,
+  NegotiationUpdatedPayload,
+  SettlementCompletedPayload,
+} from "./lib/webhook-events";
+
+// Availability Heatmap
+export {
+  analyzeMemberAvailability,
+  analyzeTeamAvailability,
+} from "./lib/availability-heatmap";
+export type {
+  DayOfWeekTrend,
+  MemberAvailabilityPattern,
+} from "./lib/availability-heatmap";
+
+// Cron Guard
+export {
+  generateIdempotencyKey,
+  isDuplicate,
+  processBatch,
+} from "./lib/cron-guard";
+export type {
+  CronExecutionRecord,
+  BatchResult,
+} from "./lib/cron-guard";
+
+// Schedule Conflict
+export {
+  detectConflicts,
+  detectMemberConflicts,
+} from "./lib/schedule-conflict";
+export type { ScheduleConflict } from "./lib/schedule-conflict";
+
+// Data Export
+export {
+  toCSV,
+  exportGamesToCSV,
+  exportMembersToCSV,
+  exportRsvpsToCSV,
+} from "./lib/data-export";
+
+// RSVP Follow-up
+export { planFollowUp } from "./lib/rsvp-followup";
+export type {
+  FollowUpTarget,
+  FollowUpPlan,
+} from "./lib/rsvp-followup";
+
+// Notification Templates
+export {
+  buildRsvpRequestMessage as buildRsvpRequestTemplate,
+  buildRsvpReminderMessage as buildRsvpReminderTemplate,
+  buildGameConfirmedMessage as buildGameConfirmedTemplate,
+  buildGameCancelledMessage as buildGameCancelledTemplate,
+  buildSettlementMessage as buildSettlementTemplate,
+  buildDeadlineWarningMessage as buildDeadlineWarningTemplate,
+} from "./lib/notification-templates";
+
+// Game Analytics
+export {
+  calculateWinLossRecord,
+  generateSeasonSummary,
+  generateMonthlyStats,
+  calculateStreak,
+} from "./lib/game-analytics";
+export type {
+  WinLossRecord,
+  SeasonSummary,
+  MonthlyStats,
+} from "./lib/game-analytics";
+
+// Opponent Matcher
+export {
+  scoreOpponent,
+  recommendOpponents,
+} from "./lib/opponent-matcher";
+export type {
+  OpponentRecommendation,
+  MatchingCriteria,
+} from "./lib/opponent-matcher";
+
+// Game Date
+export {
+  daysUntilGame,
+  isGameDay,
+  isGamePast,
+  isGameFuture,
+  formatGameSchedule,
+  sortGamesByDate,
+  filterGamesByDateRange,
+  getThisWeekGames,
+} from "./lib/game-date";
+
+// Expense Report
+export {
+  getCategoryLabel,
+  summarizeByCategory,
+  generateExpenseReport,
+} from "./lib/expense-report";
+export type {
+  CategorySummary,
+  ExpenseReport,
+} from "./lib/expense-report";
+
+// Team Capacity
+export {
+  analyzeTeamCapacity,
+  analyzePositions,
+  estimateAttendance,
+} from "./lib/team-capacity";
+export type {
+  PositionCoverage,
+  TeamCapacityReport,
+} from "./lib/team-capacity";
+
+// Attendance Tracker
+export {
+  calculateMemberAttendance,
+  calculateRsvpAccuracy,
+  rankByAttendance,
+} from "./lib/attendance-tracker";
+export type {
+  MemberAttendanceStats,
+  RsvpAccuracy,
+} from "./lib/attendance-tracker";
+
+// Game Summary
+export {
+  summarizeRsvps,
+  summarizeNegotiations,
+  summarizeHelperRequests,
+  assessReadiness,
+  createGameSummary,
+  countByStatus,
+} from "./lib/game-summary";
+export type {
+  RsvpSummary,
+  NegotiationSummary as NegotiationSummaryInfo,
+  HelperSummary,
+  GameSummary,
+  GameReadiness,
+} from "./lib/game-summary";
+
+// Deadline
+export {
+  checkDeadline,
+  shouldSendReminder as shouldSendDeadlineReminder,
+  filterExpiredGames,
+} from "./lib/deadline";
+export type {
+  DeadlineCheckResult,
+  ReminderCheckInput,
+  ReminderCheckResult,
+} from "./lib/deadline";
+
 // Validators
 export {
   createGameSchema,
+  updateGameSchema,
   transitionGameSchema,
   respondRsvpSchema,
   createHelperSchema,
@@ -180,6 +392,7 @@ export {
 } from "./lib/validators";
 export type {
   CreateGameInput,
+  UpdateGameInput,
   TransitionGameInput,
   RespondRsvpInput,
   CreateHelperInput,

@@ -29,6 +29,9 @@ export interface SettlementCalculationResult {
   memberCount: number;
 }
 
+/** 精算金額の上限 (1000万円) */
+const MAX_AMOUNT = 10_000_000;
+
 /**
  * 経費一覧から精算金額を計算する
  *
@@ -37,7 +40,7 @@ export interface SettlementCalculationResult {
  * - teamCost: totalCost - opponentShare
  * - perMember: teamCost / memberCount（切り上げ）
  *
- * @throws {Error} expenses が空、または memberCount が 0 以下の場合
+ * @throws {Error} expenses が空、memberCount が 0 以下、金額が負の値、合計が上限超過の場合
  */
 export function calculateSettlement(
   input: SettlementCalculationInput,
@@ -52,7 +55,24 @@ export function calculateSettlement(
     throw new Error("参加人数は1以上である必要があります");
   }
 
+  if (!Number.isInteger(memberCount)) {
+    throw new Error("参加人数は整数である必要があります");
+  }
+
+  // 負の金額チェック
+  const negativeExpense = expenses.find((e) => e.amount < 0);
+  if (negativeExpense) {
+    throw new Error("経費に負の金額が含まれています");
+  }
+
   const totalCost = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+  // 上限チェック
+  if (totalCost > MAX_AMOUNT) {
+    throw new Error(
+      `合計金額が上限を超えています (${totalCost.toLocaleString()}円 > ${MAX_AMOUNT.toLocaleString()}円)`,
+    );
+  }
 
   const opponentShare = expenses
     .filter((e) => e.split_with_opponent)

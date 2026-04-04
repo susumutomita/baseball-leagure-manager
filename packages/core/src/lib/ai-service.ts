@@ -12,6 +12,20 @@ import {
 
 const MODEL = "claude-sonnet-4-20250514";
 
+/** JSON パースの安全なラッパー。パース失敗時は null を返す */
+function safeJsonParse<T>(text: string): T | null {
+  try {
+    // AI応答に含まれがちなマークダウンコードブロックを除去
+    const cleaned = text
+      .replace(/^```(?:json)?\s*\n?/m, "")
+      .replace(/\n?```\s*$/m, "")
+      .trim();
+    return JSON.parse(cleaned) as T;
+  } catch {
+    return null;
+  }
+}
+
 function useModal(): boolean {
   return process.env.AI_PROVIDER === "modal";
 }
@@ -119,10 +133,11 @@ JSON形式で回答してください（他のテキストは不要）:
 
     const text =
       response.content[0].type === "text" ? response.content[0].text : "";
-    const parsed = JSON.parse(text) as AttendancePrediction;
+    const parsed = safeJsonParse<AttendancePrediction>(text);
+    if (!parsed) return fallback;
     return {
-      probability: Math.max(0, Math.min(1, parsed.probability)),
-      reasoning: parsed.reasoning,
+      probability: Math.max(0, Math.min(1, parsed.probability ?? 0)),
+      reasoning: parsed.reasoning ?? fallback.reasoning,
     };
   } catch {
     return fallback;
@@ -177,7 +192,8 @@ JSON配列で回答してください（他のテキストは不要）:
 
     const text =
       response.content[0].type === "text" ? response.content[0].text : "";
-    const parsed = JSON.parse(text) as HelperRecommendation[];
+    const parsed = safeJsonParse<HelperRecommendation[]>(text);
+    if (!parsed || !Array.isArray(parsed)) return fallback;
     return parsed.slice(0, needed);
   } catch {
     return fallback;

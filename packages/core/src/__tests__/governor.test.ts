@@ -257,3 +257,173 @@ describe("checkStopConditions", () => {
     });
   });
 });
+
+// --- canConfirm 境界値テスト ---
+
+describe("canConfirm — 境界値テスト", () => {
+  describe("ちょうどmin_players人が参加可能なとき", () => {
+    it("確定を許可するがレビュー必須にする", () => {
+      const result = canConfirm({
+        game: createGame({ min_players: 9 }),
+        rsvps: Array.from({ length: 9 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [],
+        negotiations: [createNegotiation()],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(true);
+      expect(result.reviewRequired).toBe(true);
+    });
+  });
+
+  describe("min_players + 1人が参加可能なとき", () => {
+    it("確定を許可しレビュー必須にする", () => {
+      const result = canConfirm({
+        game: createGame({ min_players: 9 }),
+        rsvps: Array.from({ length: 10 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [],
+        negotiations: [createNegotiation()],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(true);
+      expect(result.reviewRequired).toBe(true);
+    });
+  });
+
+  describe("min_players + 2人以上が参加可能なとき", () => {
+    it("レビュー不要にする", () => {
+      const result = canConfirm({
+        game: createGame({ min_players: 9 }),
+        rsvps: Array.from({ length: 11 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [],
+        negotiations: [createNegotiation()],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(true);
+      expect(result.reviewRequired).toBe(false);
+    });
+  });
+
+  describe("助っ人込みでちょうどmin_playersに達するとき", () => {
+    it("確定を許可する", () => {
+      const result = canConfirm({
+        game: createGame({ min_players: 9 }),
+        rsvps: Array.from({ length: 7 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [
+          createHelperRequest({ id: "hr-1", helper_id: "h-1" }),
+          createHelperRequest({ id: "hr-2", helper_id: "h-2" }),
+        ],
+        negotiations: [createNegotiation()],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(true);
+      expect(result.reviewRequired).toBe(true);
+    });
+  });
+
+  describe("MAYBEのメンバーがいるとき", () => {
+    it("MAYBEは参加可能人数に含めない", () => {
+      const rsvps = [
+        ...Array.from({ length: 5 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        ...Array.from({ length: 4 }, (_, i) =>
+          createRsvp(`m-${i + 6}`, "MAYBE"),
+        ),
+      ];
+      const result = canConfirm({
+        game: createGame({ min_players: 9 }),
+        rsvps,
+        helperRequests: [],
+        negotiations: [createNegotiation()],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(false);
+      expect(result.reasons).toContainEqual(
+        expect.stringContaining("参加可能人数が不足"),
+      );
+    });
+  });
+
+  describe("交渉が0件で練習のとき", () => {
+    it("対戦相手なしでも確定を許可する", () => {
+      const result = canConfirm({
+        game: createGame({ game_type: "PRACTICE" }),
+        rsvps: Array.from({ length: 9 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [],
+        negotiations: [],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(true);
+    });
+  });
+});
+
+// --- canConfirm サジェスチョンテスト ---
+
+describe("canConfirm — サジェスチョン", () => {
+  describe("人数不足で未回答メンバーがいるとき", () => {
+    it("リマインダー送信を提案する", () => {
+      const result = canConfirm({
+        game: createGame({ min_players: 9 }),
+        rsvps: [
+          ...Array.from({ length: 5 }, (_, i) => createRsvp(`m-${i + 1}`)),
+          ...Array.from({ length: 3 }, (_, i) =>
+            createRsvp(`m-${i + 6}`, "NO_RESPONSE"),
+          ),
+        ],
+        helperRequests: [],
+        negotiations: [createNegotiation()],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(false);
+      expect(result.suggestions).toContainEqual(
+        expect.objectContaining({ action: "send_reminder" }),
+      );
+    });
+  });
+
+  describe("対戦相手が未承諾で交渉進行中のとき", () => {
+    it("交渉フォローアップを提案する", () => {
+      const result = canConfirm({
+        game: createGame(),
+        rsvps: Array.from({ length: 9 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [],
+        negotiations: [createNegotiation({ status: "SENT" })],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(false);
+      expect(result.suggestions).toContainEqual(
+        expect.objectContaining({ action: "follow_up_negotiation" }),
+      );
+    });
+  });
+
+  describe("対戦相手が未承諾で交渉なしのとき", () => {
+    it("交渉開始を提案する", () => {
+      const result = canConfirm({
+        game: createGame(),
+        rsvps: Array.from({ length: 9 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [],
+        negotiations: [],
+        hasGround: true,
+      });
+      expect(result.allowed).toBe(false);
+      expect(result.suggestions).toContainEqual(
+        expect.objectContaining({ action: "create_negotiation" }),
+      );
+    });
+  });
+
+  describe("グラウンド未確保のとき", () => {
+    it("グラウンド検索を提案する", () => {
+      const result = canConfirm({
+        game: createGame({ ground_id: null, ground_name: null }),
+        rsvps: Array.from({ length: 9 }, (_, i) => createRsvp(`m-${i + 1}`)),
+        helperRequests: [],
+        negotiations: [createNegotiation()],
+        hasGround: false,
+      });
+      expect(result.suggestions).toContainEqual(
+        expect.objectContaining({ action: "search_ground" }),
+      );
+    });
+  });
+});
