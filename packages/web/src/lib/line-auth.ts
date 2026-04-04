@@ -43,6 +43,7 @@ export async function exchangeCode(
   const res = await fetch(LINE_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    signal: AbortSignal.timeout(10000),
     body: new URLSearchParams({
       grant_type: "authorization_code",
       code,
@@ -67,6 +68,7 @@ export async function getLineProfile(
 ): Promise<LineProfile> {
   const res = await fetch(LINE_PROFILE_URL, {
     headers: { Authorization: `Bearer ${accessToken}` },
+    signal: AbortSignal.timeout(10000),
   });
 
   if (!res.ok) throw new Error("Failed to fetch LINE profile");

@@ -4,10 +4,10 @@ import {
   exchangeCode,
   getLineProfile,
 } from "@/lib/line-auth";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 /** GET /api/auth/line/callback — LINE OAuth コールバック */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -22,17 +22,31 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=no_code", origin));
   }
 
-  // stateからリダイレクト先を復元
+  // stateからリダイレクト先とnonceを復元
   let redirect = "/";
+  let nonce: string | undefined;
   if (state) {
     try {
       const parsed = JSON.parse(Buffer.from(state, "base64url").toString()) as {
         redirect?: string;
+        nonce?: string;
       };
-      redirect = parsed.redirect ?? "/";
+      const parsedRedirect = parsed.redirect ?? "/";
+      // オープンリダイレクト防止
+      redirect =
+        parsedRedirect.startsWith("/") && !parsedRedirect.startsWith("//")
+          ? parsedRedirect
+          : "/";
+      nonce = parsed.nonce;
     } catch {
       // invalid state, use default redirect
     }
+  }
+
+  // CSRF検証: nonce cookie と state 内の nonce を照合
+  const nonceCookie = request.cookies.get("line_oauth_nonce")?.value;
+  if (!nonce || !nonceCookie || nonce !== nonceCookie) {
+    return NextResponse.redirect(new URL("/login?error=invalid_state", origin));
   }
 
   try {
@@ -49,6 +63,8 @@ export async function GET(request: Request) {
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
+    // nonce cookie を削除
+    response.cookies.delete("line_oauth_nonce");
 
     return response;
   } catch (e) {

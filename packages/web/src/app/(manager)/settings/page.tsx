@@ -1,6 +1,9 @@
 "use client";
 
+import Box from "@cloudscape-design/components/box";
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Button from "@cloudscape-design/components/button";
+import ColumnLayout from "@cloudscape-design/components/column-layout";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
 import Flashbar, {
@@ -10,6 +13,7 @@ import Form from "@cloudscape-design/components/form";
 import FormField from "@cloudscape-design/components/form-field";
 import Header from "@cloudscape-design/components/header";
 import Input from "@cloudscape-design/components/input";
+import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import Multiselect, {
   type MultiselectProps,
 } from "@cloudscape-design/components/multiselect";
@@ -52,7 +56,14 @@ const COST_SPLIT_OPTIONS: SelectProps.Option[] = [
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingTeam, setSavingTeam] = useState(false);
   const [flash, setFlash] = useState<FlashbarProps.MessageDefinition[]>([]);
+
+  // Team profile state
+  const [teamName, setTeamName] = useState("");
+  const [homeArea, setHomeArea] = useState("");
+  const [activityDay, setActivityDay] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
 
   // Policy state
   const [autoAccept, setAutoAccept] = useState(false);
@@ -96,16 +107,30 @@ export default function SettingsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/teams/${TEAM_ID}/policy`);
-        const json = await res.json();
-        if (json.data) {
-          applyPolicy(json.data as NegotiationPolicy);
+        const [policyRes, teamsRes] = await Promise.all([
+          fetch(`/api/teams/${TEAM_ID}/policy`),
+          fetch("/api/teams"),
+        ]);
+
+        const policyJson = await policyRes.json();
+        if (policyJson.data) {
+          applyPolicy(policyJson.data as NegotiationPolicy);
+        }
+
+        const teamsJson = await teamsRes.json();
+        const team = (teamsJson.data ?? []).find(
+          (t: { id: string }) => t.id === TEAM_ID,
+        );
+        if (team) {
+          setTeamName(team.name ?? "");
+          setHomeArea(team.home_area ?? "");
+          setActivityDay(team.activity_day ?? "");
         }
       } catch {
         setFlash([
           {
             type: "error",
-            content: "ポリシーの読み込みに失敗しました",
+            content: "設定の読み込みに失敗しました",
             dismissible: true,
             onDismiss: () => setFlash([]),
           },
@@ -183,6 +208,59 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveTeam = async () => {
+    setSavingTeam(true);
+    try {
+      const res = await fetch(`/api/teams/${TEAM_ID}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: teamName,
+          home_area: homeArea,
+          activity_day: activityDay || null,
+        }),
+      });
+
+      if (res.ok) {
+        setFlash([
+          {
+            type: "success",
+            content: "チーム情報を保存しました",
+            dismissible: true,
+            onDismiss: () => setFlash([]),
+          },
+        ]);
+      } else {
+        const json = await res.json();
+        setFlash([
+          {
+            type: "error",
+            content: json.error?.message ?? "チーム情報の保存に失敗しました",
+            dismissible: true,
+            onDismiss: () => setFlash([]),
+          },
+        ]);
+      }
+    } catch {
+      setFlash([
+        {
+          type: "error",
+          content: "チーム情報の保存に失敗しました",
+          dismissible: true,
+          onDismiss: () => setFlash([]),
+        },
+      ]);
+    } finally {
+      setSavingTeam(false);
+    }
+  };
+
+  const generateInviteLink = () => {
+    const liffId = process.env.NEXT_PUBLIC_LIFF_ID ?? "YOUR_LIFF_ID";
+    const link = `https://liff.line.me/${liffId}/register?team_id=${TEAM_ID}`;
+    setInviteLink(link);
+  };
+
   if (loading) {
     return (
       <ContentLayout header={<Header variant="h1">設定</Header>}>
@@ -193,14 +271,138 @@ export default function SettingsPage() {
 
   return (
     <ContentLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/dashboard" },
+            { text: "設定", href: "/settings" },
+          ]}
+        />
+      }
       header={
-        <Header variant="h1" description="チームの交渉ポリシーを管理します">
+        <Header
+          variant="h1"
+          description="チームの設定と交渉ポリシーを管理します"
+        >
           設定
         </Header>
       }
     >
       <SpaceBetween size="l">
         <Flashbar items={flash} />
+
+        {/* Team Profile */}
+        <Container header={<Header variant="h2">チーム情報</Header>}>
+          <SpaceBetween size="l">
+            <ColumnLayout columns={2}>
+              <FormField label="チーム名">
+                <Input
+                  value={teamName}
+                  onChange={({ detail }) => setTeamName(detail.value)}
+                />
+              </FormField>
+
+              <FormField label="活動エリア">
+                <Input
+                  value={homeArea}
+                  onChange={({ detail }) => setHomeArea(detail.value)}
+                  placeholder="例: 東京都世田谷区"
+                />
+              </FormField>
+
+              <FormField label="活動曜日">
+                <Input
+                  value={activityDay}
+                  onChange={({ detail }) => setActivityDay(detail.value)}
+                  placeholder="例: 土日"
+                />
+              </FormField>
+            </ColumnLayout>
+
+            <Button
+              variant="primary"
+              loading={savingTeam}
+              onClick={handleSaveTeam}
+            >
+              チーム情報を保存
+            </Button>
+          </SpaceBetween>
+        </Container>
+
+        {/* API Integration / Team ID */}
+        <Container header={<Header variant="h2">API連携情報</Header>}>
+          <KeyValuePairs
+            items={[
+              {
+                label: "チームID",
+                value: (
+                  <SpaceBetween direction="horizontal" size="xs">
+                    <Box>{TEAM_ID}</Box>
+                    <Button
+                      iconName="copy"
+                      variant="icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(TEAM_ID);
+                        setFlash([
+                          {
+                            type: "success",
+                            content: "チームIDをコピーしました",
+                            dismissible: true,
+                            onDismiss: () => setFlash([]),
+                          },
+                        ]);
+                      }}
+                    />
+                  </SpaceBetween>
+                ),
+              },
+            ]}
+          />
+        </Container>
+
+        {/* Member Invitation */}
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="LINE経由でメンバーを招待するリンクを生成します"
+            >
+              メンバー招待
+            </Header>
+          }
+        >
+          <SpaceBetween size="m">
+            <Button onClick={generateInviteLink}>招待リンクを生成</Button>
+            {inviteLink && (
+              <SpaceBetween size="xs">
+                <Box variant="awsui-key-label">招待リンク</Box>
+                <SpaceBetween direction="horizontal" size="xs">
+                  <Input value={inviteLink} readOnly />
+                  <Button
+                    iconName="copy"
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteLink);
+                      setFlash([
+                        {
+                          type: "success",
+                          content: "招待リンクをコピーしました",
+                          dismissible: true,
+                          onDismiss: () => setFlash([]),
+                        },
+                      ]);
+                    }}
+                  >
+                    コピー
+                  </Button>
+                </SpaceBetween>
+                <Box variant="small" color="text-body-secondary">
+                  このリンクをLINEグループに共有してメンバーを招待してください
+                </Box>
+              </SpaceBetween>
+            )}
+          </SpaceBetween>
+        </Container>
+
         <form
           onSubmit={(e) => {
             e.preventDefault();

@@ -238,6 +238,29 @@ export type {
   SettlementRequestContext,
 } from "./lib/line-messaging";
 
+// Ground Scraper
+export {
+  GroundScraper,
+  generateRealisticSlots,
+  parseYokohamaHtml,
+  parseFujisawaHtml,
+  fetchWithTimeout,
+  formatDate,
+  seededRandom,
+  KNOWN_GROUNDS,
+  SCRAPE_TIMEOUT_MS,
+  MOCK_DAYS_AHEAD,
+} from "./lib/ground-scraper";
+export type {
+  ScrapedSlot,
+  ScrapeResult,
+  GroundAdapter,
+  ScraperLogger,
+  TimeSlot as GroundTimeSlot,
+  SlotStatus,
+  GroundScraperOptions,
+} from "./lib/ground-scraper";
+
 // Email Service
 export {
   sendEmail,
@@ -255,22 +278,13 @@ export type {
   EmailSettlementRequestContext,
 } from "./lib/email-service";
 
-// Ground Scraper
+// Cron Logic
 export {
-  scrapeGround,
-  getAdapter,
-  getSupportedMunicipalities,
-  generateMockSlots,
-  TIME_SLOTS,
-  SLOT_STATUSES,
-  scrapedSlotSchema,
-} from "./lib/ground-scraper";
-export type {
-  ScrapedSlot,
-  GroundScraperAdapter,
-  TimeSlot as ScraperTimeSlot,
-  SlotStatus as ScraperSlotStatus,
-} from "./lib/ground-scraper";
+  findGamesNeedingReminder,
+  findGamesPassedDeadline,
+  shouldSendReminder,
+} from "./lib/cron-logic";
+export type { CronGameInput } from "./lib/cron-logic";
 
 // Ground Monitor
 export {

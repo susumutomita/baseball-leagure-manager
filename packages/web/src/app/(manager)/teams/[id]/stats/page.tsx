@@ -60,6 +60,29 @@ export default async function StatsPage({
 
   memberStats.sort((a, b) => b.avg - a.avg);
 
+  // チーム打撃平均
+  const teamBattingAvg =
+    memberStats.length > 0
+      ? memberStats.reduce((sum, s) => sum + s.avg, 0) / memberStats.length
+      : 0;
+
+  // リーダーボード (rank付き)
+  const battingAvgLeaders = [...memberStats]
+    .filter((s) => s.atBats >= 1)
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 5)
+    .map((s, i) => ({ ...s, rank: i + 1 }));
+  const hrLeaders = [...memberStats]
+    .filter((s) => s.homeRuns >= 1)
+    .sort((a, b) => b.homeRuns - a.homeRuns)
+    .slice(0, 5)
+    .map((s, i) => ({ ...s, rank: i + 1 }));
+  const rbiLeaders = [...memberStats]
+    .filter((s) => s.rbi >= 1)
+    .sort((a, b) => b.rbi - a.rbi)
+    .slice(0, 5)
+    .map((s, i) => ({ ...s, rank: i + 1 }));
+
   return (
     <ContentLayout
       breadcrumbs={
@@ -82,6 +105,7 @@ export default async function StatsPage({
       }
     >
       <SpaceBetween size="l">
+        {/* チーム戦績サマリー */}
         <Container header={<Header variant="h2">チーム戦績</Header>}>
           {teamStats.totalGames === 0 ? (
             <Box textAlign="center" color="text-body-secondary" padding="xxl">
@@ -92,8 +116,12 @@ export default async function StatsPage({
               <KeyValuePairs
                 items={[
                   {
-                    label: "勝敗",
-                    value: `${teamStats.wins}勝${teamStats.losses}敗${teamStats.draws}分`,
+                    label: "戦績 (W-L-D)",
+                    value: (
+                      <Box fontSize="heading-m" fontWeight="bold">
+                        {teamStats.wins}-{teamStats.losses}-{teamStats.draws}
+                      </Box>
+                    ),
                   },
                 ]}
               />
@@ -108,6 +136,14 @@ export default async function StatsPage({
                         {teamStats.winRate.toFixed(3)}
                       </StatusIndicator>
                     ),
+                  },
+                ]}
+              />
+              <KeyValuePairs
+                items={[
+                  {
+                    label: "チーム打率",
+                    value: teamBattingAvg.toFixed(3),
                   },
                 ]}
               />
@@ -130,13 +166,132 @@ export default async function StatsPage({
                   },
                 ]}
               />
-              <KeyValuePairs
-                items={[{ label: "試合数", value: `${teamStats.totalGames}` }]}
-              />
             </ColumnLayout>
           )}
         </Container>
 
+        {/* 個人リーダーボード */}
+        {memberStats.length > 0 && (
+          <ColumnLayout columns={3}>
+            <Container header={<Header variant="h3">打率リーダー</Header>}>
+              {battingAvgLeaders.length === 0 ? (
+                <Box textAlign="center" color="text-body-secondary" padding="s">
+                  データなし
+                </Box>
+              ) : (
+                <Table
+                  variant="embedded"
+                  columnDefinitions={[
+                    {
+                      id: "rank",
+                      header: "#",
+                      cell: (item) => item.rank,
+                      width: 50,
+                    },
+                    {
+                      id: "name",
+                      header: "選手",
+                      cell: (item) => (
+                        <Link
+                          href={`/members/${item.member_id}`}
+                          variant="secondary"
+                        >
+                          {item.name}
+                        </Link>
+                      ),
+                    },
+                    {
+                      id: "avg",
+                      header: "打率",
+                      cell: (item) => (
+                        <Box fontWeight="bold">{item.avg.toFixed(3)}</Box>
+                      ),
+                    },
+                  ]}
+                  items={battingAvgLeaders}
+                />
+              )}
+            </Container>
+            <Container header={<Header variant="h3">本塁打リーダー</Header>}>
+              {hrLeaders.length === 0 ? (
+                <Box textAlign="center" color="text-body-secondary" padding="s">
+                  データなし
+                </Box>
+              ) : (
+                <Table
+                  variant="embedded"
+                  columnDefinitions={[
+                    {
+                      id: "rank",
+                      header: "#",
+                      cell: (item) => item.rank,
+                      width: 50,
+                    },
+                    {
+                      id: "name",
+                      header: "選手",
+                      cell: (item) => (
+                        <Link
+                          href={`/members/${item.member_id}`}
+                          variant="secondary"
+                        >
+                          {item.name}
+                        </Link>
+                      ),
+                    },
+                    {
+                      id: "hr",
+                      header: "HR",
+                      cell: (item) => (
+                        <Box fontWeight="bold">{item.homeRuns}</Box>
+                      ),
+                    },
+                  ]}
+                  items={hrLeaders}
+                />
+              )}
+            </Container>
+            <Container header={<Header variant="h3">打点リーダー</Header>}>
+              {rbiLeaders.length === 0 ? (
+                <Box textAlign="center" color="text-body-secondary" padding="s">
+                  データなし
+                </Box>
+              ) : (
+                <Table
+                  variant="embedded"
+                  columnDefinitions={[
+                    {
+                      id: "rank",
+                      header: "#",
+                      cell: (item) => item.rank,
+                      width: 50,
+                    },
+                    {
+                      id: "name",
+                      header: "選手",
+                      cell: (item) => (
+                        <Link
+                          href={`/members/${item.member_id}`}
+                          variant="secondary"
+                        >
+                          {item.name}
+                        </Link>
+                      ),
+                    },
+                    {
+                      id: "rbi",
+                      header: "打点",
+                      cell: (item) => <Box fontWeight="bold">{item.rbi}</Box>,
+                    },
+                  ]}
+                  items={rbiLeaders}
+                />
+              )}
+            </Container>
+          </ColumnLayout>
+        )}
+
+        {/* 個人打撃成績テーブル */}
         <Table
           header={
             <Header variant="h2" counter={`(${memberStats.length})`}>
@@ -147,60 +302,84 @@ export default async function StatsPage({
             {
               id: "name",
               header: "選手",
-              cell: (item) => item.name,
+              cell: (item) => (
+                <Link href={`/members/${item.member_id}`}>{item.name}</Link>
+              ),
               sortingField: "name",
             },
             {
               id: "games",
               header: "試合",
               cell: (item) => item.games,
+              sortingField: "games",
             },
             {
               id: "avg",
               header: "打率",
-              cell: (item) => item.avg.toFixed(3),
+              cell: (item) => (
+                <Box fontWeight="bold">{item.avg.toFixed(3)}</Box>
+              ),
               sortingField: "avg",
             },
             {
               id: "pa",
               header: "打席",
               cell: (item) => item.plateAppearances,
+              sortingField: "plateAppearances",
             },
             {
               id: "hits",
               header: "安打",
               cell: (item) => item.hits,
+              sortingField: "hits",
             },
             {
               id: "hr",
               header: "本塁打",
               cell: (item) => item.homeRuns,
+              sortingField: "homeRuns",
             },
             {
               id: "rbi",
               header: "打点",
               cell: (item) => item.rbi,
+              sortingField: "rbi",
             },
             {
               id: "obp",
               header: "出塁率",
               cell: (item) => item.obp.toFixed(3),
+              sortingField: "obp",
             },
             {
               id: "slg",
               header: "長打率",
               cell: (item) => item.slg.toFixed(3),
+              sortingField: "slg",
             },
             {
               id: "ops",
               header: "OPS",
-              cell: (item) => item.ops.toFixed(3),
+              cell: (item) => (
+                <StatusIndicator
+                  type={
+                    item.ops >= 0.8
+                      ? "success"
+                      : item.ops >= 0.6
+                        ? "info"
+                        : "pending"
+                  }
+                >
+                  {item.ops.toFixed(3)}
+                </StatusIndicator>
+              ),
               sortingField: "ops",
             },
             {
               id: "sb",
               header: "盗塁",
               cell: (item) => item.stolenBases,
+              sortingField: "stolenBases",
             },
           ]}
           items={memberStats}
@@ -211,6 +390,7 @@ export default async function StatsPage({
           }
           variant="full-page"
           stickyHeader
+          sortingDisabled={false}
         />
       </SpaceBetween>
     </ContentLayout>

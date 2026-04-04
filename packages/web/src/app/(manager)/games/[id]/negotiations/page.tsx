@@ -8,8 +8,6 @@ import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Table from "@cloudscape-design/components/table";
-import { NegotiationActions } from "./NegotiationActions";
-import { NewNegotiationForm } from "./NewNegotiationForm";
 
 const NEGOTIATION_STATUS_TYPE: Record<
   string,
@@ -27,8 +25,8 @@ const NEGOTIATION_STATUS_LABELS: Record<string, string> = {
   DRAFT: "下書き",
   SENT: "送信済み",
   REPLIED: "返信あり",
-  ACCEPTED: "承諾",
-  DECLINED: "辞退",
+  ACCEPTED: "成立",
+  DECLINED: "不成立",
   CANCELLED: "キャンセル",
 };
 
@@ -42,13 +40,13 @@ export default async function NegotiationsPage({
 
   const { data: game } = await supabase
     .from("games")
-    .select("*, teams(id, name)")
+    .select("id, title")
     .eq("id", id)
     .single();
 
   if (!game) {
     return (
-      <ContentLayout header={<Header variant="h1">交渉管理</Header>}>
+      <ContentLayout header={<Header variant="h1">対戦交渉</Header>}>
         <Box textAlign="center" color="text-status-inactive" padding="xxl">
           試合が見つかりません
         </Box>
@@ -56,19 +54,11 @@ export default async function NegotiationsPage({
     );
   }
 
-  const team = game.teams as { id: string; name: string } | null;
-
   const { data: negotiations } = await supabase
     .from("negotiations")
-    .select("*, opponent_teams(name)")
+    .select("*, opponent_teams(name, area, contact_name)")
     .eq("game_id", id)
     .order("created_at", { ascending: false });
-
-  const { data: opponents } = await supabase
-    .from("opponent_teams")
-    .select("id, name")
-    .eq("team_id", game.team_id)
-    .order("name");
 
   return (
     <ContentLayout
@@ -77,33 +67,27 @@ export default async function NegotiationsPage({
           items={[
             { text: "ダッシュボード", href: "/dashboard" },
             { text: game.title, href: `/games/${id}` },
-            { text: "交渉管理", href: `/games/${id}/negotiations` },
+            { text: "対戦交渉", href: `/games/${id}/negotiations` },
           ]}
         />
       }
       header={
         <Header
           variant="h1"
-          description={<Link href={`/games/${id}`}>試合詳細に戻る</Link>}
+          counter={
+            negotiations && negotiations.length > 0
+              ? `(${negotiations.length})`
+              : undefined
+          }
+          description={`${game.title} の対戦交渉一覧`}
         >
-          {game.title} — 交渉管理
+          対戦交渉
         </Header>
       }
     >
       <SpaceBetween size="l">
-        <NewNegotiationForm
-          gameId={id}
-          teamName={team?.name ?? ""}
-          opponents={opponents ?? []}
-        />
-
         {negotiations && negotiations.length > 0 ? (
           <Table
-            header={
-              <Header variant="h2" counter={`(${negotiations.length})`}>
-                交渉一覧
-              </Header>
-            }
             columnDefinitions={[
               {
                 id: "opponent",
@@ -111,8 +95,22 @@ export default async function NegotiationsPage({
                 cell: (item) => {
                   const opponent = item.opponent_teams as {
                     name: string;
+                    area: string;
+                    contact_name: string;
                   } | null;
                   return opponent?.name ?? "—";
+                },
+              },
+              {
+                id: "area",
+                header: "地域",
+                cell: (item) => {
+                  const opponent = item.opponent_teams as {
+                    name: string;
+                    area: string;
+                    contact_name: string;
+                  } | null;
+                  return opponent?.area ?? "—";
                 },
               },
               {
@@ -127,39 +125,26 @@ export default async function NegotiationsPage({
                 ),
               },
               {
-                id: "proposed_dates",
-                header: "候補日",
-                cell: (item) => {
-                  const dates = item.proposed_dates_json as string[] | null;
-                  return dates?.join(", ") ?? "—";
-                },
-              },
-              {
-                id: "message_sent",
-                header: "送信メッセージ",
+                id: "sent_at",
+                header: "送信日",
                 cell: (item) =>
-                  item.message_sent
-                    ? `${String(item.message_sent).slice(0, 50)}...`
+                  item.sent_at
+                    ? new Date(item.sent_at).toLocaleDateString("ja-JP")
                     : "—",
               },
               {
-                id: "reply_received",
-                header: "返信",
+                id: "replied_at",
+                header: "返信日",
                 cell: (item) =>
-                  item.reply_received
-                    ? `${String(item.reply_received).slice(0, 50)}...`
+                  item.replied_at
+                    ? new Date(item.replied_at).toLocaleDateString("ja-JP")
                     : "—",
               },
               {
-                id: "actions",
-                header: "アクション",
-                cell: (item) => (
-                  <NegotiationActions
-                    negotiationId={item.id}
-                    gameId={id}
-                    currentStatus={item.status}
-                  />
-                ),
+                id: "message",
+                header: "メッセージ",
+                cell: (item) => item.message_sent ?? "—",
+                maxWidth: 200,
               },
             ]}
             items={negotiations}
@@ -168,7 +153,10 @@ export default async function NegotiationsPage({
         ) : (
           <Container header={<Header variant="h2">交渉一覧</Header>}>
             <Box textAlign="center" color="text-status-inactive" padding="l">
-              交渉がまだありません。上のフォームから新しい交渉を開始してください。
+              対戦交渉がありません
+            </Box>
+            <Box textAlign="center" padding="s">
+              <Link href={`/games/${id}`}>試合詳細に戻る</Link>
             </Box>
           </Container>
         )}
