@@ -164,6 +164,8 @@ export {
   updateNegotiationSchema,
   createExpenseSchema,
   createTeamSchema,
+  createGroundSchema,
+  updateGroundWatchSchema,
   sendNotificationSchema,
   zodToValidationError,
 } from "./lib/validators";
@@ -178,6 +180,8 @@ export type {
   UpdateNegotiationInput,
   CreateExpenseInput,
   CreateTeamInput,
+  CreateGroundInput,
+  UpdateGroundWatchInput,
   SendNotificationInput,
 } from "./lib/validators";
 
