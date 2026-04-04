@@ -156,6 +156,7 @@ export default async function GameDetailPage({
               currentStatus={game.status}
               transitions={transitions}
             />
+            <Link href={`/games/${game.id}/negotiations`}>交渉を管理</Link>
             {(game.status === "COMPLETED" || game.status === "SETTLED") && (
               <Link href={`/games/${game.id}/expenses`}>支出・精算を管理</Link>
             )}
