@@ -68,7 +68,12 @@ export type {
 } from "./lib/governor";
 
 // Audit
-export { writeAuditLog } from "./lib/audit";
+export {
+  writeAuditLog,
+  auditGameTransition,
+  AUDIT_ACTIONS,
+} from "./lib/audit";
+export type { AuditEntry, AuditResult, AuditAction } from "./lib/audit";
 
 // Result
 export { ok, err, formatError, httpStatus } from "./lib/result";
@@ -173,6 +178,17 @@ export type {
   SettlementCalculationInput,
   SettlementCalculationResult,
 } from "./lib/settlement";
+
+// Attendance Tracker
+export {
+  calculateMemberAttendance,
+  calculateRsvpAccuracy,
+  rankByAttendance,
+} from "./lib/attendance-tracker";
+export type {
+  MemberAttendanceStats,
+  RsvpAccuracy,
+} from "./lib/attendance-tracker";
 
 // Game Summary
 export {
