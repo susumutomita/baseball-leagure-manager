@@ -101,6 +101,12 @@ export default function LandingPage() {
             <Box variant="p">
               「あの件どうなった？」と聞かれて思い出せない
             </Box>
+            <Box variant="p">
+              新しいツールを導入したいけど、趣味の草野球で覚える時間がない
+            </Box>
+            <Box variant="p">
+              便利なアプリを入れても、メンバーが使いこなせず結局LINEに戻る
+            </Box>
           </ColumnLayout>
         </Container>
 
