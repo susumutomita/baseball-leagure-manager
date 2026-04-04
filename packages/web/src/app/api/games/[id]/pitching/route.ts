@@ -8,11 +8,7 @@ const VALID_ROLES = ["STARTER", "RELIEVER", "CLOSER"] as const;
 
 const pitchingStatSchema = z.object({
   member_id: z.string().uuid("member_id は有効な UUID である必要があります"),
-  role: z.enum(VALID_ROLES, {
-    errorMap: () => ({
-      message: "role は STARTER, RELIEVER, CLOSER のいずれかです",
-    }),
-  }),
+  role: z.enum(VALID_ROLES),
   innings_pitched: z
     .number()
     .min(0, "innings_pitched は 0 以上です")

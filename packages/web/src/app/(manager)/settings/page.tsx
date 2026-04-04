@@ -337,7 +337,7 @@ export default function SettingsPage() {
                 label: "チームID",
                 value: (
                   <SpaceBetween direction="horizontal" size="xs">
-                    <Box fontFamily="monospace">{TEAM_ID}</Box>
+                    <code>{TEAM_ID}</code>
                     <Button
                       iconName="copy"
                       variant="icon"
