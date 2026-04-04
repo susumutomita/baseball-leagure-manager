@@ -128,6 +128,26 @@ export const createTeamSchema = z.object({
 });
 export type CreateTeamInput = z.infer<typeof createTeamSchema>;
 
+// --- Ground ---
+
+export const createGroundSchema = z.object({
+  team_id: uuidSchema,
+  name: z.string().min(1, "グラウンド名は必須です").max(200),
+  municipality: z.string().min(1, "市区町村は必須です").max(200),
+  source_url: z.string().url().nullable().default(null),
+  cost_per_slot: z.number().int().min(0).nullable().default(null),
+  is_hardball_ok: z.boolean().default(false),
+  has_night_lights: z.boolean().default(false),
+  note: z.string().max(500).nullable().default(null),
+});
+export type CreateGroundInput = z.infer<typeof createGroundSchema>;
+
+export const updateGroundWatchSchema = z.object({
+  watch_active: z.boolean(),
+  conditions_json: z.record(z.string(), z.unknown()).nullable().default(null),
+});
+export type UpdateGroundWatchInput = z.infer<typeof updateGroundWatchSchema>;
+
 // --- Notification ---
 
 export const sendNotificationSchema = z.object({
