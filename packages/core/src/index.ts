@@ -179,6 +179,32 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// Cron Guard
+export {
+  generateIdempotencyKey,
+  isDuplicate,
+  processBatch,
+} from "./lib/cron-guard";
+export type {
+  CronExecutionRecord,
+  BatchResult,
+} from "./lib/cron-guard";
+
+// Schedule Conflict
+export {
+  detectConflicts,
+  detectMemberConflicts,
+} from "./lib/schedule-conflict";
+export type { ScheduleConflict } from "./lib/schedule-conflict";
+
+// Data Export
+export {
+  toCSV,
+  exportGamesToCSV,
+  exportMembersToCSV,
+  exportRsvpsToCSV,
+} from "./lib/data-export";
+
 // RSVP Follow-up
 export { planFollowUp } from "./lib/rsvp-followup";
 export type {
