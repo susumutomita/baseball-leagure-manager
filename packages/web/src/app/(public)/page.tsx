@@ -21,7 +21,7 @@ const FEATURES = [
   },
   {
     title: "助っ人・対戦の連絡、覚えなくていい",
-    desc: "AIが連絡文を下書き、あなたが確認して送信。返信状況はシステムが追跡し、過去の依頼履歴も全て残ります。「あの件どうなった？」がゼロに。素早い応答で相手からの信頼も上がります。",
+    desc: "AIが連絡文を下書き、あなたが確認して送信。相手はLINEやメールで受け取るから新しいツール不要。返信追跡・履歴も全てシステムが管理。素早い応答で相手からの信頼も上がります。",
   },
   {
     title: "集金のストレスをゼロに",
@@ -58,8 +58,7 @@ export default function LandingPage() {
               金曜の夜。LINEの出欠、まだ5人しか返事がない。
             </Header>
             <Box variant="p" fontSize="heading-m" color="text-body-secondary">
-              「9人集まるのか」「グラウンドどうする」「相手チームは」——
-              全部、mound が解決します。
+              LINEもメールもそのまま。チームの連絡手段を変えずに、出欠・グラウンド・助っ人・精算の面倒を全て自動化。
             </Box>
             <Box>
               <Button variant="primary" onClick={() => router.push("/login")}>
