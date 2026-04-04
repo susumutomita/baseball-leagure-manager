@@ -2,12 +2,12 @@
 
 import Alert from "@cloudscape-design/components/alert";
 import Box from "@cloudscape-design/components/box";
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Button from "@cloudscape-design/components/button";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
 import Header from "@cloudscape-design/components/header";
 import Input from "@cloudscape-design/components/input";
-import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import { use, useMemo, useState } from "react";
 
@@ -32,18 +32,16 @@ export default function CalendarPage({
 
   return (
     <ContentLayout
-      header={
-        <Header
-          variant="h1"
-          actions={
-            <Link href={`/teams/${id}`} variant="primary">
-              チーム詳細に戻る
-            </Link>
-          }
-        >
-          カレンダー連携
-        </Header>
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "ダッシュボード", href: "/dashboard" },
+            { text: "チーム", href: `/teams/${id}` },
+            { text: "カレンダー連携", href: `/teams/${id}/calendar` },
+          ]}
+        />
       }
+      header={<Header variant="h1">カレンダー連携</Header>}
     >
       <SpaceBetween size="l">
         <Container header={<Header variant="h2">購読 URL</Header>}>
