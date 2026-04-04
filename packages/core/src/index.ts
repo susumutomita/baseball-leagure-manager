@@ -278,23 +278,6 @@ export type {
   EmailSettlementRequestContext,
 } from "./lib/email-service";
 
-// Ground Scraper
-export {
-  scrapeGround,
-  getAdapter,
-  getSupportedMunicipalities,
-  generateMockSlots,
-  TIME_SLOTS,
-  SLOT_STATUSES,
-  scrapedSlotSchema,
-} from "./lib/ground-scraper";
-export type {
-  ScrapedSlot,
-  GroundScraperAdapter,
-  TimeSlot as ScraperTimeSlot,
-  SlotStatus as ScraperSlotStatus,
-} from "./lib/ground-scraper";
-
 // Ground Monitor
 export {
   detectNewAvailability,
