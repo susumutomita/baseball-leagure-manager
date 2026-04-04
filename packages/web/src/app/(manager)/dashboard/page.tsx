@@ -1,4 +1,5 @@
 import { DashboardView } from "@/components/DashboardView";
+import { OnboardingGuard } from "@/components/OnboardingGuard";
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
@@ -9,6 +10,27 @@ import Header from "@cloudscape-design/components/header";
 export default async function DashboardPage() {
   const supabase = await createClient();
   const teamId = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
+
+  // チームが存在するか確認する
+  const { count: teamCount } = await supabase
+    .from("teams")
+    .select("id", { count: "exact", head: true });
+
+  const hasTeams = (teamCount ?? 0) > 0;
+
+  if (!hasTeams) {
+    return (
+      <ContentLayout
+        header={
+          <Header variant="h1" description="チームをセットアップしましょう">
+            はじめに
+          </Header>
+        }
+      >
+        <OnboardingGuard />
+      </ContentLayout>
+    );
+  }
 
   const { data: games } = await supabase
     .from("games")
