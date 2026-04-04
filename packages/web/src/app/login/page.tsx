@@ -1,6 +1,5 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
 import Container from "@cloudscape-design/components/container";
@@ -10,18 +9,19 @@ import SpaceBetween from "@cloudscape-design/components/space-between";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
+const ERROR_MESSAGES: Record<string, string> = {
+  cancelled: "ログインがキャンセルされました",
+  no_code: "認証コードが取得できませんでした",
+  auth_failed: "認証に失敗しました。もう一度お試しください",
+};
+
 function LoginContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/";
+  const error = searchParams.get("error");
 
-  const handleLogin = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
-      },
-    });
+  const handleLogin = () => {
+    window.location.href = `/api/auth/line?redirect=${encodeURIComponent(redirect)}`;
   };
 
   return (
@@ -39,6 +39,11 @@ function LoginContent() {
               <Box variant="p" textAlign="center">
                 ログインして試合を管理しましょう
               </Box>
+              {error && (
+                <Box textAlign="center" color="text-status-error">
+                  {ERROR_MESSAGES[error] ?? "エラーが発生しました"}
+                </Box>
+              )}
               <Box textAlign="center">
                 <Button variant="primary" onClick={handleLogin}>
                   LINE でログイン
