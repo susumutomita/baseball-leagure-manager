@@ -242,6 +242,34 @@ export type {
   EmailSettlementRequestContext,
 } from "./lib/email-service";
 
+// Ground Scraper
+export {
+  scrapeGround,
+  getAdapter,
+  getSupportedMunicipalities,
+  generateMockSlots,
+  TIME_SLOTS,
+  SLOT_STATUSES,
+  scrapedSlotSchema,
+} from "./lib/ground-scraper";
+export type {
+  ScrapedSlot,
+  GroundScraperAdapter,
+  TimeSlot as ScraperTimeSlot,
+  SlotStatus as ScraperSlotStatus,
+} from "./lib/ground-scraper";
+
+// Ground Monitor
+export {
+  detectNewAvailability,
+  checkGrounds,
+} from "./lib/ground-monitor";
+export type {
+  NewAvailability,
+  GroundCheckResult,
+  CheckGroundsResult,
+} from "./lib/ground-monitor";
+
 // Notification Dispatcher
 export {
   dispatchNotifications,
