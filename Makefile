@@ -1,5 +1,6 @@
 .PHONY: start dev build lint lint-fix lint-check format typecheck test test-watch test-coverage check before-commit clean install install-ci
 
+BUN := $(or $(shell command -v bun 2>/dev/null),$(HOME)/.bun/bin/bun)
 BIOME := ./node_modules/.bin/biome
 
 # ===================================================
@@ -10,10 +11,10 @@ BIOME := ./node_modules/.bin/biome
 start: install dev ## ローカル開発サーバーを起動
 
 dev: ## Next.js 開発サーバーを起動
-	bun run dev
+	$(BUN) run dev
 
 build: ## プロダクションビルド
-	bun run build
+	$(BUN) run build
 
 ## 品質チェック
 lint: ## Biome lint チェック
@@ -26,16 +27,16 @@ format: ## Biome フォーマット
 	$(BIOME) format --write .
 
 typecheck: ## TypeScript 型チェック
-	bun run --filter '*' typecheck
+	$(BUN) run --filter '*' typecheck
 
 test: ## テスト実行
-	bun test
+	$(BUN) test
 
 test-watch: ## テスト (watch モード)
-	bun test --watch
+	$(BUN) test --watch
 
 test-coverage: ## テスト + カバレッジ
-	bun test --coverage
+	$(BUN) test --coverage
 
 check: lint typecheck test ## lint + typecheck + test 一括実行
 	@echo "✅ All checks passed"
@@ -49,10 +50,10 @@ lint-check: ## Biome lint + format チェック (CI用、修正しない)
 
 ## セットアップ
 install: ## 依存関係インストール
-	bun install
+	$(BUN) install
 
 install-ci: ## CI用インストール (install後にlockfile差分チェック)
-	bun install
+	$(BUN) install
 	git diff --exit-code bun.lock || (echo "ERROR: bun.lock is out of date. Run 'bun install' locally and commit bun.lock." && exit 1)
 
 clean: ## ビルド成果物を削除
