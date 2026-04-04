@@ -70,6 +70,36 @@ export default function LandingPage() {
       }
     >
       <SpaceBetween size="xxl">
+        {/* こんな悩み、ありませんか？ */}
+        <Container
+          header={
+            <Header variant="h2">
+              チーム運営、こんなことに時間を取られていませんか？
+            </Header>
+          }
+        >
+          <ColumnLayout columns={2}>
+            <Box variant="p">
+              「出欠まだ？」のLINE催促を毎回5人に送っている
+            </Box>
+            <Box variant="p">
+              人数が足りず日曜朝に助っ人に電話している
+            </Box>
+            <Box variant="p">
+              対戦相手へのメール返信を忘れて試合が流れた
+            </Box>
+            <Box variant="p">
+              精算のスプレッドシートを毎回手で更新している
+            </Box>
+            <Box variant="p">
+              グラウンドの抽選日をうっかり忘れた
+            </Box>
+            <Box variant="p">
+              「あの件どうなった？」と聞かれて思い出せない
+            </Box>
+          </ColumnLayout>
+        </Container>
+
         {/* 選ばれる理由 */}
         <Container
           header={
@@ -81,7 +111,7 @@ export default function LandingPage() {
             </Header>
           }
         >
-          <ColumnLayout columns={3}>
+          <ColumnLayout columns={2}>
             <SpaceBetween size="xs">
               <Box variant="h3">メンバーの学習コスト：ゼロ</Box>
               <Box variant="p" color="text-body-secondary">
@@ -92,6 +122,12 @@ export default function LandingPage() {
               <Box variant="h3">代表の作業：10分の1</Box>
               <Box variant="p" color="text-body-secondary">
                 出欠の催促、人数の集計、助っ人への連絡、精算の計算。今まで代表が手作業でやっていたこと全てをシステムが代行します。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xs">
+              <Box variant="h3">既存アプリにない「運営の自動化」</Box>
+              <Box variant="p" color="text-body-secondary">
+                成績管理だけのアプリとは違います。お金の精算、対戦チームとの交渉、助っ人の声掛けまで。人手を介さずにチーム運営が回ります。
               </Box>
             </SpaceBetween>
             <SpaceBetween size="xs">
