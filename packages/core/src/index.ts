@@ -179,6 +179,40 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// Game Date
+export {
+  daysUntilGame,
+  isGameDay,
+  isGamePast,
+  isGameFuture,
+  formatGameSchedule,
+  sortGamesByDate,
+  filterGamesByDateRange,
+  getThisWeekGames,
+} from "./lib/game-date";
+
+// Expense Report
+export {
+  getCategoryLabel,
+  summarizeByCategory,
+  generateExpenseReport,
+} from "./lib/expense-report";
+export type {
+  CategorySummary,
+  ExpenseReport,
+} from "./lib/expense-report";
+
+// Team Capacity
+export {
+  analyzeTeamCapacity,
+  analyzePositions,
+  estimateAttendance,
+} from "./lib/team-capacity";
+export type {
+  PositionCoverage,
+  TeamCapacityReport,
+} from "./lib/team-capacity";
+
 // Attendance Tracker
 export {
   calculateMemberAttendance,
