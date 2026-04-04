@@ -5,6 +5,7 @@ import { SESSION_COOKIE_NAME } from "./lib/line-auth";
 const PUBLIC_PATHS = [
   "/login",
   "/api/auth",
+  "/auth/callback",
   "/api/liff",
   "/liff",
   "/terms",
@@ -24,6 +25,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // 公開ランディングページ(/)は認証不要
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
+
   // セッションcookieの存在チェック
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
@@ -33,7 +39,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // JWTの詳細検証はAPI側で行う（middlewareではEdge Runtime制約があるため存在チェックのみ）
   return NextResponse.next();
 }
 

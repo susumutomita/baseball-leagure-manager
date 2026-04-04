@@ -140,6 +140,28 @@ export function shouldAutoAccept(
   return result.matched;
 }
 
+// --- 他の交渉の自動キャンセル ---
+
+export interface NegotiationSummary {
+  id: string;
+  status: string;
+}
+
+/**
+ * 1つの交渉が承諾されたとき、同じ試合の他の交渉をキャンセル対象として返す。
+ * 終端状態（DECLINED, CANCELLED, ACCEPTED）にある交渉はスキップする。
+ */
+export function cancelOtherNegotiations(
+  negotiations: NegotiationSummary[],
+  acceptedNegotiationId: string,
+): NegotiationSummary[] {
+  const TERMINAL_STATUSES = ["DECLINED", "CANCELLED", "ACCEPTED"];
+  return negotiations.filter(
+    (n) =>
+      n.id !== acceptedNegotiationId && !TERMINAL_STATUSES.includes(n.status),
+  );
+}
+
 // --- 自動辞退判定 ---
 
 export function shouldAutoDecline(

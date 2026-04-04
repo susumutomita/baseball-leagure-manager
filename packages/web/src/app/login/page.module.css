@@ -1,0 +1,129 @@
+.pageWrapper {
+  min-height: 100vh;
+  background: #0a0e27;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pageWrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      ellipse 60% 50% at 30% 40%,
+      rgba(79, 143, 255, 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 70% 60%,
+      rgba(120, 80, 220, 0.1) 0%,
+      transparent 60%
+    );
+  z-index: 0;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  padding: 48px 40px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0
+    rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 24px rgba(79, 143, 255, 0.4);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 0 40px;
+}
+
+.heading {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.description {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 32px;
+}
+
+.lineButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: #06c755;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(6, 199, 85, 0.3);
+}
+
+.lineButton:hover {
+  background: #05b34c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(6, 199, 85, 0.35);
+}
+
+.lineIcon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.note {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 20px 0 0;
+}
+
+.backLink {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.backLink:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 36px 24px;
+    border-radius: 24px;
+  }
+}

@@ -1,16 +1,34 @@
 // ============================================================
 // AI サービス — Claude API を利用した各種 AI 機能
+// AI_PROVIDER=modal の場合は Modal (Gemma 4) に委譲
 // ============================================================
-import Anthropic from "@anthropic-ai/sdk";
+
+import {
+  generateNegotiationMessageModal,
+  generateWeeklyReportModal,
+  predictAttendanceModal,
+  recommendHelpersModal,
+} from "./modal-ai-service";
 
 const MODEL = "claude-sonnet-4-20250514";
 
-function createAnthropicClient(): Anthropic | null {
+function useModal(): boolean {
+  return process.env.AI_PROVIDER === "modal";
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: dynamic import for optional dependency
+function createAnthropicClient(): any | null {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return null;
   }
-  return new Anthropic({ apiKey });
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Anthropic = require("@anthropic-ai/sdk").default;
+    return new Anthropic({ apiKey });
+  } catch {
+    return null;
+  }
 }
 
 // --- 型定義 ---
@@ -67,6 +85,8 @@ export async function predictAttendance(
   member: PredictAttendanceInput,
   game: PredictAttendanceGameInput,
 ): Promise<AttendancePrediction> {
+  if (useModal()) return predictAttendanceModal(member, game);
+
   const fallback: AttendancePrediction = {
     probability: member.attendance_rate,
     reasoning:
@@ -116,6 +136,8 @@ export async function recommendHelpers(
   helpers: RecommendHelpersInput[],
   needed: number,
 ): Promise<HelperRecommendation[]> {
+  if (useModal()) return recommendHelpersModal(helpers, needed);
+
   const fallback: HelperRecommendation[] = helpers
     .sort((a, b) => b.reliability_score - a.reliability_score)
     .slice(0, needed)
@@ -168,6 +190,8 @@ JSON配列で回答してください（他のテキストは不要）:
 export async function generateNegotiationMessage(
   context: NegotiationMessageContext,
 ): Promise<string> {
+  if (useModal()) return generateNegotiationMessageModal(context);
+
   const fallback = `${context.opponent_name} 御中\n\nいつもお世話になっております。${context.team_name}です。\n下記の日程で試合をお願いできませんでしょうか。\n\n候補日:\n${context.proposed_dates.map((d) => `・${d}`).join("\n")}${context.ground_name ? `\n\n会場: ${context.ground_name}` : ""}\n\nご検討のほどよろしくお願いいたします。`;
 
   const client = createAnthropicClient();
@@ -206,6 +230,8 @@ ${context.ground_name ? `会場: ${context.ground_name}` : "会場: 未定"}
 export async function generateWeeklyReport(
   games: WeeklyReportGameInput[],
 ): Promise<string> {
+  if (useModal()) return generateWeeklyReportModal(games);
+
   if (games.length === 0) {
     return "今週の試合予定はありません。";
   }

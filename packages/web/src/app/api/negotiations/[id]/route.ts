@@ -11,6 +11,29 @@ import {
 import type { NegotiationStatus } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
+/** GET /api/negotiations/:id — 交渉詳細取得 */
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("negotiations")
+    .select("*, opponent_teams(name, area, contact_name)")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return NextResponse.json(apiError("NOT_FOUND", "交渉が見つかりません"), {
+      status: 404,
+    });
+  }
+
+  return NextResponse.json(apiSuccess(data, []));
+}
+
 /** PATCH /api/negotiations/:id — 交渉状態遷移 */
 export async function PATCH(
   request: NextRequest,

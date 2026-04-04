@@ -132,6 +132,7 @@ export {
   matchPolicy,
   shouldAutoAccept,
   shouldAutoDecline,
+  cancelOtherNegotiations,
   negotiationPolicySchema,
   negotiationPolicyPatchSchema,
   DAY_OF_WEEK,
@@ -141,6 +142,7 @@ export {
 export type {
   NegotiationPolicy,
   NegotiationProposal,
+  NegotiationSummary,
   DayOfWeek,
   TimeSlot,
   CostSplit,
@@ -151,6 +153,13 @@ export { generateICalFeed, generateVEvent } from "./lib/ical";
 
 // PayPay
 export { generatePayPayLink } from "./lib/paypay";
+
+// Settlement
+export { calculateSettlement } from "./lib/settlement";
+export type {
+  SettlementCalculationInput,
+  SettlementCalculationResult,
+} from "./lib/settlement";
 
 // Validators
 export {
@@ -164,6 +173,8 @@ export {
   updateNegotiationSchema,
   createExpenseSchema,
   createTeamSchema,
+  createGroundSchema,
+  updateGroundWatchSchema,
   sendNotificationSchema,
   zodToValidationError,
 } from "./lib/validators";
@@ -178,6 +189,8 @@ export type {
   UpdateNegotiationInput,
   CreateExpenseInput,
   CreateTeamInput,
+  CreateGroundInput,
+  UpdateGroundWatchInput,
   SendNotificationInput,
 } from "./lib/validators";
 
@@ -197,3 +210,91 @@ export type {
   WeeklyReportGameInput,
   NegotiationMessageContext,
 } from "./lib/ai-service";
+
+// Modal AI Service
+export {
+  predictAttendanceModal,
+  recommendHelpersModal,
+  generateNegotiationMessageModal,
+  generateWeeklyReportModal,
+} from "./lib/modal-ai-service";
+
+// LINE Messaging
+export {
+  pushMessage,
+  createLineSender,
+  buildRsvpReminderMessage,
+  buildRsvpReminderFlex,
+  buildGameConfirmedMessage,
+  buildSettlementRequestMessage,
+} from "./lib/line-messaging";
+export type {
+  LineTextMessage,
+  LineFlexMessage,
+  LineMessage,
+  LinePushResult,
+  RsvpReminderContext,
+  GameConfirmedContext,
+  SettlementRequestContext,
+} from "./lib/line-messaging";
+
+// Email Service
+export {
+  sendEmail,
+  createEmailSender,
+  buildRsvpReminderEmail,
+  buildGameConfirmedEmail,
+  buildSettlementRequestEmail,
+} from "./lib/email-service";
+export type {
+  EmailSendResult,
+  EmailSendOptions,
+  EmailContent,
+  EmailRsvpReminderContext,
+  EmailGameConfirmedContext,
+  EmailSettlementRequestContext,
+} from "./lib/email-service";
+
+// Ground Scraper
+export {
+  scrapeGround,
+  getAdapter,
+  getSupportedMunicipalities,
+  generateMockSlots,
+  TIME_SLOTS,
+  SLOT_STATUSES,
+  scrapedSlotSchema,
+} from "./lib/ground-scraper";
+export type {
+  ScrapedSlot,
+  GroundScraperAdapter,
+  TimeSlot as ScraperTimeSlot,
+  SlotStatus as ScraperSlotStatus,
+} from "./lib/ground-scraper";
+
+// Ground Monitor
+export {
+  detectNewAvailability,
+  checkGrounds,
+} from "./lib/ground-monitor";
+export type {
+  NewAvailability,
+  GroundCheckResult,
+  CheckGroundsResult,
+} from "./lib/ground-monitor";
+
+// Notification Dispatcher
+export {
+  dispatchNotifications,
+  dispatchToMember,
+  resolveChannels,
+  getNotificationHistory,
+  dispatchNotificationSchema,
+  memberNotificationPreferenceSchema,
+} from "./lib/notification-dispatcher";
+export type {
+  DispatchNotificationInput,
+  MemberNotificationPreference,
+  DispatchResult,
+  RetryConfig,
+} from "./lib/notification-dispatcher";

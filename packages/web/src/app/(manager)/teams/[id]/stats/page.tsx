@@ -65,7 +65,7 @@ export default async function StatsPage({
       breadcrumbs={
         <BreadcrumbGroup
           items={[
-            { text: "ダッシュボード", href: "/" },
+            { text: "ダッシュボード", href: "/dashboard" },
             { text: team?.name ?? "チーム", href: `/teams/${id}` },
             { text: "成績", href: `/teams/${id}/stats` },
           ]}

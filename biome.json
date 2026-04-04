@@ -39,6 +39,7 @@
     "ignore": [
       "node_modules",
       ".next",
+      ".claude",
       "bun.lock",
       "*.config.ts",
       "*.config.mjs"
