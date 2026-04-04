@@ -31,16 +31,16 @@ const FEATURES = [
 
 const STEPS = [
   {
-    title: "1. LINEグループと連携",
-    desc: "チームのLINEグループを登録するだけ。メンバー一覧が自動で作成されます。",
+    title: "1. 代表が登録（5分）",
+    desc: "LINEグループを連携するだけ。メンバー一覧が自動で作成されます。メンバーへの説明は不要です。",
   },
   {
-    title: "2. 試合を立てる",
-    desc: "日付と場所を入れたら、出欠回収が自動スタート。リマインドも全自動。",
+    title: "2. メンバーは何もしなくていい",
+    desc: "出欠の連絡はいつも通りLINEに届きます。タップで回答。アプリのインストールもアカウント作成も不要。",
   },
   {
-    title: "3. 試合成立",
-    desc: "人数OK・グラウンドOK・相手OK。確定ボタンひとつで全員に通知。",
+    title: "3. あとは全部自動",
+    desc: "リマインド送信・人数集計・助っ人連絡・精算計算まで。代表が確定ボタンを押すだけ。",
   },
 ] as const;
 
@@ -55,10 +55,10 @@ export default function LandingPage() {
         <Box padding={{ top: "xxxl", bottom: "xxxl" }}>
           <SpaceBetween size="l">
             <Header variant="h1">
-              金曜の夜。LINEの出欠、まだ5人しか返事がない。
+              チームの連絡手段、そのままでいい。
             </Header>
             <Box variant="p" fontSize="heading-m" color="text-body-secondary">
-              LINEもメールもそのまま。チームの連絡手段を変えずに、出欠・グラウンド・助っ人・精算の面倒を全て自動化。
+              メンバーはLINEで返事するだけ。新しいアプリを覚える必要なし。代表だけが管理画面を使えば、出欠・グラウンド・助っ人・精算が全て自動で回ります。
             </Box>
             <Box>
               <Button variant="primary" onClick={() => router.push("/login")}>
@@ -70,12 +70,45 @@ export default function LandingPage() {
       }
     >
       <SpaceBetween size="xxl">
+        {/* 選ばれる理由 */}
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="LINEグループ・メール・スプレッドシートで運営している全てのチームへ"
+            >
+              mound が選ばれる理由
+            </Header>
+          }
+        >
+          <ColumnLayout columns={3}>
+            <SpaceBetween size="xs">
+              <Box variant="h3">メンバーの学習コスト：ゼロ</Box>
+              <Box variant="p" color="text-body-secondary">
+                メンバーはLINEで届いた通知をタップするだけ。新しいアプリのインストールもアカウント登録も不要。導入したその日から使えます。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xs">
+              <Box variant="h3">代表の作業：10分の1</Box>
+              <Box variant="p" color="text-body-secondary">
+                出欠の催促、人数の集計、助っ人への連絡、精算の計算。今まで代表が手作業でやっていたこと全てをシステムが代行します。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xs">
+              <Box variant="h3">相手チームからの信頼UP</Box>
+              <Box variant="p" color="text-body-secondary">
+                AIが連絡文を下書きし、返信を自動追跡。素早く丁寧な対応で「また試合したい」と思われるチームになれます。
+              </Box>
+            </SpaceBetween>
+          </ColumnLayout>
+        </Container>
+
         {/* 主な機能 */}
         <Container
           header={
             <Header
               variant="h2"
-              description="試合を「成立」させるために必要な機能をワンストップで"
+              description="代表の負担を減らし、チーム全員がストレスなく使える"
             >
               主な機能
             </Header>
@@ -100,9 +133,9 @@ export default function LandingPage() {
           header={
             <Header
               variant="h2"
-              description="面倒な初期設定は不要。すぐに使い始められます"
+              description="導入5分。メンバーの学習コストゼロ"
             >
-              かんたん3ステップ
+              導入の流れ
             </Header>
           }
         >
