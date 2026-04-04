@@ -36,21 +36,18 @@ export default function PublicLayout({
             <Link href="/#features">機能</Link>
             <Link href="/#pricing">料金プラン</Link>
             <Link href="/#howto">使い方</Link>
+            <Link href="/docs">ドキュメント</Link>
           </div>
           <div className={styles.footerSection}>
             <h4>法的情報</h4>
             <Link href="/terms">利用規約</Link>
             <Link href="/privacy">プライバシーポリシー</Link>
+            <Link href="/legal">特定商取引法に基づく表記</Link>
           </div>
           <div className={styles.footerSection}>
             <h4>サポート</h4>
-            <a
-              href="mailto:support@mound.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              お問い合わせ
-            </a>
+            <Link href="/contact">お問い合わせ</Link>
+            <Link href="/help">ヘルプセンター</Link>
           </div>
         </div>
         <div className={styles.footerBottom}>
