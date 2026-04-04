@@ -1,8 +1,8 @@
 /* ===== Page wrapper ===== */
 .pageWrapper {
   min-height: 100vh;
-  background: #0a0e27;
-  color: #fff;
+  background: #fff;
+  color: #1a1a1a;
 }
 
 /* ===== Header ===== */
@@ -10,11 +10,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
-  background: rgba(10, 14, 39, 0.7);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 32px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -23,43 +21,36 @@
 .logo {
   font-size: 22px;
   font-weight: 800;
-  color: #fff;
+  color: #2d6a30;
   text-decoration: none;
-  letter-spacing: -0.02em;
-  text-shadow: 0 0 24px rgba(79, 143, 255, 0.4);
+  letter-spacing: -0.03em;
 }
 
 .loginButton {
-  background: rgba(255, 255, 255, 0.08);
+  background: #2d6a30;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 8px 24px;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.2s;
 }
 
 .loginButton:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: #245523;
 }
 
 /* ===== Footer ===== */
 .footer {
-  background: rgba(10, 14, 39, 0.9);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
-  padding: 56px 32px 28px;
+  background: #1a1a1a;
+  color: #999;
+  padding: 48px 32px 24px;
 }
 
 .footerInner {
-  max-width: 1100px;
+  max-width: 960px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -68,47 +59,48 @@
 
 .footerSection h4 {
   color: #fff;
-  margin: 0 0 14px;
-  font-size: 14px;
+  margin: 0 0 12px;
+  font-size: 13px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .footerSection p {
   font-size: 13px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.4);
+  color: #777;
   margin: 0;
 }
 
 .footerSection a {
-  color: rgba(255, 255, 255, 0.45);
+  color: #999;
   text-decoration: none;
   display: block;
   font-size: 13px;
   line-height: 2;
-  transition: color 0.2s ease;
 }
 
 .footerSection a:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: #fff;
 }
 
 .footerBottom {
-  max-width: 1100px;
-  margin: 36px auto 0;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-width: 960px;
+  margin: 32px auto 0;
+  padding-top: 16px;
+  border-top: 1px solid #333;
   text-align: center;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.25);
+  color: #666;
 }
 
 @media (max-width: 768px) {
   .header {
-    padding: 14px 16px;
+    padding: 12px 16px;
   }
 
   .footer {
-    padding: 40px 16px 24px;
+    padding: 32px 16px 20px;
   }
 }
