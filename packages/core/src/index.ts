@@ -179,6 +179,23 @@ export type {
   SettlementCalculationResult,
 } from "./lib/settlement";
 
+// RSVP Follow-up
+export { planFollowUp } from "./lib/rsvp-followup";
+export type {
+  FollowUpTarget,
+  FollowUpPlan,
+} from "./lib/rsvp-followup";
+
+// Notification Templates
+export {
+  buildRsvpRequestMessage as buildRsvpRequestTemplate,
+  buildRsvpReminderMessage as buildRsvpReminderTemplate,
+  buildGameConfirmedMessage as buildGameConfirmedTemplate,
+  buildGameCancelledMessage as buildGameCancelledTemplate,
+  buildSettlementMessage as buildSettlementTemplate,
+  buildDeadlineWarningMessage as buildDeadlineWarningTemplate,
+} from "./lib/notification-templates";
+
 // Game Analytics
 export {
   calculateWinLossRecord,
