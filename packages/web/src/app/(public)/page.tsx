@@ -12,8 +12,8 @@ import { useRouter } from "next/navigation";
 
 const FEATURES = [
   {
-    title: "未読スルーされない出欠回収",
-    desc: "LINEで個別にリマインド自動送信。金曜夜に「あと3人！」がわかる。日曜朝の「やっぱ無理」も即反映。",
+    title: "出欠回収、催促いらず",
+    desc: "メンバーはLINEでタップするだけ。リマインドはシステムが自動送信。今何人集まっているかリアルタイムに把握できます。",
   },
   {
     title: "グラウンド確保、もう抽選日を忘れない",
@@ -148,7 +148,7 @@ export default function LandingPage() {
           header={
             <Header
               variant="h2"
-              description="代表の負担を減らし、チーム全員がストレスなく使える"
+              description="上の悩み、全部 mound が解決します"
             >
               主な機能
             </Header>
@@ -173,7 +173,7 @@ export default function LandingPage() {
           header={
             <Header
               variant="h2"
-              description="導入5分。メンバーの学習コストゼロ"
+              description="導入5分。メンバーの学習コストゼロ。立ち上げたばかりのチームでも、すぐに運営を始められる型を提供します"
             >
               導入の流れ
             </Header>
