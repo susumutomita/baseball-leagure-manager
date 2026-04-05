@@ -157,34 +157,87 @@ describe("calculateSettlement", () => {
     });
   });
 
-  // --- 追加テスト: 複数の経費カテゴリ ---
+  describe("参加人数が小数のとき", () => {
+    it("エラーをスローする", () => {
+      expect(() =>
+        calculateSettlement(createInput({ memberCount: 2.5 })),
+      ).toThrow("参加人数は整数である必要があります");
+    });
+  });
+
+  describe("経費に負の金額が含まれるとき", () => {
+    it("エラーをスローする", () => {
+      expect(() =>
+        calculateSettlement(
+          createInput({
+            expenses: [createExpense({ amount: -500 })],
+          }),
+        ),
+      ).toThrow("経費に負の金額が含まれています");
+    });
+  });
+
+  describe("合計金額が上限を超えるとき", () => {
+    it("エラーをスローする", () => {
+      expect(() =>
+        calculateSettlement(
+          createInput({
+            expenses: [
+              createExpense({ amount: 6_000_000 }),
+              createExpense({ amount: 5_000_000 }),
+            ],
+          }),
+        ),
+      ).toThrow("合計金額が上限を超えています");
+    });
+  });
+
+  describe("金額が0の経費のみのとき", () => {
+    it("一人あたり0円になる", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 0 })],
+          memberCount: 5,
+        }),
+      );
+      expect(result.totalCost).toBe(0);
+      expect(result.perMember).toBe(0);
+    });
+  });
+
+  describe("大人数での精算のとき", () => {
+    it("正しく計算される", () => {
+      const result = calculateSettlement(
+        createInput({
+          expenses: [createExpense({ amount: 10000 })],
+          memberCount: 30,
+        }),
+      );
+      // 10000 / 30 = 333.33 → ceil → 334
+      expect(result.perMember).toBe(334);
+    });
+  });
 
   describe("多くの経費カテゴリが混在するとき", () => {
     it("折半と非折半が正しく集計される", () => {
       const result = calculateSettlement(
         createInput({
           expenses: [
-            createExpense({ amount: 10000, split_with_opponent: true }), // グラウンド代
-            createExpense({ amount: 5000, split_with_opponent: true }), // 審判代
-            createExpense({ amount: 3000, split_with_opponent: false }), // ドリンク代
-            createExpense({ amount: 2000, split_with_opponent: false }), // ボール代
+            createExpense({ amount: 10000, split_with_opponent: true }),
+            createExpense({ amount: 5000, split_with_opponent: true }),
+            createExpense({ amount: 3000, split_with_opponent: false }),
+            createExpense({ amount: 2000, split_with_opponent: false }),
           ],
           memberCount: 15,
         }),
       );
 
-      // totalCost: 10000 + 5000 + 3000 + 2000 = 20000
       expect(result.totalCost).toBe(20000);
-      // opponentShare: floor(10000/2) + floor(5000/2) = 5000 + 2500 = 7500
       expect(result.opponentShare).toBe(7500);
-      // teamCost: 20000 - 7500 = 12500
       expect(result.teamCost).toBe(12500);
-      // perMember: ceil(12500/15) = ceil(833.33) = 834
       expect(result.perMember).toBe(834);
     });
   });
-
-  // --- 追加テスト: 端数の丸め ---
 
   describe("perMember が割り切れるとき", () => {
     it("切り上げの影響を受けない", () => {
@@ -194,7 +247,6 @@ describe("calculateSettlement", () => {
           memberCount: 10,
         }),
       );
-
       expect(result.perMember).toBe(1000);
     });
   });
@@ -207,8 +259,6 @@ describe("calculateSettlement", () => {
           memberCount: 10,
         }),
       );
-
-      // 10001 / 10 = 1000.1 → ceil → 1001
       expect(result.perMember).toBe(1001);
     });
   });
@@ -224,27 +274,9 @@ describe("calculateSettlement", () => {
           memberCount: 2,
         }),
       );
-
-      // opponentShare: floor(1001/2) + floor(2001/2) = 500 + 1000 = 1500
       expect(result.opponentShare).toBe(1500);
-      // totalCost: 3002, teamCost: 3002 - 1500 = 1502
       expect(result.teamCost).toBe(1502);
-      // perMember: ceil(1502/2) = 751
       expect(result.perMember).toBe(751);
-    });
-  });
-
-  describe("大きな金額の経費のとき", () => {
-    it("正しく計算される", () => {
-      const result = calculateSettlement(
-        createInput({
-          expenses: [createExpense({ amount: 1000000 })],
-          memberCount: 20,
-        }),
-      );
-
-      expect(result.totalCost).toBe(1000000);
-      expect(result.perMember).toBe(50000);
     });
   });
 
@@ -256,8 +288,6 @@ describe("calculateSettlement", () => {
           memberCount: 3,
         }),
       );
-
-      // 1 / 3 = 0.33 → ceil → 1
       expect(result.perMember).toBe(1);
     });
   });
@@ -265,7 +295,6 @@ describe("calculateSettlement", () => {
   describe("memberCount の結果を返すとき", () => {
     it("入力した参加人数がそのまま返される", () => {
       const result = calculateSettlement(createInput({ memberCount: 15 }));
-
       expect(result.memberCount).toBe(15);
     });
   });

@@ -54,9 +54,7 @@ export default function LandingPage() {
       header={
         <Box padding={{ top: "xxxl", bottom: "xxxl" }}>
           <SpaceBetween size="l">
-            <Header variant="h1">
-              全員が野球に集中できる環境をつくる。
-            </Header>
+            <Header variant="h1">全員が野球に集中できる環境をつくる。</Header>
             <Box variant="p" fontSize="heading-m" color="text-body-secondary">
               出欠の催促、助っ人探し、精算の計算——チーム運営の負担は代表に偏りがちです。mound
               はその作業を自動化し、代表もメンバーも野球だけに集中できる環境をつくります。

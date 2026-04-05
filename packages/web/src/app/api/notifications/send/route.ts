@@ -107,10 +107,10 @@ export async function POST(request: NextRequest) {
 
   const results = await sendBulkNotifications(supabase, entries, dispatchers);
 
-  const sent = results.filter((r) => r.delivered).length;
-  const queued = results.filter((r) => !r.delivered).length;
+  const sent = results.succeeded.length;
+  const failed = results.failed.length;
 
-  return NextResponse.json(apiSuccess({ sent, queued, total: results.length }));
+  return NextResponse.json(apiSuccess({ sent, failed, total: results.total }));
 }
 
 // --- ヘルパー関数 ---

@@ -131,6 +131,77 @@ describe("createTeamSchema", () => {
   });
 });
 
+describe("createGameSchema — クロスフィールドバリデーション", () => {
+  it("start_timeがend_timeより後のとき拒否する", () => {
+    const result = createGameSchema.safeParse({
+      team_id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "テスト",
+      start_time: "14:00",
+      end_time: "09:00",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("start_timeがend_timeより前のとき受け入れる", () => {
+    const result = createGameSchema.safeParse({
+      team_id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "テスト",
+      start_time: "09:00",
+      end_time: "14:00",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("start_timeとend_timeが同じとき拒否する", () => {
+    const result = createGameSchema.safeParse({
+      team_id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "テスト",
+      start_time: "09:00",
+      end_time: "09:00",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rsvp_deadlineがgame_dateより後のとき拒否する", () => {
+    const result = createGameSchema.safeParse({
+      team_id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "テスト",
+      game_date: "2026-05-01",
+      rsvp_deadline: "2026-05-02T00:00:00Z",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rsvp_deadlineがgame_dateより前のとき受け入れる", () => {
+    const result = createGameSchema.safeParse({
+      team_id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "テスト",
+      game_date: "2026-05-01",
+      rsvp_deadline: "2026-04-28T00:00:00Z",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("片方のみ指定されている場合はクロスバリデーションをスキップする", () => {
+    const result = createGameSchema.safeParse({
+      team_id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "テスト",
+      start_time: "09:00",
+      end_time: null,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("時刻がHH:MM形式でないとき拒否する", () => {
+    const result = createGameSchema.safeParse({
+      team_id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "テスト",
+      start_time: "9:00",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
 describe("zodToValidationError", () => {
   it("ZodError\u3092ValidationErr\u306b\u5909\u63db\u3059\u308b", () => {
     const result = createGameSchema.safeParse({ team_id: "bad", title: "" });

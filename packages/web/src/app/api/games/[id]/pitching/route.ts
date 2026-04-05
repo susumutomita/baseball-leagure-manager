@@ -2,15 +2,11 @@ import { requireAuth, requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, apiSuccess, writeAuditLog } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-
-const VALID_ROLES = ["STARTER", "RELIEVER", "CLOSER"] as const;
+import { z } from "zod/v4";
 
 const pitchingStatSchema = z.object({
   member_id: z.string().uuid("member_id は有効な UUID である必要があります"),
-  role: z.enum(VALID_ROLES, {
-    error: "role は STARTER, RELIEVER, CLOSER のいずれかです",
-  }),
+  role: z.enum(["STARTER", "RELIEVER", "CLOSER"]),
   innings_pitched: z
     .number()
     .min(0, "innings_pitched は 0 以上です")
