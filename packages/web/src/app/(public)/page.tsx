@@ -12,35 +12,20 @@ import { useRouter } from "next/navigation";
 
 const FEATURES = [
   {
-    title: "出欠回収、催促いらず",
-    desc: "メンバーはLINEでタップするだけ。リマインドはシステムが自動送信。今何人集まっているかリアルタイムに把握できます。",
+    title: "出欠はLINEでタップだけ",
+    desc: "催促も集計も自動。メンバーは何もインストールしなくていい。",
   },
   {
-    title: "グラウンド確保、もう抽選日を忘れない",
-    desc: "横浜市・藤沢市など6自治体の空き状況を毎日チェック。空きが出たらすぐ通知。",
+    title: "助っ人・対戦相手もワンタッチ",
+    desc: "過去の実績から最適な候補をAIが提案。連絡文も自動で下書き。",
   },
   {
-    title: "助っ人・対戦の連絡、覚えなくていい",
-    desc: "AIが連絡文を下書き、あなたが確認して送信。相手はLINEやメールで受け取るから新しいツール不要。返信追跡・履歴も全てシステムが管理。素早い応答で相手からの信頼も上がります。",
+    title: "精算はPayPayで一発",
+    desc: "参加費を自動計算してリンクを送信。「誰が払った」も一目瞭然。",
   },
   {
-    title: "集金のストレスをゼロに",
-    desc: "参加費を自動計算してPayPayリンクを送信。「誰が払った？」を管理画面で一目瞭然。",
-  },
-] as const;
-
-const STEPS = [
-  {
-    title: "1. 代表が登録（5分）",
-    desc: "LINEグループを連携するだけ。メンバー一覧が自動で作成されます。メンバーへの説明は不要です。",
-  },
-  {
-    title: "2. メンバーは何もしなくていい",
-    desc: "出欠の連絡はいつも通りLINEに届きます。タップで回答。アプリのインストールもアカウント作成も不要。",
-  },
-  {
-    title: "3. あとは全部自動",
-    desc: "リマインド送信・人数集計・助っ人連絡・精算計算まで。代表が確定ボタンを押すだけ。",
+    title: "グラウンドの空きを自動監視",
+    desc: "空きが出たら即通知。もう抽選日を忘れない。",
   },
 ] as const;
 
@@ -54,172 +39,83 @@ export default function LandingPage() {
       header={
         <Box padding={{ top: "xxxl", bottom: "xxxl" }}>
           <SpaceBetween size="l">
-            <Header variant="h1">全員が野球に集中できる環境をつくる。</Header>
+            <Header variant="h1">
+              試合の段取り、もう代表が一人で抱えなくていい。
+            </Header>
             <Box variant="p" fontSize="heading-m" color="text-body-secondary">
-              出欠の催促、助っ人探し、精算の計算——チーム運営の負担は代表に偏りがちです。mound
-              はその作業を自動化し、代表もメンバーも野球だけに集中できる環境をつくります。
+              出欠・助っ人・精算・グラウンド確保——草野球チーム運営を丸ごと自動化。メンバーはLINEで回答するだけ。
             </Box>
-            <Box>
+            <SpaceBetween size="s" direction="horizontal">
               <Button variant="primary" onClick={() => router.push("/login")}>
                 無料ではじめる
               </Button>
-            </Box>
+              <Button variant="link" onClick={() => router.push("/login")}>
+                ログイン
+              </Button>
+            </SpaceBetween>
           </SpaceBetween>
         </Box>
       }
     >
       <SpaceBetween size="xxl">
-        {/* こんな悩み、ありませんか？ */}
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="ボランティアベースの運営。代表に負担が偏り、疲れてしまうことも。"
-            >
-              チーム運営、こんなことに時間を取られていませんか？
-            </Header>
-          }
-        >
-          <ColumnLayout columns={1}>
-            <Box variant="p">
-              グラウンドは確保できた。でもメンバーの出欠がわからない。催促しても返事が返ってこない。
-            </Box>
-            <Box variant="p">
-              相手チームからお誘いが来た。でも人数が揃うかわからず、すぐに返事ができない。返事が遅れて相手に迷惑をかけてしまう。
-            </Box>
-            <Box variant="p">
-              試合が終わった。グラウンド代・審判代・ボール代を誰がいくら払うか、会計係を置くか代表が自ら手計算で管理している。ボールなどの消耗品も在庫がわからず、いつ補充すればいいか・どこが最安か誰も把握していない。
-            </Box>
-            <Box variant="p">
-              人数が足りないとき、助っ人の候補を毎回ゼロから考える。過去に来てくれた人を思い出すのも一苦労。一人ずつLINEやメールで連絡するのも手間。
-            </Box>
-            <Box variant="p">
-              グラウンドの抽選日・予約状況を把握するのが大変。空きが出ても気づかない。
-            </Box>
-            <Box variant="p">
-              新しいツールを導入したいけど、チーム全員に浸透させるのが大変。趣味の草野球のために時間をかけて覚えたくない。
-            </Box>
-          </ColumnLayout>
-        </Container>
-
-        {/* 選ばれる理由 */}
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="LINEグループ・メール・スプレッドシートで運営している全てのチームへ"
-            >
-              mound が選ばれる理由
-            </Header>
-          }
-        >
-          <ColumnLayout columns={2}>
-            <SpaceBetween size="xs">
-              <Box variant="h3">メンバーの学習コスト：ゼロ</Box>
-              <Box variant="p" color="text-body-secondary">
-                メンバーはLINEで届いた通知をタップするだけ。新しいアプリのインストールもアカウント登録も不要。導入したその日から使えます。
-              </Box>
-            </SpaceBetween>
-            <SpaceBetween size="xs">
-              <Box variant="h3">チーム運営を丸ごと自動化</Box>
-              <Box variant="p" color="text-body-secondary">
-                出欠の催促、人数の集計、助っ人への連絡、精算の計算、対戦チームとの交渉まで。代表が手作業でやっていたことをシステムが代行します。
-              </Box>
-            </SpaceBetween>
-            <SpaceBetween size="xs">
-              <Box variant="h3">全ての記録がチームの資産になる</Box>
-              <Box variant="p" color="text-body-secondary">
-                連絡履歴・出欠履歴・精算記録が全てシステムに残ります。「去年の助っ人誰だっけ？」「先月のグラウンド代いくらだった？」がすぐわかります。
-              </Box>
-            </SpaceBetween>
-            <SpaceBetween size="xs">
-              <Box variant="h3">相手への返信が早くなる</Box>
-              <Box variant="p" color="text-body-secondary">
-                AIが連絡文を下書きし、返信状況を自動追跡。対戦の誘いや助っ人の依頼に素早く返事ができるようになります。
-              </Box>
-            </SpaceBetween>
-          </ColumnLayout>
-        </Container>
-
         {/* 主な機能 */}
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="上の悩み、全部 mound が解決します"
-            >
-              主な機能
-            </Header>
-          }
-        >
+        <Container header={<Header variant="h2">できること</Header>}>
           <ColumnLayout columns={2}>
             {FEATURES.map((f) => (
-              <Container key={f.title}>
-                <SpaceBetween size="xs">
-                  <Box variant="h3">{f.title}</Box>
-                  <Box variant="p" color="text-body-secondary">
-                    {f.desc}
-                  </Box>
-                </SpaceBetween>
-              </Container>
-            ))}
-          </ColumnLayout>
-        </Container>
-
-        {/* かんたん3ステップ */}
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="導入5分。メンバーの学習コストゼロ。立ち上げたばかりのチームでも、すぐに運営を始められる型を提供します"
-            >
-              導入の流れ
-            </Header>
-          }
-        >
-          <ColumnLayout columns={3}>
-            {STEPS.map((s) => (
-              <SpaceBetween key={s.title} size="xs">
-                <Box variant="h3">{s.title}</Box>
+              <SpaceBetween key={f.title} size="xxs">
+                <Box variant="h3">{f.title}</Box>
                 <Box variant="p" color="text-body-secondary">
-                  {s.desc}
+                  {f.desc}
                 </Box>
               </SpaceBetween>
             ))}
           </ColumnLayout>
         </Container>
 
-        {/* 料金プラン */}
-        <Container
-          header={
-            <Header variant="h2" description="まずは無料プランでお試しください">
-              料金プラン
-            </Header>
-          }
-        >
+        {/* 導入ステップ */}
+        <Container header={<Header variant="h2">始め方</Header>}>
+          <ColumnLayout columns={3}>
+            <SpaceBetween size="xxs">
+              <Box variant="h3">1. LINE で登録（5分）</Box>
+              <Box variant="p" color="text-body-secondary">
+                LINEアカウントでログインするだけ。メンバーの説明は不要。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xxs">
+              <Box variant="h3">2. 試合を作成</Box>
+              <Box variant="p" color="text-body-secondary">
+                日程とグラウンドを入れたら出欠の依頼が自動で飛ぶ。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xxs">
+              <Box variant="h3">3. 確定ボタンを押す</Box>
+              <Box variant="p" color="text-body-secondary">
+                人数が揃ったら確定。精算まで全部システムがやる。
+              </Box>
+            </SpaceBetween>
+          </ColumnLayout>
+        </Container>
+
+        {/* 料金 */}
+        <Container header={<Header variant="h2">料金</Header>}>
           <ColumnLayout columns={3}>
             <Container
-              header={<Header variant="h3">LITE</Header>}
+              header={<Header variant="h3">無料</Header>}
               footer={
                 <Button onClick={() => router.push("/login")}>
                   無料ではじめる
                 </Button>
               }
             >
-              <SpaceBetween size="s">
-                <Box variant="h1" fontSize="display-l">
-                  無料
-                </Box>
-                <Box variant="p" color="text-body-secondary">
-                  出欠管理（1チーム） / 試合作成（月3件まで） / LINE通知
-                </Box>
-              </SpaceBetween>
+              <Box variant="p" color="text-body-secondary">
+                1チーム・月3試合まで
+              </Box>
             </Container>
 
             <Container
               header={
                 <Header variant="h3" info="おすすめ">
-                  STANDARD
+                  ¥500/月
                 </Header>
               }
               footer={
@@ -228,52 +124,22 @@ export default function LandingPage() {
                 </Button>
               }
             >
-              <SpaceBetween size="s">
-                <SpaceBetween
-                  size="xxs"
-                  direction="horizontal"
-                  alignItems="end"
-                >
-                  <Box variant="h1" fontSize="display-l">
-                    &yen;500
-                  </Box>
-                  <Box variant="p" color="text-body-secondary">
-                    / 月（税込）
-                  </Box>
-                </SpaceBetween>
-                <Box variant="p" color="text-body-secondary">
-                  出欠管理（無制限） / 試合作成（無制限） / グラウンド空き監視 /
-                  精算・PayPay連携 / 対戦相手マッチング
-                </Box>
-              </SpaceBetween>
+              <Box variant="p" color="text-body-secondary">
+                試合無制限・グラウンド監視・精算・対戦マッチング
+              </Box>
             </Container>
 
             <Container
-              header={<Header variant="h3">PRO</Header>}
+              header={<Header variant="h3">¥980/月</Header>}
               footer={
                 <Button onClick={() => router.push("/login")}>
                   PROで始める
                 </Button>
               }
             >
-              <SpaceBetween size="s">
-                <SpaceBetween
-                  size="xxs"
-                  direction="horizontal"
-                  alignItems="end"
-                >
-                  <Box variant="h1" fontSize="display-l">
-                    &yen;980
-                  </Box>
-                  <Box variant="p" color="text-body-secondary">
-                    / 月（税込）
-                  </Box>
-                </SpaceBetween>
-                <Box variant="p" color="text-body-secondary">
-                  STANDARDの全機能 / AI運営アシスタント / AI連絡文の自動生成 /
-                  優先サポート
-                </Box>
-              </SpaceBetween>
+              <Box variant="p" color="text-body-secondary">
+                全機能＋AI運営アシスタント・優先サポート
+              </Box>
             </Container>
           </ColumnLayout>
         </Container>
@@ -292,7 +158,7 @@ export default function LandingPage() {
               </SpaceBetween>
             </Box>
             <Box color="text-body-secondary" fontSize="body-s">
-              &copy; 2026 mound. All rights reserved.
+              &copy; 2026 mound
             </Box>
           </SpaceBetween>
         </Box>
