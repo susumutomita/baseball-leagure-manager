@@ -1,9 +1,10 @@
-import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { SESSION_COOKIE_NAME } from "./lib/line-auth";
 
 // 認証不要のパス
 const PUBLIC_PATHS = [
   "/login",
+  "/api/auth",
   "/auth/callback",
   "/api/liff",
   "/liff",
@@ -23,43 +24,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // API ルートは各ルート内で認証チェックするため、ミドルウェアではセッション更新のみ
-  const response = NextResponse.next();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value, options } of cookiesToSet) {
-            response.cookies.set(name, value, options);
-          }
-        },
-      },
-    },
-  );
-
-  // セッション更新
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // API ルートはスキップ（各ルート内で認証チェック）
+  if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
 
   // 公開ランディングページ(/)は認証不要
   if (pathname === "/") {
-    return response;
+    return NextResponse.next();
   }
 
-  // 管理画面へのアクセスで未ログインの場合、ログインページへリダイレクト
-  if (!user && !pathname.startsWith("/api")) {
+  // セッションcookieの存在チェック
+  const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!sessionToken) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

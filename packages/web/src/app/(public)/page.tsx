@@ -1,44 +1,29 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import styles from "./page.module.css";
+"use client";
 
-export const metadata: Metadata = {
-  title: "mound - 金曜の夜、LINEの出欠まだ5人しか返事がない",
-  description:
-    "出欠回収・グラウンド確保・対戦相手探し・集金まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
-  openGraph: {
-    title: "mound - 金曜の夜、LINEの出欠まだ5人しか返事がない",
-    description:
-      "出欠回収・グラウンド確保・対戦相手探し・集金まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
-    type: "website",
-    locale: "ja_JP",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "mound - 金曜の夜、LINEの出欠まだ5人しか返事がない",
-    description:
-      "出欠回収・グラウンド確保・対戦相手探し・集金まで。草野球チームの試合成立をAIがサポートする運営エンジン。",
-  },
-};
+import Box from "@cloudscape-design/components/box";
+import Button from "@cloudscape-design/components/button";
+import ColumnLayout from "@cloudscape-design/components/column-layout";
+import Container from "@cloudscape-design/components/container";
+import ContentLayout from "@cloudscape-design/components/content-layout";
+import Header from "@cloudscape-design/components/header";
+import Link from "@cloudscape-design/components/link";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import { useRouter } from "next/navigation";
 
 const FEATURES = [
   {
-    abbr: "出欠",
-    title: "未読スルーされない出欠回収",
-    desc: "LINEで個別にリマインド自動送信。金曜夜に「あと3人！」がわかる。日曜朝の「やっぱ無理」も即反映。",
+    title: "出欠回収、催促いらず",
+    desc: "メンバーはLINEでタップするだけ。リマインドはシステムが自動送信。今何人集まっているかリアルタイムに把握できます。",
   },
   {
-    abbr: "球場",
     title: "グラウンド確保、もう抽選日を忘れない",
     desc: "横浜市・藤沢市など6自治体の空き状況を毎日チェック。空きが出たらすぐ通知。",
   },
   {
-    abbr: "対戦",
-    title: "対戦相手、探さなくていい",
-    desc: "日程と地域が合うチームを自動提案。メッセージ作成もAIがサポート。",
+    title: "助っ人・対戦の連絡、覚えなくていい",
+    desc: "AIが連絡文を下書き、あなたが確認して送信。相手はLINEやメールで受け取るから新しいツール不要。返信追跡・履歴も全てシステムが管理。素早い応答で相手からの信頼も上がります。",
   },
   {
-    abbr: "精算",
     title: "集金のストレスをゼロに",
     desc: "参加費を自動計算してPayPayリンクを送信。「誰が払った？」を管理画面で一目瞭然。",
   },
@@ -46,122 +31,272 @@ const FEATURES = [
 
 const STEPS = [
   {
-    number: 1,
-    title: "LINEグループと連携",
-    desc: "チームのLINEグループを登録するだけ。メンバー一覧が自動で作成されます。",
+    title: "1. 代表が登録（5分）",
+    desc: "LINEグループを連携するだけ。メンバー一覧が自動で作成されます。メンバーへの説明は不要です。",
   },
   {
-    number: 2,
-    title: "試合を立てる",
-    desc: "日付と場所を入れたら、出欠回収が自動スタート。リマインドも全自動。",
+    title: "2. メンバーは何もしなくていい",
+    desc: "出欠の連絡はいつも通りLINEに届きます。タップで回答。アプリのインストールもアカウント作成も不要。",
   },
   {
-    number: 3,
-    title: "試合成立",
-    desc: "人数OK・グラウンドOK・相手OK。確定ボタンひとつで全員に通知。",
+    title: "3. あとは全部自動",
+    desc: "リマインド送信・人数集計・助っ人連絡・精算計算まで。代表が確定ボタンを押すだけ。",
   },
 ] as const;
 
 export default function LandingPage() {
+  const router = useRouter();
+
   return (
-    <>
-      {/* Hero */}
-      <section className={styles.hero}>
-        <div className={styles.heroInner}>
-          <h1 className={styles.heroTitle}>
-            金曜の夜。LINEの出欠、
-            <br />
-            まだ5人しか返事がない。
-          </h1>
-          <p className={styles.heroSub}>
-            「9人集まるのか」「グラウンドどうする」「相手チームは」——
-            <br />
-            全部、mound が解決します。
-          </p>
-          <Link href="/login" className={styles.ctaButton}>
-            無料ではじめる
-          </Link>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className={styles.section}>
-        <h2 className={styles.sectionTitle}>主な機能</h2>
-        <p className={styles.sectionSub}>
-          試合を「成立」させるために必要な機能をワンストップで
-        </p>
-        <div className={styles.featuresGrid}>
-          {FEATURES.map((f) => (
-            <div key={f.title} className={styles.featureCard}>
-              <div className={styles.featureIcon}>{f.abbr}</div>
-              <h3 className={styles.featureTitle}>{f.title}</h3>
-              <p className={styles.featureDesc}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="howto" className={styles.section}>
-        <h2 className={styles.sectionTitle}>かんたん3ステップ</h2>
-        <p className={styles.sectionSub}>
-          面倒な初期設定は不要。すぐに使い始められます
-        </p>
-        <div className={styles.stepsRow}>
-          {STEPS.map((s) => (
-            <div key={s.number} className={styles.step}>
-              <div className={styles.stepNumber}>{s.number}</div>
-              <h3 className={styles.stepTitle}>{s.title}</h3>
-              <p className={styles.stepDesc}>{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className={styles.pricingSection}>
-        <div className={styles.pricingInner}>
-          <h2 className={styles.sectionTitle}>料金プラン</h2>
-          <p className={styles.sectionSub}>まずは無料プランでお試しください</p>
-          <div className={styles.pricingGrid}>
-            {/* LITE */}
-            <div className={styles.pricingCard}>
-              <h3 className={styles.planName}>LITE</h3>
-              <div className={styles.planPrice}>無料</div>
-              <div className={styles.planPriceSub}>&nbsp;</div>
-              <ul className={styles.planFeatures}>
-                <li>出欠管理（1チーム）</li>
-                <li>試合作成（月3件まで）</li>
-                <li>LINE通知</li>
-                <li>基本統計</li>
-              </ul>
-              <Link href="/login" className={styles.ctaButtonLite}>
+    <ContentLayout
+      defaultPadding
+      headerBackgroundStyle="default"
+      header={
+        <Box padding={{ top: "xxxl", bottom: "xxxl" }}>
+          <SpaceBetween size="l">
+            <Header variant="h1">全員が野球に集中できる環境をつくる。</Header>
+            <Box variant="p" fontSize="heading-m" color="text-body-secondary">
+              出欠の催促、助っ人探し、精算の計算——チーム運営の負担は代表に偏りがちです。mound
+              はその作業を自動化し、代表もメンバーも野球だけに集中できる環境をつくります。
+            </Box>
+            <Box>
+              <Button variant="primary" onClick={() => router.push("/login")}>
                 無料ではじめる
-              </Link>
-            </div>
+              </Button>
+            </Box>
+          </SpaceBetween>
+        </Box>
+      }
+    >
+      <SpaceBetween size="xxl">
+        {/* こんな悩み、ありませんか？ */}
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="ボランティアベースの運営。代表に負担が偏り、疲れてしまうことも。"
+            >
+              チーム運営、こんなことに時間を取られていませんか？
+            </Header>
+          }
+        >
+          <ColumnLayout columns={1}>
+            <Box variant="p">
+              グラウンドは確保できた。でもメンバーの出欠がわからない。催促しても返事が返ってこない。
+            </Box>
+            <Box variant="p">
+              相手チームからお誘いが来た。でも人数が揃うかわからず、すぐに返事ができない。返事が遅れて相手に迷惑をかけてしまう。
+            </Box>
+            <Box variant="p">
+              試合が終わった。グラウンド代・審判代・ボール代を誰がいくら払うか、会計係を置くか代表が自ら手計算で管理している。ボールなどの消耗品も在庫がわからず、いつ補充すればいいか・どこが最安か誰も把握していない。
+            </Box>
+            <Box variant="p">
+              人数が足りないとき、助っ人の候補を毎回ゼロから考える。過去に来てくれた人を思い出すのも一苦労。一人ずつLINEやメールで連絡するのも手間。
+            </Box>
+            <Box variant="p">
+              グラウンドの抽選日・予約状況を把握するのが大変。空きが出ても気づかない。
+            </Box>
+            <Box variant="p">
+              新しいツールを導入したいけど、チーム全員に浸透させるのが大変。趣味の草野球のために時間をかけて覚えたくない。
+            </Box>
+          </ColumnLayout>
+        </Container>
 
-            {/* PRO */}
-            <div className={styles.pricingCardPro}>
-              <span className={styles.proBadge}>おすすめ</span>
-              <h3 className={styles.planName}>PRO</h3>
-              <div className={styles.planPrice}>&yen;980</div>
-              <div className={styles.planPriceSub}>/ 月（税込）</div>
-              <ul className={styles.planFeatures}>
-                <li>出欠管理（無制限）</li>
-                <li>試合作成（無制限）</li>
-                <li>グラウンド空き監視</li>
-                <li>対戦相手マッチング</li>
-                <li>精算・PayPay連携</li>
-                <li>AI運営アシスタント</li>
-                <li>優先サポート</li>
-              </ul>
-              <Link href="/login" className={styles.ctaButton}>
-                PROで始める
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
+        {/* 選ばれる理由 */}
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="LINEグループ・メール・スプレッドシートで運営している全てのチームへ"
+            >
+              mound が選ばれる理由
+            </Header>
+          }
+        >
+          <ColumnLayout columns={2}>
+            <SpaceBetween size="xs">
+              <Box variant="h3">メンバーの学習コスト：ゼロ</Box>
+              <Box variant="p" color="text-body-secondary">
+                メンバーはLINEで届いた通知をタップするだけ。新しいアプリのインストールもアカウント登録も不要。導入したその日から使えます。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xs">
+              <Box variant="h3">チーム運営を丸ごと自動化</Box>
+              <Box variant="p" color="text-body-secondary">
+                出欠の催促、人数の集計、助っ人への連絡、精算の計算、対戦チームとの交渉まで。代表が手作業でやっていたことをシステムが代行します。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xs">
+              <Box variant="h3">全ての記録がチームの資産になる</Box>
+              <Box variant="p" color="text-body-secondary">
+                連絡履歴・出欠履歴・精算記録が全てシステムに残ります。「去年の助っ人誰だっけ？」「先月のグラウンド代いくらだった？」がすぐわかります。
+              </Box>
+            </SpaceBetween>
+            <SpaceBetween size="xs">
+              <Box variant="h3">相手への返信が早くなる</Box>
+              <Box variant="p" color="text-body-secondary">
+                AIが連絡文を下書きし、返信状況を自動追跡。対戦の誘いや助っ人の依頼に素早く返事ができるようになります。
+              </Box>
+            </SpaceBetween>
+          </ColumnLayout>
+        </Container>
+
+        {/* 主な機能 */}
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="上の悩み、全部 mound が解決します"
+            >
+              主な機能
+            </Header>
+          }
+        >
+          <ColumnLayout columns={2}>
+            {FEATURES.map((f) => (
+              <Container key={f.title}>
+                <SpaceBetween size="xs">
+                  <Box variant="h3">{f.title}</Box>
+                  <Box variant="p" color="text-body-secondary">
+                    {f.desc}
+                  </Box>
+                </SpaceBetween>
+              </Container>
+            ))}
+          </ColumnLayout>
+        </Container>
+
+        {/* かんたん3ステップ */}
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="導入5分。メンバーの学習コストゼロ。立ち上げたばかりのチームでも、すぐに運営を始められる型を提供します"
+            >
+              導入の流れ
+            </Header>
+          }
+        >
+          <ColumnLayout columns={3}>
+            {STEPS.map((s) => (
+              <SpaceBetween key={s.title} size="xs">
+                <Box variant="h3">{s.title}</Box>
+                <Box variant="p" color="text-body-secondary">
+                  {s.desc}
+                </Box>
+              </SpaceBetween>
+            ))}
+          </ColumnLayout>
+        </Container>
+
+        {/* 料金プラン */}
+        <Container
+          header={
+            <Header variant="h2" description="まずは無料プランでお試しください">
+              料金プラン
+            </Header>
+          }
+        >
+          <ColumnLayout columns={3}>
+            <Container
+              header={<Header variant="h3">LITE</Header>}
+              footer={
+                <Button onClick={() => router.push("/login")}>
+                  無料ではじめる
+                </Button>
+              }
+            >
+              <SpaceBetween size="s">
+                <Box variant="h1" fontSize="display-l">
+                  無料
+                </Box>
+                <Box variant="p" color="text-body-secondary">
+                  出欠管理（1チーム） / 試合作成（月3件まで） / LINE通知
+                </Box>
+              </SpaceBetween>
+            </Container>
+
+            <Container
+              header={
+                <Header variant="h3" info="おすすめ">
+                  STANDARD
+                </Header>
+              }
+              footer={
+                <Button variant="primary" onClick={() => router.push("/login")}>
+                  STANDARDで始める
+                </Button>
+              }
+            >
+              <SpaceBetween size="s">
+                <SpaceBetween
+                  size="xxs"
+                  direction="horizontal"
+                  alignItems="end"
+                >
+                  <Box variant="h1" fontSize="display-l">
+                    &yen;500
+                  </Box>
+                  <Box variant="p" color="text-body-secondary">
+                    / 月（税込）
+                  </Box>
+                </SpaceBetween>
+                <Box variant="p" color="text-body-secondary">
+                  出欠管理（無制限） / 試合作成（無制限） / グラウンド空き監視 /
+                  精算・PayPay連携 / 対戦相手マッチング
+                </Box>
+              </SpaceBetween>
+            </Container>
+
+            <Container
+              header={<Header variant="h3">PRO</Header>}
+              footer={
+                <Button onClick={() => router.push("/login")}>
+                  PROで始める
+                </Button>
+              }
+            >
+              <SpaceBetween size="s">
+                <SpaceBetween
+                  size="xxs"
+                  direction="horizontal"
+                  alignItems="end"
+                >
+                  <Box variant="h1" fontSize="display-l">
+                    &yen;980
+                  </Box>
+                  <Box variant="p" color="text-body-secondary">
+                    / 月（税込）
+                  </Box>
+                </SpaceBetween>
+                <Box variant="p" color="text-body-secondary">
+                  STANDARDの全機能 / AI運営アシスタント / AI連絡文の自動生成 /
+                  優先サポート
+                </Box>
+              </SpaceBetween>
+            </Container>
+          </ColumnLayout>
+        </Container>
+
+        {/* フッター */}
+        <Box textAlign="center" padding={{ bottom: "xl" }}>
+          <SpaceBetween size="xs">
+            <Box color="text-body-secondary" fontSize="body-s">
+              <SpaceBetween size="m" direction="horizontal">
+                <Link href="/terms" fontSize="body-s">
+                  利用規約
+                </Link>
+                <Link href="/privacy" fontSize="body-s">
+                  プライバシーポリシー
+                </Link>
+              </SpaceBetween>
+            </Box>
+            <Box color="text-body-secondary" fontSize="body-s">
+              &copy; 2026 mound. All rights reserved.
+            </Box>
+          </SpaceBetween>
+        </Box>
+      </SpaceBetween>
+    </ContentLayout>
   );
 }

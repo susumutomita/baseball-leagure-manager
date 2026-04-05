@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "next-dev",
-      "runtimeExecutable": "bun",
-      "runtimeArgs": ["run", "--filter", "@match-engine/web", "dev"],
+      "runtimeExecutable": "make",
+      "runtimeArgs": ["dev"],
       "port": 3000
     }
   ]
