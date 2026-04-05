@@ -211,8 +211,8 @@ export default function LandingPage() {
                   無料
                 </Box>
                 <Box variant="p" color="text-body-secondary">
-                  出欠管理 / 試合作成 / 成績管理 / メンバー管理 /
-                  グラウンド監視（土曜午前のみ）
+                  出欠管理 / 試合作成 / 成績管理（直近1年分） / メンバー管理 /
+                  グラウンド監視（土曜午前のみ） / 広告あり
                 </Box>
               </SpaceBetween>
             </Container>
