@@ -68,7 +68,16 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (e) {
-    console.error("LINE auth error:", e);
-    return NextResponse.redirect(new URL("/login?error=auth_failed", origin));
+    const message = e instanceof Error ? e.message : "unknown error";
+    console.error("LINE auth error:", message, e);
+    // エラー種別をクエリパラムに含めてデバッグしやすくする
+    const errorType = message.includes("credentials")
+      ? "missing_env"
+      : message.includes("token exchange")
+        ? "token_exchange"
+        : message.includes("SESSION_SECRET")
+          ? "missing_secret"
+          : "auth_failed";
+    return NextResponse.redirect(new URL(`/login?error=${errorType}`, origin));
   }
 }

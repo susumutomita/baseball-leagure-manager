@@ -14,6 +14,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   cancelled: "ログインがキャンセルされました",
   no_code: "認証コードが取得できませんでした",
   auth_failed: "認証に失敗しました。もう一度お試しください",
+  invalid_state: "セッションが無効です。もう一度お試しください",
+  missing_env:
+    "サーバー設定エラー: LINE_CHANNEL_ID / LINE_CHANNEL_SECRET が未設定です",
+  token_exchange: "LINEとの通信に失敗しました。もう一度お試しください",
+  missing_secret:
+    "サーバー設定エラー: SESSION_SECRET または LINE_CHANNEL_SECRET が未設定です",
 };
 
 function LoginContent() {
