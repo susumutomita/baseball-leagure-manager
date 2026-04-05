@@ -526,6 +526,21 @@ export type {
   RetryConfig,
 } from "./lib/notification-dispatcher";
 
+// Orchestrator
+export {
+  orchestrateGame,
+  orchestrateTeam,
+  formatActionAsNotification,
+  formatActionsAsSummary,
+} from "./lib/orchestrator";
+export type {
+  OrchestratorAction,
+  OrchestratorActionType,
+  GameOrchestrationContext,
+  OrchestrationResult,
+  TeamOrchestrationResult,
+} from "./lib/orchestrator";
+
 // Test Fixtures
 export {
   createTeamFixture,
