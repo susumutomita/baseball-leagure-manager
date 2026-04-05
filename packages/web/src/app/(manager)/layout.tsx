@@ -4,9 +4,20 @@ import AppLayout from "@cloudscape-design/components/app-layout";
 import SideNavigation from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const DEFAULT_TEAM_ID = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID ?? "";
+interface TeamInfo {
+  memberId: string;
+  teamId: string;
+  teamName: string;
+  role: string;
+}
+
+interface MeData {
+  displayName: string;
+  teams: TeamInfo[];
+  currentTeam: TeamInfo | null;
+}
 
 export default function ManagerLayout({
   children,
@@ -16,6 +27,44 @@ export default function ManagerLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [navOpen, setNavOpen] = useState(true);
+  const [me, setMe] = useState<MeData | null>(null);
+  const [activeTeam, setActiveTeam] = useState<TeamInfo | null>(null);
+  const teamId = activeTeam?.teamId ?? "";
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.data) {
+          setMe(data.data);
+          // ローカルストレージから前回選択したチームを復元
+          const savedTeamId = localStorage.getItem("mound_active_team");
+          const saved = data.data.teams?.find(
+            (t: TeamInfo) => t.teamId === savedTeamId,
+          );
+          setActiveTeam(saved ?? data.data.currentTeam ?? null);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const switchTeam = (team: TeamInfo) => {
+    setActiveTeam(team);
+    localStorage.setItem("mound_active_team", team.teamId);
+    router.push("/dashboard");
+  };
+
+  const handleLogout = async () => {
+    localStorage.removeItem("mound_active_team");
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  };
+
+  // チーム切替メニューアイテム
+  const teamMenuItems = (me?.teams ?? []).map((t) => ({
+    id: `team-${t.teamId}`,
+    text: `${t.teamName}${t.teamId === activeTeam?.teamId ? " ✓" : ""}`,
+  }));
 
   return (
     <>
@@ -23,13 +72,40 @@ export default function ManagerLayout({
         <TopNavigation
           identity={{
             href: "/dashboard",
-            title: "試合成立エンジン",
+            title: "mound",
           }}
           utilities={[
+            ...(me && me.teams.length > 1
+              ? [
+                  {
+                    type: "menu-dropdown" as const,
+                    text: activeTeam?.teamName ?? "チーム選択",
+                    items: teamMenuItems,
+                    onItemClick: ({ detail }: { detail: { id: string } }) => {
+                      const team = me.teams.find(
+                        (t) => `team-${t.teamId}` === detail.id,
+                      );
+                      if (team) switchTeam(team);
+                    },
+                  },
+                ]
+              : []),
             {
-              type: "button",
-              text: "試合作成",
-              onClick: () => router.push("/games/new"),
+              type: "menu-dropdown" as const,
+              text: me?.displayName ?? "",
+              iconName: "user-profile" as const,
+              items: [
+                {
+                  id: "team-info",
+                  text: activeTeam
+                    ? `所属: ${activeTeam.teamName}`
+                    : "チーム未所属",
+                },
+                { id: "logout", text: "ログアウト" },
+              ],
+              onItemClick: ({ detail }: { detail: { id: string } }) => {
+                if (detail.id === "logout") handleLogout();
+              },
             },
           ]}
         />
@@ -41,7 +117,7 @@ export default function ManagerLayout({
             activeHref={pathname}
             onFollow={(e) => {
               e.preventDefault();
-              router.push(e.detail.href);
+              if (e.detail.href !== "#") router.push(e.detail.href);
             }}
             header={{ text: "メニュー", href: "/dashboard" }}
             items={[
@@ -56,32 +132,32 @@ export default function ManagerLayout({
                   {
                     type: "link",
                     text: "メンバー",
-                    href: `/teams/${DEFAULT_TEAM_ID}`,
+                    href: teamId ? `/teams/${teamId}` : "#",
                   },
                   {
                     type: "link",
                     text: "助っ人",
-                    href: `/teams/${DEFAULT_TEAM_ID}/helpers`,
+                    href: teamId ? `/teams/${teamId}/helpers` : "#",
                   },
                   {
                     type: "link",
                     text: "対戦相手",
-                    href: `/teams/${DEFAULT_TEAM_ID}/opponents`,
+                    href: teamId ? `/teams/${teamId}/opponents` : "#",
                   },
                   {
                     type: "link",
                     text: "グラウンド",
-                    href: `/teams/${DEFAULT_TEAM_ID}/grounds`,
+                    href: teamId ? `/teams/${teamId}/grounds` : "#",
                   },
                   {
                     type: "link",
                     text: "成績・統計",
-                    href: `/teams/${DEFAULT_TEAM_ID}/stats`,
+                    href: teamId ? `/teams/${teamId}/stats` : "#",
                   },
                   {
                     type: "link",
                     text: "カレンダー",
-                    href: `/teams/${DEFAULT_TEAM_ID}/calendar`,
+                    href: teamId ? `/teams/${teamId}/calendar` : "#",
                   },
                   {
                     type: "link",
