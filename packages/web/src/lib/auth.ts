@@ -1,10 +1,13 @@
+import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/line-auth";
 // ============================================================
 // API ルート用 認証・認可ヘルパー
+// LINE OAuth JWT セッション (mound_session cookie) を使用
 // ============================================================
 import { createClient } from "@/lib/supabase/server";
 import { apiError } from "@match-engine/core";
 import type { MemberRole } from "@match-engine/core";
 import { hasRole } from "@match-engine/core";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export interface AuthenticatedMember {
@@ -15,25 +18,23 @@ export interface AuthenticatedMember {
   line_user_id: string | null;
 }
 
-/** Supabase Auth セッションからログイン中ユーザーの member を取得 */
+/** LINE OAuth JWT セッションからログイン中ユーザーの member を取得 */
 export async function getAuthMember(): Promise<AuthenticatedMember | null> {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!sessionToken) return null;
+
+  // JWT を検証して LINE プロフィールを取得
+  const profile = await verifySessionToken(sessionToken);
+  if (!profile) return null;
+
+  // LINE user ID で members テーブルから検索
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return null;
-
-  // LINE OAuth の場合、provider_id (= LINE user ID) で members を検索
-  const lineUserId =
-    user.user_metadata?.provider_id ?? user.user_metadata?.sub ?? null;
-
-  if (!lineUserId) return null;
-
   const { data: member } = await supabase
     .from("members")
     .select("id, team_id, name, role, line_user_id")
-    .eq("line_user_id", lineUserId)
+    .eq("line_user_id", profile.userId)
     .eq("status", "ACTIVE")
     .single();
 
