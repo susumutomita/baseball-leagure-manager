@@ -197,7 +197,7 @@ export default function LandingPage() {
             </Header>
           }
         >
-          <ColumnLayout columns={2}>
+          <ColumnLayout columns={3}>
             <Container
               header={<Header variant="h3">LITE</Header>}
               footer={
@@ -211,8 +211,7 @@ export default function LandingPage() {
                   無料
                 </Box>
                 <Box variant="p" color="text-body-secondary">
-                  出欠管理（1チーム） / 試合作成（月3件まで） / LINE通知 /
-                  基本統計
+                  出欠管理（1チーム） / 試合作成（月3件まで） / LINE通知
                 </Box>
               </SpaceBetween>
             </Container>
@@ -220,11 +219,39 @@ export default function LandingPage() {
             <Container
               header={
                 <Header variant="h3" info="おすすめ">
-                  PRO
+                  STANDARD
                 </Header>
               }
               footer={
                 <Button variant="primary" onClick={() => router.push("/login")}>
+                  STANDARDで始める
+                </Button>
+              }
+            >
+              <SpaceBetween size="s">
+                <SpaceBetween
+                  size="xxs"
+                  direction="horizontal"
+                  alignItems="end"
+                >
+                  <Box variant="h1" fontSize="display-l">
+                    &yen;500
+                  </Box>
+                  <Box variant="p" color="text-body-secondary">
+                    / 月（税込）
+                  </Box>
+                </SpaceBetween>
+                <Box variant="p" color="text-body-secondary">
+                  出欠管理（無制限） / 試合作成（無制限） / グラウンド空き監視 /
+                  精算・PayPay連携 / 対戦相手マッチング
+                </Box>
+              </SpaceBetween>
+            </Container>
+
+            <Container
+              header={<Header variant="h3">PRO</Header>}
+              footer={
+                <Button onClick={() => router.push("/login")}>
                   PROで始める
                 </Button>
               }
@@ -243,8 +270,7 @@ export default function LandingPage() {
                   </Box>
                 </SpaceBetween>
                 <Box variant="p" color="text-body-secondary">
-                  出欠管理（無制限） / 試合作成（無制限） / グラウンド空き監視 /
-                  対戦相手マッチング / 精算・PayPay連携 / AI運営アシスタント /
+                  STANDARDの全機能 / AI運営アシスタント / AI連絡文の自動生成 /
                   優先サポート
                 </Box>
               </SpaceBetween>
