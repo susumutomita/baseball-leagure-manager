@@ -199,7 +199,7 @@ export default function LandingPage() {
         >
           <ColumnLayout columns={3}>
             <Container
-              header={<Header variant="h3">LITE</Header>}
+              header={<Header variant="h3">FREE</Header>}
               footer={
                 <Button onClick={() => router.push("/login")}>
                   無料ではじめる
@@ -211,7 +211,8 @@ export default function LandingPage() {
                   無料
                 </Box>
                 <Box variant="p" color="text-body-secondary">
-                  出欠管理（1チーム） / 試合作成（月3件まで） / LINE通知
+                  出欠管理 / 試合作成 / 成績管理 / メンバー管理 /
+                  グラウンド監視（土曜午前のみ）
                 </Box>
               </SpaceBetween>
             </Container>
