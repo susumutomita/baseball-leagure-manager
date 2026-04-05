@@ -65,3 +65,49 @@ describe("canConfirm", () => {
 - システムは **状態を持つ** (State Machine) — 状態遷移は `packages/core/lib/state-machine.ts` が正本
 - ルールエンジンが **暴走を防ぐ** (Governor) — `packages/core/lib/governor.ts` で成立条件を判定
 - 人が **最後に承認する** — CONFIRMED 遷移は必ず人間のアクションを要求する
+
+## 自律改善エージェント ガイドライン
+
+スケジュール実行やIssueドリブンで自律的にプロダクトを改善するエージェント向けのルール。
+
+### 実行フロー
+
+```
+1. GitHub Issues を確認 (open, ラベル: enhancement/bug/chore)
+2. 優先度判定 (bug > enhancement > chore)
+3. ブランチ作成 (claude/<issue-slug>-<number>)
+4. 実装 + テスト追加
+5. make check 通過を確認
+6. コミット + プッシュ
+7. PR 作成 (Closes #<number> をbodyに含める)
+```
+
+### 制約
+
+- **破壊的変更禁止**: 既存のAPIシグネチャ・型定義を壊さない
+- **テスト必須**: 新機能には必ずテストを追加する。既存テストを壊さない
+- **1 Issue = 1 PR**: Issue ごとにブランチを分ける
+- **スコープ厳守**: Issue に書かれた範囲のみ実装する。関連する改善を見つけても別 Issue にする
+- **ドキュメント不要**: README/CLAUDE.md の更新はユーザーが明示的に依頼した場合のみ
+- **依存追加は慎重に**: 新しい npm パッケージの追加は最小限に
+
+### コード品質チェックリスト
+
+- [ ] `make check` (lint + typecheck + test) が通る
+- [ ] 新しいエクスポートは `packages/core/src/index.ts` に追加済み
+- [ ] Zod バリデーションを使っている (ユーザー入力)
+- [ ] `Result<T, E>` パターンでエラーハンドリングしている
+- [ ] BDD スタイルのテストを書いている (日本語 describe/it)
+- [ ] ファクトリ関数でテストデータを用意している
+
+### パッケージ構造の理解
+
+```
+packages/core/   → ビジネスロジック (純粋関数・型定義・バリデーション)
+packages/web/    → Next.js フロントエンド + API Routes
+packages/mcp/    → Claude MCP サーバー (エージェント向けツール)
+supabase/        → DB マイグレーション・シードデータ
+scripts/         → ユーティリティスクリプト
+```
+
+core パッケージのモジュールを変更した場合、web/mcp で利用する場合は `index.ts` からエクスポートすること。
