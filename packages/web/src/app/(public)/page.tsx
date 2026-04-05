@@ -108,7 +108,7 @@ export default function LandingPage() {
               }
             >
               <Box variant="p" color="text-body-secondary">
-                1チーム・月3試合まで
+                1チーム・月3試合まで・成績は直近1年分・広告あり
               </Box>
             </Container>
 
