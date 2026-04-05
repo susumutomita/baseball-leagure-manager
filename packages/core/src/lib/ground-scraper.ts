@@ -224,7 +224,7 @@ export function parseYokohamaHtml(
   // 空き状況テーブルから行を抽出
   // パターン: 日付セル + 時間帯ごとの空き状況セル
   const rowPattern =
-    /(\d{1,2})\/(\d{1,2})\s*(?:\([日月火水木金土]\))?\s*.*?(○|×|−|-)\s*.*?(○|×|−|-)\s*.*?(○|×|−|-)/g;
+    /(\d{1,2})\/(\d{1,2})\s*(?:\([日月火水木金土]\))?\s*[^\n]*?(○|×|−|-)\s*[^\n]*?(○|×|−|-)\s*[^\n]*?(○|×|−|-)/g;
 
   const matches = html.matchAll(rowPattern);
   for (const match of matches) {
@@ -273,7 +273,7 @@ export function parseFujisawaHtml(
 
   // 藤沢市の予約システムは日付行 + 午前/午後/夜間の空きパターン
   const rowPattern =
-    /(\d{1,2})月(\d{1,2})日\s*(?:\([日月火水木金土]\))?\s*.*?(○|×|△|−|-)\s*.*?(○|×|△|−|-)\s*.*?(○|×|△|−|-)/g;
+    /(\d{1,2})月(\d{1,2})日\s*(?:\([日月火水木金土]\))?\s*[^\n]*?(○|×|△|−|-)\s*[^\n]*?(○|×|△|−|-)\s*[^\n]*?(○|×|△|−|-)/g;
 
   const matches = html.matchAll(rowPattern);
   for (const match of matches) {
