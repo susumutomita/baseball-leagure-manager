@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateActivityModal } from "@/components/CreateActivityModal";
 import AppLayout from "@cloudscape-design/components/app-layout";
 import SideNavigation from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
@@ -27,6 +28,7 @@ export default function ManagerLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [navOpen, setNavOpen] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [me, setMe] = useState<MeData | null>(null);
   const [activeTeam, setActiveTeam] = useState<TeamInfo | null>(null);
   const teamId = activeTeam?.teamId ?? "";
@@ -117,13 +119,21 @@ export default function ManagerLayout({
             activeHref={pathname}
             onFollow={(e) => {
               e.preventDefault();
-              if (e.detail.href !== "#") router.push(e.detail.href);
+              if (e.detail.href === "#create") {
+                setShowCreateModal(true);
+              } else if (e.detail.href !== "#") {
+                router.push(e.detail.href);
+              }
             }}
             header={{ text: "メニュー", href: "/dashboard" }}
             items={[
               { type: "link", text: "ダッシュボード", href: "/dashboard" },
               { type: "link", text: "試合一覧", href: "/games" },
-              { type: "link", text: "試合作成", href: "/games/new" },
+              {
+                type: "link",
+                text: "活動を作成",
+                href: "#create",
+              },
               { type: "divider" },
               {
                 type: "section",
@@ -174,6 +184,10 @@ export default function ManagerLayout({
         content={children}
         toolsHide
         headerSelector="#top-nav"
+      />
+      <CreateActivityModal
+        visible={showCreateModal}
+        onDismiss={() => setShowCreateModal(false)}
       />
     </>
   );
