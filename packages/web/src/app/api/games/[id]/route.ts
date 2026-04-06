@@ -13,6 +13,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+
   const { id } = await params;
   const supabase = await createClient();
 
@@ -37,6 +40,14 @@ export async function GET(
   }
 
   const game = gameRes.data;
+
+  if (game.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   const rsvps = rsvpsRes.data ?? [];
   const helperRequests = helpersRes.data ?? [];
   const negotiations = negotiationsRes.data ?? [];
@@ -82,6 +93,13 @@ export async function PATCH(
     return NextResponse.json(apiError("NOT_FOUND", "試合が見つかりません"), {
       status: 404,
     });
+  }
+
+  if (before.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
   }
 
   // status, version は直接変更不可

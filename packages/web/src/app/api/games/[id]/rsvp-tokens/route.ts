@@ -34,6 +34,13 @@ export async function POST(
     });
   }
 
+  if (game.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   // RSVP一覧
   const { data: rsvps, error: rsvpError } = await supabase
     .from("rsvps")
