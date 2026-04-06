@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "試合成立エンジン",
-  description: "草野球チーム向け試合成立エンジン SaaS",
+  title: "mound",
+  description: "チーム運営が、勝手に回る。",
 };
 
 export default function RootLayout({
