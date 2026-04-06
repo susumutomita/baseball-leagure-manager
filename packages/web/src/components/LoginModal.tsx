@@ -6,6 +6,7 @@ import Link from "@cloudscape-design/components/link";
 import Modal from "@cloudscape-design/components/modal";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 const ERROR_MESSAGES: Record<string, string> = {
   cancelled: "ログインがキャンセルされました",
@@ -28,8 +29,10 @@ export function LoginModal({ visible, onDismiss }: LoginModalProps) {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/dashboard";
   const error = searchParams.get("error");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = () => {
+    setLoading(true);
     window.location.href = `/api/auth/line?redirect=${encodeURIComponent(redirect)}`;
   };
 
@@ -52,12 +55,19 @@ export function LoginModal({ visible, onDismiss }: LoginModalProps) {
           </Box>
         )}
         <Box textAlign="center">
-          <Button variant="primary" onClick={handleLogin}>
+          <Button
+            variant="primary"
+            onClick={handleLogin}
+            loading={loading}
+            disabled={loading}
+          >
             LINE でログイン
           </Button>
         </Box>
         <Box textAlign="center" color="text-body-secondary" fontSize="body-s">
-          LINE アカウントで認証します
+          {loading
+            ? "LINE の認証画面に移動しています..."
+            : "LINE アカウントで認証します"}
         </Box>
         <Box textAlign="center" fontSize="body-s">
           <SpaceBetween size="m" direction="horizontal">

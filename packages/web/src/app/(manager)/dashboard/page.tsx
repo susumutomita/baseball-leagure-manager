@@ -3,6 +3,7 @@ import { OnboardingGuard } from "@/components/OnboardingGuard";
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
+import Button from "@cloudscape-design/components/button";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
@@ -30,10 +31,14 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const teamId = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
 
-  // チームが存在するか確認する
-  const { count: teamCount } = await supabase
+  // チーム存在確認
+  const { count: teamCount, error: teamError } = await supabase
     .from("teams")
     .select("id", { count: "exact", head: true });
+
+  if (teamError) {
+    throw new Error(`チームの取得に失敗しました: ${teamError.message}`);
+  }
 
   const hasTeams = (teamCount ?? 0) > 0;
 
@@ -51,12 +56,28 @@ export default async function DashboardPage() {
     );
   }
 
-  const { data: games } = await supabase
+  if (!teamId) {
+    return (
+      <ContentLayout header={<Header variant="h1">ダッシュボード</Header>}>
+        <Container>
+          <Box variant="p">
+            チームIDが設定されていません。管理者に連絡してください。
+          </Box>
+        </Container>
+      </ContentLayout>
+    );
+  }
+
+  const { data: games, error: gamesError } = await supabase
     .from("games")
     .select("*")
     .eq("team_id", teamId)
     .order("created_at", { ascending: false })
     .limit(20);
+
+  if (gamesError) {
+    throw new Error(`試合データの取得に失敗しました: ${gamesError.message}`);
+  }
 
   const { data: calendarGames } = await supabase
     .from("games")
@@ -65,34 +86,61 @@ export default async function DashboardPage() {
     .not("game_date", "is", null)
     .order("game_date", { ascending: true });
 
+  const safeGames = games ?? [];
+  const safeCalendarGames = calendarGames ?? [];
   const today = new Date().toISOString().split("T")[0];
 
-  // Next upcoming game (confirmed or collecting, with a future date)
   const nextGame =
-    calendarGames?.find(
+    safeCalendarGames.find(
       (g) =>
         g.game_date &&
         g.game_date >= today &&
         ["COLLECTING", "CONFIRMED"].includes(g.status),
     ) ?? null;
 
-  // Get full details of next game if it exists
   const nextGameFull = nextGame
-    ? (games?.find((g) => g.id === nextGame.id) ?? null)
+    ? (safeGames.find((g) => g.id === nextGame.id) ?? null)
     : null;
 
-  // Recent completed games (last 3)
-  const recentCompleted =
-    games
-      ?.filter((g) => ["COMPLETED", "SETTLED"].includes(g.status))
-      .slice(0, 3) ?? [];
+  const recentCompleted = safeGames
+    .filter((g) => ["COMPLETED", "SETTLED"].includes(g.status))
+    .slice(0, 3);
 
-  const active =
-    games?.filter(
-      (g) =>
-        !["CONFIRMED", "COMPLETED", "SETTLED", "CANCELLED"].includes(g.status),
-    ) ?? [];
-  const confirmed = games?.filter((g) => g.status === "CONFIRMED") ?? [];
+  const active = safeGames.filter(
+    (g) =>
+      !["CONFIRMED", "COMPLETED", "SETTLED", "CANCELLED"].includes(g.status),
+  );
+  const confirmed = safeGames.filter((g) => g.status === "CONFIRMED");
+
+  // 全て空の場合
+  if (safeGames.length === 0) {
+    return (
+      <ContentLayout
+        breadcrumbs={
+          <BreadcrumbGroup
+            items={[{ text: "ダッシュボード", href: "/dashboard" }]}
+          />
+        }
+        header={
+          <Header variant="h1" description="現在の状況">
+            ダッシュボード
+          </Header>
+        }
+      >
+        <Container header={<Header variant="h2">まだ活動がありません</Header>}>
+          <SpaceBetween size="m">
+            <Box variant="p">
+              最初の活動を作成して、チーム運営を始めましょう。
+              試合・練習・イベントを作成すると、メンバーへの出欠確認が自動で始まります。
+            </Box>
+            <Button variant="primary" href="/games">
+              活動を作成する
+            </Button>
+          </SpaceBetween>
+        </Container>
+      </ContentLayout>
+    );
+  }
 
   return (
     <ContentLayout
@@ -111,7 +159,7 @@ export default async function DashboardPage() {
         <ColumnLayout columns={3}>
           <KpiCard label="進行中" value={active.length} />
           <KpiCard label="確定済み" value={confirmed.length} />
-          <KpiCard label="全試合" value={games?.length ?? 0} />
+          <KpiCard label="全試合" value={safeGames.length} />
         </ColumnLayout>
 
         {nextGameFull && (
@@ -184,7 +232,7 @@ export default async function DashboardPage() {
         )}
 
         <DashboardView
-          games={(games ?? []).map((g) => ({
+          games={safeGames.map((g) => ({
             id: g.id,
             title: g.title,
             game_type: g.game_type,
@@ -194,7 +242,7 @@ export default async function DashboardPage() {
             unavailable_count: g.unavailable_count,
             no_response_count: g.no_response_count,
           }))}
-          calendarGames={(calendarGames ?? []).map((g) => ({
+          calendarGames={safeCalendarGames.map((g) => ({
             id: g.id,
             title: g.title,
             game_date: g.game_date,
