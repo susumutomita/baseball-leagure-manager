@@ -1,6 +1,8 @@
+"use client";
+
 import { DashboardView } from "@/components/DashboardView";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
-import { createClient } from "@/lib/supabase/server";
+import { useTeam } from "@/contexts/TeamContext";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Button from "@cloudscape-design/components/button";
@@ -10,7 +12,9 @@ import ContentLayout from "@cloudscape-design/components/content-layout";
 import Header from "@cloudscape-design/components/header";
 import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
+import Spinner from "@cloudscape-design/components/spinner";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
+import { useEffect, useState } from "react";
 
 const RESULT_LABELS: Record<string, string> = {
   WIN: "勝ち",
@@ -27,22 +31,70 @@ const RESULT_TYPE: Record<
   DRAW: "warning",
 };
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const teamId = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
+interface GameRow {
+  id: string;
+  title: string;
+  game_type: string;
+  status: string;
+  game_date: string | null;
+  ground_name: string | null;
+  min_players: number;
+  available_count: number;
+  unavailable_count: number;
+  no_response_count: number;
+  result?: string | null;
+}
 
-  // チーム存在確認
-  const { count: teamCount, error: teamError } = await supabase
-    .from("teams")
-    .select("id", { count: "exact", head: true });
+export default function DashboardPage() {
+  const team = useTeam();
+  const teamId = team?.teamId;
+  const [games, setGames] = useState<GameRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (teamError) {
-    throw new Error(`チームの取得に失敗しました: ${teamError.message}`);
+  useEffect(() => {
+    if (!teamId) {
+      setLoading(false);
+      return;
+    }
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/games?team_id=${teamId}&limit=20`);
+        if (!res.ok) throw new Error("試合データの取得に失敗しました");
+        const json = await res.json();
+        setGames(json.data ?? []);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "データの取得に失敗しました",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, [teamId]);
+
+  if (loading) {
+    return (
+      <ContentLayout
+        header={
+          <Header variant="h1" description="読み込み中...">
+            ダッシュボード
+          </Header>
+        }
+      >
+        <Box padding="xxl" textAlign="center">
+          <Spinner size="large" />
+        </Box>
+      </ContentLayout>
+    );
   }
 
-  const hasTeams = (teamCount ?? 0) > 0;
-
-  if (!hasTeams) {
+  if (!teamId) {
     return (
       <ContentLayout
         header={
@@ -56,64 +108,39 @@ export default async function DashboardPage() {
     );
   }
 
-  if (!teamId) {
+  if (error) {
     return (
       <ContentLayout header={<Header variant="h1">ダッシュボード</Header>}>
         <Container>
-          <Box variant="p">
-            チームIDが設定されていません。管理者に連絡してください。
-          </Box>
+          <SpaceBetween size="l">
+            <Box color="text-status-error">{error}</Box>
+            <Button onClick={() => window.location.reload()}>再読み込み</Button>
+          </SpaceBetween>
         </Container>
       </ContentLayout>
     );
   }
 
-  const { data: games, error: gamesError } = await supabase
-    .from("games")
-    .select("*")
-    .eq("team_id", teamId)
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  if (gamesError) {
-    throw new Error(`試合データの取得に失敗しました: ${gamesError.message}`);
-  }
-
-  const { data: calendarGames } = await supabase
-    .from("games")
-    .select("id, title, game_date, status, game_type")
-    .eq("team_id", teamId)
-    .not("game_date", "is", null)
-    .order("game_date", { ascending: true });
-
-  const safeGames = games ?? [];
-  const safeCalendarGames = calendarGames ?? [];
   const today = new Date().toISOString().split("T")[0];
-
-  const nextGame =
-    safeCalendarGames.find(
+  const nextGameFull =
+    games.find(
       (g) =>
         g.game_date &&
         g.game_date >= today &&
         ["COLLECTING", "CONFIRMED"].includes(g.status),
     ) ?? null;
 
-  const nextGameFull = nextGame
-    ? (safeGames.find((g) => g.id === nextGame.id) ?? null)
-    : null;
-
-  const recentCompleted = safeGames
+  const recentCompleted = games
     .filter((g) => ["COMPLETED", "SETTLED"].includes(g.status))
     .slice(0, 3);
 
-  const active = safeGames.filter(
+  const active = games.filter(
     (g) =>
       !["CONFIRMED", "COMPLETED", "SETTLED", "CANCELLED"].includes(g.status),
   );
-  const confirmed = safeGames.filter((g) => g.status === "CONFIRMED");
+  const confirmed = games.filter((g) => g.status === "CONFIRMED");
 
-  // 全て空の場合
-  if (safeGames.length === 0) {
+  if (games.length === 0) {
     return (
       <ContentLayout
         breadcrumbs={
@@ -142,6 +169,16 @@ export default async function DashboardPage() {
     );
   }
 
+  const calendarGames = games
+    .filter((g) => g.game_date)
+    .map((g) => ({
+      id: g.id,
+      title: g.title,
+      game_date: g.game_date,
+      status: g.status,
+      game_type: g.game_type,
+    }));
+
   return (
     <ContentLayout
       breadcrumbs={
@@ -159,7 +196,7 @@ export default async function DashboardPage() {
         <ColumnLayout columns={3}>
           <KpiCard label="進行中" value={active.length} />
           <KpiCard label="確定済み" value={confirmed.length} />
-          <KpiCard label="全試合" value={safeGames.length} />
+          <KpiCard label="全試合" value={games.length} />
         </ColumnLayout>
 
         {nextGameFull && (
@@ -232,7 +269,7 @@ export default async function DashboardPage() {
         )}
 
         <DashboardView
-          games={safeGames.map((g) => ({
+          games={games.map((g) => ({
             id: g.id,
             title: g.title,
             game_type: g.game_type,
@@ -242,13 +279,7 @@ export default async function DashboardPage() {
             unavailable_count: g.unavailable_count,
             no_response_count: g.no_response_count,
           }))}
-          calendarGames={safeCalendarGames.map((g) => ({
-            id: g.id,
-            title: g.title,
-            game_date: g.game_date,
-            status: g.status,
-            game_type: g.game_type,
-          }))}
+          calendarGames={calendarGames}
         />
       </SpaceBetween>
     </ContentLayout>
