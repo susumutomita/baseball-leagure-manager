@@ -1,3 +1,4 @@
+import { HelperRequestActions } from "@/components/HelperRequestActions";
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
@@ -9,6 +10,7 @@ import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Table from "@cloudscape-design/components/table";
+import { HelperRequestFormWrapper } from "./HelperRequestFormWrapper";
 
 const HELPER_REQUEST_STATUS_TYPE: Record<
   string,
@@ -63,17 +65,14 @@ export default async function GameHelpersPage({
     accepted: requests.filter((r) => r.status === "ACCEPTED").length,
     declined: requests.filter((r) => r.status === "DECLINED").length,
     cancelled: requests.filter((r) => r.status === "CANCELLED").length,
-    total: requests.length,
   };
 
-  // チームの助っ人一覧 (新規打診用)
   const { data: helpers } = await supabase
     .from("helpers")
     .select("id, name, reliability_score")
     .eq("team_id", game.team_id)
     .order("reliability_score", { ascending: false });
 
-  // 既に打診済みの助っ人IDを除外
   const requestedHelperIds = new Set(requests.map((r) => r.helper_id));
   const availableHelpers = (helpers ?? []).filter(
     (h) => !requestedHelperIds.has(h.id),
@@ -95,6 +94,16 @@ export default async function GameHelpersPage({
           variant="h1"
           counter={requests.length > 0 ? `(${requests.length})` : undefined}
           description={`${game.title} の助っ人打診状況`}
+          actions={
+            <HelperRequestFormWrapper
+              gameId={id}
+              availableHelpers={availableHelpers.map((h) => ({
+                id: h.id,
+                name: h.name,
+                reliability_score: Number(h.reliability_score),
+              }))}
+            />
+          }
         >
           助っ人管理
         </Header>
@@ -152,20 +161,15 @@ export default async function GameHelpersPage({
                 cell: (item) => {
                   const helper = item.helpers as {
                     name: string;
-                    note: string | null;
-                    reliability_score: number;
                   } | null;
                   return helper?.name ?? "—";
                 },
-                sortingField: "name",
               },
               {
                 id: "reliability",
                 header: "信頼度",
                 cell: (item) => {
                   const helper = item.helpers as {
-                    name: string;
-                    note: string | null;
                     reliability_score: number;
                   } | null;
                   if (!helper) return "—";
@@ -197,26 +201,14 @@ export default async function GameHelpersPage({
                 ),
               },
               {
-                id: "sent_at",
-                header: "打診日",
-                cell: (item) =>
-                  item.sent_at
-                    ? new Date(item.sent_at).toLocaleDateString("ja-JP")
-                    : "—",
-              },
-              {
-                id: "responded_at",
-                header: "回答日",
-                cell: (item) =>
-                  item.responded_at
-                    ? new Date(item.responded_at).toLocaleDateString("ja-JP")
-                    : "—",
-              },
-              {
-                id: "message",
-                header: "メッセージ",
-                cell: (item) => item.message ?? "—",
-                maxWidth: 200,
+                id: "actions",
+                header: "操作",
+                cell: (item) => (
+                  <HelperRequestActions
+                    requestId={item.id}
+                    currentStatus={item.status}
+                  />
+                ),
               },
             ]}
             items={requests}
@@ -225,61 +217,10 @@ export default async function GameHelpersPage({
         ) : (
           <Container header={<Header variant="h2">打診一覧</Header>}>
             <Box textAlign="center" color="text-status-inactive" padding="l">
-              助っ人への打診がありません
+              助っ人への打診がありません。「助っ人を打診」から始めましょう。
             </Box>
           </Container>
         )}
-
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="まだ打診していない助っ人の一覧です"
-            >
-              新規打診
-            </Header>
-          }
-        >
-          {availableHelpers.length > 0 ? (
-            <Table
-              columnDefinitions={[
-                {
-                  id: "name",
-                  header: "助っ人名",
-                  cell: (item) => item.name,
-                },
-                {
-                  id: "reliability",
-                  header: "信頼度",
-                  cell: (item) => {
-                    const score = Number(item.reliability_score);
-                    const type =
-                      score >= 0.8
-                        ? "success"
-                        : score >= 0.5
-                          ? "warning"
-                          : "error";
-                    return (
-                      <StatusIndicator
-                        type={type as "success" | "warning" | "error"}
-                      >
-                        {(score * 100).toFixed(0)}%
-                      </StatusIndicator>
-                    );
-                  },
-                },
-              ]}
-              items={availableHelpers}
-              variant="embedded"
-            />
-          ) : (
-            <Box textAlign="center" color="text-status-inactive" padding="l">
-              {(helpers ?? []).length === 0
-                ? "チームに助っ人が登録されていません"
-                : "すべての助っ人に打診済みです"}
-            </Box>
-          )}
-        </Container>
 
         <Box>
           <Link href={`/games/${id}`}>
