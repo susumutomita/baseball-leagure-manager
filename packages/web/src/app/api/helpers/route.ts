@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
   }
 
   const input = parsed.data;
+
+  if (input.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   const { data, error } = await supabase
     .from("helpers")
     .insert({
@@ -74,18 +82,26 @@ export async function POST(request: NextRequest) {
 
 /** GET /api/helpers?team_id=xxx */
 export async function GET(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const teamId = searchParams.get("team_id");
 
-  let query = supabase
+  // team_id が指定されている場合、自チームのみアクセス可能
+  if (teamId && teamId !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
+  const query = supabase
     .from("helpers")
     .select("*")
+    .eq("team_id", authResult.team_id)
     .order("reliability_score", { ascending: false });
-
-  if (teamId) {
-    query = query.eq("team_id", teamId);
-  }
 
   const { data, error } = await query;
 

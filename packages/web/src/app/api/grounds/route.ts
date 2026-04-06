@@ -12,17 +12,28 @@ import { type NextRequest, NextResponse } from "next/server";
 
 /** GET /api/grounds?team_id=xxx&watch_active=true */
 export async function GET(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const teamId = searchParams.get("team_id");
   const watchActive = searchParams.get("watch_active");
 
+  // team_id が指定されている場合、自チームのみアクセス可能
+  if (teamId && teamId !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   let query = supabase
     .from("grounds")
     .select("*")
+    .eq("team_id", authResult.team_id)
     .order("name", { ascending: true });
 
-  if (teamId) query = query.eq("team_id", teamId);
   if (watchActive !== null && watchActive !== undefined) {
     query = query.eq("watch_active", watchActive === "true");
   }

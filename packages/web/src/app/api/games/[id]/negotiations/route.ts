@@ -35,9 +35,9 @@ export async function POST(
   const input = parsed.data;
 
   // 試合の存在確認
-  const { error: gameError } = await supabase
+  const { data: gameData, error: gameError } = await supabase
     .from("games")
-    .select("id")
+    .select("id, team_id")
     .eq("id", id)
     .single();
 
@@ -45,6 +45,13 @@ export async function POST(
     return NextResponse.json(apiError("NOT_FOUND", "試合が見つかりません"), {
       status: 404,
     });
+  }
+
+  if (gameData.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
   }
 
   const { data, error } = await supabase
@@ -92,8 +99,30 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+
   const { id } = await params;
   const supabase = await createClient();
+
+  const { data: game, error: gameError } = await supabase
+    .from("games")
+    .select("team_id")
+    .eq("id", id)
+    .single();
+
+  if (gameError) {
+    return NextResponse.json(apiError("NOT_FOUND", "試合が見つかりません"), {
+      status: 404,
+    });
+  }
+
+  if (game.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
 
   const { data, error } = await supabase
     .from("negotiations")

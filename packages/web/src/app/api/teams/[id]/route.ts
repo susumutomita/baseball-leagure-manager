@@ -15,7 +15,18 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+
   const { id } = await params;
+
+  if (authResult.team_id !== id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -44,6 +55,14 @@ export async function PATCH(
   if (roleCheck) return roleCheck;
 
   const { id } = await params;
+
+  if (authResult.team_id !== id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   const supabase = await createClient();
   const body = await request.json();
 
