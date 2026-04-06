@@ -102,7 +102,7 @@ export default async function DashboardPage() {
         />
       }
       header={
-        <Header variant="h1" description="試合成立エンジン -- 現在の状況">
+        <Header variant="h1" description="現在の状況">
           ダッシュボード
         </Header>
       }

@@ -1,14 +1,15 @@
 "use client";
 
+import { LoginModal } from "@/components/LoginModal";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
 
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
+  const [showLogin, setShowLogin] = useState(false);
 
   return (
     <>
@@ -22,12 +23,15 @@ export default function PublicLayout({
             {
               type: "button",
               text: "ログイン",
-              onClick: () => router.push("/login"),
+              onClick: () => setShowLogin(true),
             },
           ]}
         />
       </div>
       {children}
+      <Suspense>
+        <LoginModal visible={showLogin} onDismiss={() => setShowLogin(false)} />
+      </Suspense>
     </>
   );
 }

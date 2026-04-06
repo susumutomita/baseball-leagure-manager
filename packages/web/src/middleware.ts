@@ -43,6 +43,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // /login にアクセスした場合はトップにリダイレクト（モーダル化のため）
+  if (pathname === "/login" && sessionToken) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
   return NextResponse.next();
 }
 
