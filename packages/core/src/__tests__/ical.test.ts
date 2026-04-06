@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { generateICalFeed, generateVEvent } from "../lib/ical";
 import type { Game } from "../types/domain";
 
