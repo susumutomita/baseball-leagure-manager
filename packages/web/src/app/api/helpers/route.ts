@@ -42,9 +42,13 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
-      status: 400,
-    });
+    console.error("DATABASE_ERROR:", error.message);
+    return NextResponse.json(
+      apiError("DATABASE_ERROR", "データベースエラーが発生しました"),
+      {
+        status: 400,
+      },
+    );
   }
 
   await writeAuditLog(supabase, {
@@ -86,9 +90,13 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
 
   if (error) {
-    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
-      status: 400,
-    });
+    console.error("DATABASE_ERROR:", error.message);
+    return NextResponse.json(
+      apiError("DATABASE_ERROR", "データベースエラーが発生しました"),
+      {
+        status: 400,
+      },
+    );
   }
 
   return NextResponse.json(apiSuccess(data ?? [], []));

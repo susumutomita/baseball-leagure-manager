@@ -21,6 +21,15 @@ const PUBLIC_PATHS = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // CSRF: ミューテーション系リクエストの Origin ヘッダー検証
+  if (["POST", "PATCH", "PUT", "DELETE"].includes(request.method)) {
+    const origin = request.headers.get("origin");
+    const host = request.headers.get("host");
+    if (origin && host && !origin.includes(host)) {
+      return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+    }
+  }
+
   // 公開パスはスキップ（完全一致 or パス区切り付き前方一致）
   if (
     PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
