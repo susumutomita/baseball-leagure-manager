@@ -36,6 +36,15 @@ export async function POST(request: NextRequest) {
   }
 
   const input = parsed.data;
+
+  // チームIDの所有権チェック
+  if (input.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "自分のチームの試合のみ作成できます"),
+      { status: 403 },
+    );
+  }
+
   const { data, error } = await supabase
     .from("games")
     .insert({
@@ -55,9 +64,13 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
-      status: 400,
-    });
+    console.error("DATABASE_ERROR:", error.message);
+    return NextResponse.json(
+      apiError("DATABASE_ERROR", "データベースエラーが発生しました"),
+      {
+        status: 400,
+      },
+    );
   }
 
   await writeAuditLog(supabase, {
@@ -133,9 +146,13 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
 
   if (error) {
-    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
-      status: 400,
-    });
+    console.error("DATABASE_ERROR:", error.message);
+    return NextResponse.json(
+      apiError("DATABASE_ERROR", "データベースエラーが発生しました"),
+      {
+        status: 400,
+      },
+    );
   }
 
   const hasMore = data && data.length > limit;

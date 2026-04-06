@@ -35,6 +35,7 @@ export async function PATCH(
     .from("grounds")
     .update(parsed.data)
     .eq("id", id)
+    .eq("team_id", authResult.team_id)
     .select()
     .single();
 
@@ -61,12 +62,20 @@ export async function DELETE(
   const { id } = await params;
   const supabase = await createClient();
 
-  const { error } = await supabase.from("grounds").delete().eq("id", id);
+  const { error } = await supabase
+    .from("grounds")
+    .delete()
+    .eq("id", id)
+    .eq("team_id", authResult.team_id);
 
   if (error) {
-    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
-      status: 400,
-    });
+    console.error("DATABASE_ERROR:", error.message);
+    return NextResponse.json(
+      apiError("DATABASE_ERROR", "データベースエラーが発生しました"),
+      {
+        status: 400,
+      },
+    );
   }
 
   return NextResponse.json(apiSuccess({ deleted: true }));

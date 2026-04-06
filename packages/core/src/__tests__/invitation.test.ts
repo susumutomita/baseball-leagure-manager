@@ -7,11 +7,13 @@ import {
   validateInvitation,
 } from "../lib/invitation";
 
+const TEST_SECRET = "test-secret-key";
+
 describe("generateInvitationToken / decodeInvitationToken", () => {
   it("ペイロードをエンコード・デコードできる", () => {
     const payload = createInvitationPayload("team-1", "テストチーム", "user-1");
-    const token = generateInvitationToken(payload);
-    const decoded = decodeInvitationToken(token);
+    const token = generateInvitationToken(payload, TEST_SECRET);
+    const decoded = decodeInvitationToken(token, TEST_SECRET);
 
     expect(decoded).not.toBeNull();
     expect(decoded?.teamId).toBe("team-1");
@@ -21,15 +23,30 @@ describe("generateInvitationToken / decodeInvitationToken", () => {
   });
 
   it("不正なトークンはnullを返す", () => {
-    expect(decodeInvitationToken("not-valid-base64!!!")).toBeNull();
+    expect(
+      decodeInvitationToken("not-valid-base64!!!", TEST_SECRET),
+    ).toBeNull();
+  });
+
+  it("署名が改ざんされたトークンはnullを返す", () => {
+    const payload = createInvitationPayload("team-1", "テストチーム", "user-1");
+    const token = generateInvitationToken(payload, TEST_SECRET);
+    const tampered = `${token.split(".")[0]}.tampered-signature`;
+    expect(decodeInvitationToken(tampered, TEST_SECRET)).toBeNull();
+  });
+
+  it("異なるシークレットで署名されたトークンはnullを返す", () => {
+    const payload = createInvitationPayload("team-1", "テストチーム", "user-1");
+    const token = generateInvitationToken(payload, "secret-a");
+    expect(decodeInvitationToken(token, "secret-b")).toBeNull();
   });
 });
 
 describe("validateInvitation", () => {
   it("有効な招待トークンを検証する", () => {
     const payload = createInvitationPayload("team-1", "テストチーム", "user-1");
-    const token = generateInvitationToken(payload);
-    const result = validateInvitation(token);
+    const token = generateInvitationToken(payload, TEST_SECRET);
+    const result = validateInvitation(token, new Date(), TEST_SECRET);
     expect(result.valid).toBe(true);
     expect(result.payload?.teamId).toBe("team-1");
   });
@@ -42,14 +59,14 @@ describe("validateInvitation", () => {
       role: "MEMBER" as const,
       expiresAt: "2020-01-01T00:00:00Z",
     };
-    const token = generateInvitationToken(payload);
-    const result = validateInvitation(token);
+    const token = generateInvitationToken(payload, TEST_SECRET);
+    const result = validateInvitation(token, new Date(), TEST_SECRET);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain("有効期限");
   });
 
   it("不正なトークンを拒否する", () => {
-    const result = validateInvitation("garbage");
+    const result = validateInvitation("garbage", new Date(), TEST_SECRET);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain("無効");
   });
