@@ -52,15 +52,18 @@ export default function WebRsvpPage() {
       return;
     }
 
-    const { gameId, rsvpId, memberId } = validation.payload;
+    const { rsvpId } = validation.payload;
 
     async function load() {
       try {
-        // ゲーム情報取得
-        const gameRes = await fetch(`/api/games/${gameId}`);
-        if (!gameRes.ok) throw new Error("試合情報の取得に失敗しました");
-        const gameJson = await gameRes.json();
-        const g = gameJson.data;
+        // トークン認証でゲーム+RSVP情報を一括取得（認証不要API）
+        const res = await fetch(
+          `/api/rsvps/${rsvpId}/game?token=${encodeURIComponent(token)}`,
+        );
+        if (!res.ok) throw new Error("データの取得に失敗しました");
+        const json = await res.json();
+        const { game: g, rsvp: r } = json.data;
+
         setGame({
           title: g.title,
           game_date: g.game_date,
@@ -70,20 +73,12 @@ export default function WebRsvpPage() {
           min_players: g.min_players,
         });
 
-        // RSVP情報取得
-        const rsvpRes = await fetch(`/api/games/${gameId}/rsvps`);
-        if (rsvpRes.ok) {
-          const rsvpJson = await rsvpRes.json();
-          const myRsvp = (rsvpJson.data ?? []).find(
-            (r: { id: string }) => r.id === rsvpId,
-          );
-          if (myRsvp) {
-            setRsvp({
-              id: myRsvp.id,
-              response: myRsvp.response,
-              member_name: myRsvp.member_name ?? memberId,
-            });
-          }
+        if (r) {
+          setRsvp({
+            id: r.id,
+            response: r.response,
+            member_name: r.member_name,
+          });
         }
       } catch (err) {
         setError(
