@@ -9,11 +9,17 @@ import type {
   GameResult,
   Helper,
   HelperRequest,
+  League,
+  LeagueMatch,
+  LeagueStanding,
+  LeagueTeam,
   Member,
   Negotiation,
   OpponentTeam,
   Rsvp,
   Team,
+  TeamInvitation,
+  TeamProfile,
 } from "../types/domain";
 
 // --- チーム ---
@@ -265,4 +271,123 @@ export function createRsvpsFixture(
       response,
     }),
   );
+}
+
+// --- リーグ ---
+export function createLeagueFixture(overrides: Partial<League> = {}): League {
+  return {
+    id: "league-fixture-1",
+    name: "テストリーグ",
+    season: "2026春季",
+    area: "東京都",
+    format: "ROUND_ROBIN",
+    organizer_user_id: "user-fixture-1",
+    status: "DRAFT",
+    max_teams: 20,
+    rules_json: {},
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+export function createLeagueTeamFixture(
+  overrides: Partial<LeagueTeam> = {},
+): LeagueTeam {
+  return {
+    id: "lt-fixture-1",
+    league_id: "league-fixture-1",
+    team_id: "team-fixture-1",
+    status: "INVITED",
+    joined_at: null,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+export function createLeagueMatchFixture(
+  overrides: Partial<LeagueMatch> = {},
+): LeagueMatch {
+  return {
+    id: "lm-fixture-1",
+    league_id: "league-fixture-1",
+    home_team_id: "team-A",
+    away_team_id: "team-B",
+    round: 1,
+    match_number: 1,
+    game_id: null,
+    scheduled_date: null,
+    ground_id: null,
+    status: "SCHEDULED",
+    home_score: null,
+    away_score: null,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+export function createLeagueStandingFixture(
+  overrides: Partial<LeagueStanding> = {},
+): LeagueStanding {
+  return {
+    id: "ls-fixture-1",
+    league_id: "league-fixture-1",
+    team_id: "team-fixture-1",
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    points: 0,
+    runs_for: 0,
+    runs_against: 0,
+    games_played: 0,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+// --- 招待 ---
+export function createTeamInvitationFixture(
+  overrides: Partial<TeamInvitation> = {},
+): TeamInvitation {
+  return {
+    id: "invite-fixture-1",
+    team_id: "team-fixture-1",
+    invite_type: "OPPONENT",
+    invite_code: "ABC12345",
+    created_by: "user-fixture-1",
+    expires_at: null,
+    max_uses: null,
+    use_count: 0,
+    metadata_json: {},
+    is_active: true,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+// --- チームプロフィール ---
+export function createTeamProfileFixture(
+  overrides: Partial<TeamProfile> = {},
+): TeamProfile {
+  return {
+    id: "profile-fixture-1",
+    team_id: "team-fixture-1",
+    is_public: true,
+    description: "テストチームの説明",
+    activity_area: "東京都・世田谷区",
+    skill_level: "INTERMEDIATE",
+    member_count: 15,
+    founded_year: 2020,
+    looking_for_opponents: true,
+    looking_for_helpers: false,
+    photo_url: null,
+    stats_json: {},
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
 }

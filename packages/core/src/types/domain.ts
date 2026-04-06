@@ -281,3 +281,169 @@ export interface AuditLog {
   after_json: Record<string, unknown> | null;
   created_at: string;
 }
+
+// ============================================================
+// リーグ運営
+// ============================================================
+
+// --- League 状態 ---
+export const LEAGUE_STATUSES = [
+  "DRAFT",
+  "RECRUITING",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+export type LeagueStatus = (typeof LEAGUE_STATUSES)[number];
+
+// --- League フォーマット ---
+export const LEAGUE_FORMATS = [
+  "ROUND_ROBIN",
+  "TOURNAMENT",
+  "DOUBLE_ROUND_ROBIN",
+] as const;
+export type LeagueFormat = (typeof LEAGUE_FORMATS)[number];
+
+// --- LeagueTeam 状態 ---
+export const LEAGUE_TEAM_STATUSES = [
+  "INVITED",
+  "ACCEPTED",
+  "DECLINED",
+  "WITHDRAWN",
+] as const;
+export type LeagueTeamStatus = (typeof LEAGUE_TEAM_STATUSES)[number];
+
+// --- LeagueMatch 状態 ---
+export const LEAGUE_MATCH_STATUSES = [
+  "SCHEDULED",
+  "COMPLETED",
+  "CANCELLED",
+  "POSTPONED",
+] as const;
+export type LeagueMatchStatus = (typeof LEAGUE_MATCH_STATUSES)[number];
+
+export interface League {
+  id: string;
+  name: string;
+  season: string;
+  area: string | null;
+  format: LeagueFormat;
+  organizer_user_id: string;
+  status: LeagueStatus;
+  max_teams: number;
+  rules_json: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeagueTeam {
+  id: string;
+  league_id: string;
+  team_id: string;
+  status: LeagueTeamStatus;
+  joined_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeagueMatch {
+  id: string;
+  league_id: string;
+  home_team_id: string;
+  away_team_id: string;
+  round: number;
+  match_number: number;
+  game_id: string | null;
+  scheduled_date: string | null;
+  ground_id: string | null;
+  status: LeagueMatchStatus;
+  home_score: number | null;
+  away_score: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeagueStanding {
+  id: string;
+  league_id: string;
+  team_id: string;
+  wins: number;
+  losses: number;
+  draws: number;
+  points: number;
+  runs_for: number;
+  runs_against: number;
+  games_played: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// バイラル設計
+// ============================================================
+
+// --- 招待タイプ ---
+export const INVITE_TYPES = ["OPPONENT", "HELPER", "LEAGUE", "MEMBER"] as const;
+export type InviteType = (typeof INVITE_TYPES)[number];
+
+// --- スキルレベル ---
+export const SKILL_LEVELS = [
+  "BEGINNER",
+  "INTERMEDIATE",
+  "ADVANCED",
+  "COMPETITIVE",
+] as const;
+export type SkillLevel = (typeof SKILL_LEVELS)[number];
+
+export interface TeamInvitation {
+  id: string;
+  team_id: string;
+  invite_type: InviteType;
+  invite_code: string;
+  created_by: string;
+  expires_at: string | null;
+  max_uses: number | null;
+  use_count: number;
+  metadata_json: Record<string, unknown>;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamProfile {
+  id: string;
+  team_id: string;
+  is_public: boolean;
+  description: string | null;
+  activity_area: string | null;
+  skill_level: SkillLevel | null;
+  member_count: number;
+  founded_year: number | null;
+  looking_for_opponents: boolean;
+  looking_for_helpers: boolean;
+  photo_url: string | null;
+  stats_json: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvitationUse {
+  id: string;
+  invitation_id: string;
+  used_by_user_id: string | null;
+  used_by_team_id: string | null;
+  used_at: string;
+}
+
+// ============================================================
+// コア機能強化 (RSVP設定)
+// ============================================================
+
+export type RsvpVisibilityMode = "ALL" | "ADMIN_ONLY" | "AGGREGATE_ONLY";
+
+export interface TeamRsvpSettings {
+  deadline_default_response: "UNAVAILABLE" | "NO_RESPONSE";
+  rsvp_visibility: RsvpVisibilityMode;
+  reminder_escalation: boolean;
+  early_bird_priority: boolean;
+}

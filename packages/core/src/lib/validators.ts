@@ -244,6 +244,67 @@ export const sendNotificationSchema = z.object({
 });
 export type SendNotificationInput = z.infer<typeof sendNotificationSchema>;
 
+// --- League ---
+
+export const createLeagueSchema = z.object({
+  name: z.string().min(1, "リーグ名は必須です").max(200),
+  season: z.string().min(1, "シーズンは必須です").max(100),
+  area: z.string().max(200).nullable().default(null),
+  format: z
+    .enum(["ROUND_ROBIN", "TOURNAMENT", "DOUBLE_ROUND_ROBIN"])
+    .default("ROUND_ROBIN"),
+  organizer_user_id: uuidSchema,
+  max_teams: z.number().int().min(2).max(100).default(20),
+});
+export type CreateLeagueInput = z.infer<typeof createLeagueSchema>;
+
+export const recordMatchResultSchema = z.object({
+  home_score: z.number().int().min(0, "スコアは0以上です"),
+  away_score: z.number().int().min(0, "スコアは0以上です"),
+});
+export type RecordMatchResultInput = z.infer<typeof recordMatchResultSchema>;
+
+// --- Team Invitation ---
+
+export const createInvitationSchema = z.object({
+  team_id: uuidSchema,
+  invite_type: z.enum(["OPPONENT", "HELPER", "LEAGUE", "MEMBER"]),
+  created_by: uuidSchema,
+  expires_at: z.string().datetime().nullable().default(null),
+  max_uses: z.number().int().min(1).nullable().default(null),
+});
+export type CreateInvitationInput = z.infer<typeof createInvitationSchema>;
+
+// --- Team Profile ---
+
+export const updateTeamProfileSchema = z.object({
+  is_public: z.boolean().optional(),
+  description: z.string().max(1000).nullable().optional(),
+  activity_area: z.string().max(200).nullable().optional(),
+  skill_level: z
+    .enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "COMPETITIVE"])
+    .nullable()
+    .optional(),
+  member_count: z.number().int().min(0).optional(),
+  founded_year: z.number().int().min(1900).max(2100).nullable().optional(),
+  looking_for_opponents: z.boolean().optional(),
+  looking_for_helpers: z.boolean().optional(),
+  photo_url: z.string().url().nullable().optional(),
+});
+export type UpdateTeamProfileInput = z.infer<typeof updateTeamProfileSchema>;
+
+// --- Team RSVP Settings ---
+
+export const updateTeamRsvpSettingsSchema = z.object({
+  deadline_default_response: z.enum(["UNAVAILABLE", "NO_RESPONSE"]).optional(),
+  rsvp_visibility: z.enum(["ALL", "ADMIN_ONLY", "AGGREGATE_ONLY"]).optional(),
+  reminder_escalation: z.boolean().optional(),
+  early_bird_priority: z.boolean().optional(),
+});
+export type UpdateTeamRsvpSettingsInput = z.infer<
+  typeof updateTeamRsvpSettingsSchema
+>;
+
 // --- Zod エラー → AppError 変換 ---
 
 import type { ValidationErr } from "./result";
