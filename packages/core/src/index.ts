@@ -417,6 +417,12 @@ export {
   createInvitationSchema,
   updateTeamProfileSchema,
   updateTeamRsvpSettingsSchema,
+  createMemberSchema,
+  updateMemberSchema,
+  updateHelperSchema,
+  createOpponentTeamSchema,
+  updateOpponentTeamSchema,
+  updateGroundSchema,
   zodToValidationError,
 } from "./lib/validators";
 export type {
@@ -439,6 +445,12 @@ export type {
   CreateInvitationInput,
   UpdateTeamProfileInput,
   UpdateTeamRsvpSettingsInput,
+  CreateMemberInput,
+  UpdateMemberInput,
+  UpdateHelperInput,
+  CreateOpponentTeamInput,
+  UpdateOpponentTeamInput,
+  UpdateGroundInput,
 } from "./lib/validators";
 
 // AI Service

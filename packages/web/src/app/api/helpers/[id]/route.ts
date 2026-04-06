@@ -3,36 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import {
   apiError,
   apiSuccess,
-  createOpponentTeamSchema,
+  updateHelperSchema,
   zodToValidationError,
 } from "@match-engine/core";
 import { type NextRequest, NextResponse } from "next/server";
 
-/** GET /api/teams/:id/opponents — 対戦相手一覧 */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("opponent_teams")
-    .select("*")
-    .eq("team_id", id)
-    .order("times_played", { ascending: false });
-
-  if (error) {
-    return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
-      status: 400,
-    });
-  }
-
-  return NextResponse.json(apiSuccess(data ?? [], []));
-}
-
-/** POST /api/teams/:id/opponents — 対戦相手追加 */
-export async function POST(
+/** PATCH /api/helpers/:id — 助っ人編集 */
+export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -41,14 +18,11 @@ export async function POST(
   const roleCheck = requireRole(authResult, "ADMIN");
   if (roleCheck) return roleCheck;
 
-  const { id: teamId } = await params;
+  const { id } = await params;
   const supabase = await createClient();
   const body = await request.json();
 
-  const parsed = createOpponentTeamSchema.safeParse({
-    ...body,
-    team_id: teamId,
-  });
+  const parsed = updateHelperSchema.safeParse(body);
   if (!parsed.success) {
     const ve = zodToValidationError(parsed.error);
     return NextResponse.json(
@@ -58,10 +32,35 @@ export async function POST(
   }
 
   const { data, error } = await supabase
-    .from("opponent_teams")
-    .insert(parsed.data)
+    .from("helpers")
+    .update(parsed.data)
+    .eq("id", id)
     .select()
     .single();
+
+  if (error || !data) {
+    return NextResponse.json(apiError("NOT_FOUND", "助っ人が見つかりません"), {
+      status: 404,
+    });
+  }
+
+  return NextResponse.json(apiSuccess(data));
+}
+
+/** DELETE /api/helpers/:id — 助っ人削除 */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const roleCheck = requireRole(authResult, "ADMIN");
+  if (roleCheck) return roleCheck;
+
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("helpers").delete().eq("id", id);
 
   if (error) {
     return NextResponse.json(apiError("DATABASE_ERROR", error.message), {
@@ -69,5 +68,5 @@ export async function POST(
     });
   }
 
-  return NextResponse.json(apiSuccess(data), { status: 201 });
+  return NextResponse.json(apiSuccess({ deleted: true }));
 }
