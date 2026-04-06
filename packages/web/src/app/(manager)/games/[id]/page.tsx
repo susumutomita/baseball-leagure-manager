@@ -1,3 +1,4 @@
+import { RsvpLinkGenerator } from "@/components/RsvpLinkGenerator";
 import { RsvpTable } from "@/components/RsvpTable";
 import { TransitionButtons } from "@/components/TransitionButtons";
 import { createClient } from "@/lib/supabase/server";
@@ -188,7 +189,8 @@ export default async function GameDetailPage({
               <Header
                 variant="h2"
                 counter={`(${rsvps.length})`}
-                description="出欠の回答はLINEアプリから行えます"
+                description="LINEまたはWebリンクから回答できます"
+                actions={<RsvpLinkGenerator gameId={game.id} />}
               >
                 出欠状況
               </Header>
