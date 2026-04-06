@@ -1,5 +1,6 @@
 "use client";
 
+import { useTeam } from "@/contexts/TeamContext";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Button from "@cloudscape-design/components/button";
@@ -13,8 +14,6 @@ import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Table from "@cloudscape-design/components/table";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-
-const TEAM_ID = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID ?? "";
 
 interface GameRow {
   id: string;
@@ -68,6 +67,8 @@ const PAGE_SIZE = 20;
 
 export default function GamesListPage() {
   const router = useRouter();
+  const team = useTeam();
+  const teamId = team?.teamId ?? "";
   const [games, setGames] = useState<GameRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] =
@@ -75,9 +76,10 @@ export default function GamesListPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const loadGames = useCallback(async () => {
+    if (!teamId) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/games?team_id=${TEAM_ID}&limit=100`);
+      const res = await fetch(`/api/games?team_id=${teamId}&limit=100`);
       if (res.ok) {
         const json = await res.json();
         setGames(json.data ?? []);
@@ -87,7 +89,7 @@ export default function GamesListPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [teamId]);
 
   useEffect(() => {
     loadGames();

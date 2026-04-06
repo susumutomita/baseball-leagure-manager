@@ -1,5 +1,6 @@
 "use client";
 
+import { useTeam } from "@/contexts/TeamContext";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
@@ -63,7 +64,8 @@ export default function NewGamePage() {
   const [loadingGrounds, setLoadingGrounds] = useState(true);
   const [loadingOpponents, setLoadingOpponents] = useState(true);
 
-  const teamId = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
+  const team = useTeam();
+  const teamId = team?.teamId;
 
   useEffect(() => {
     const fetchGrounds = async () => {

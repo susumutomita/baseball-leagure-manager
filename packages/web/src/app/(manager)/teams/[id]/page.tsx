@@ -1,7 +1,7 @@
+import { MembersList } from "@/components/MembersList";
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
-import Cards from "@cloudscape-design/components/cards";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
 import Container from "@cloudscape-design/components/container";
 import ContentLayout from "@cloudscape-design/components/content-layout";
@@ -9,22 +9,6 @@ import Header from "@cloudscape-design/components/header";
 import KeyValuePairs from "@cloudscape-design/components/key-value-pairs";
 import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
-import StatusIndicator from "@cloudscape-design/components/status-indicator";
-
-const ROLE_LABELS: Record<string, string> = {
-  SUPER_ADMIN: "管理者(代表)",
-  ADMIN: "管理者",
-  MEMBER: "メンバー",
-};
-
-const ROLE_TYPE: Record<
-  string,
-  "success" | "info" | "warning" | "error" | "stopped" | "pending"
-> = {
-  SUPER_ADMIN: "success",
-  ADMIN: "info",
-  MEMBER: "pending",
-};
 
 export default async function TeamDetailPage({
   params,
@@ -106,49 +90,7 @@ export default async function TeamDetailPage({
           </ColumnLayout>
         </Container>
 
-        <Cards
-          header={
-            <Header counter={`(${members?.length ?? 0})`}>メンバー</Header>
-          }
-          cardDefinition={{
-            header: (item) => item.name,
-            sections: [
-              {
-                id: "role",
-                header: "ロール",
-                content: (item) => (
-                  <StatusIndicator type={ROLE_TYPE[item.role] ?? "pending"}>
-                    {ROLE_LABELS[item.role] ?? item.role}
-                  </StatusIndicator>
-                ),
-              },
-              {
-                id: "positions",
-                header: "ポジション",
-                content: (item) => {
-                  const positions = item.positions_json as string[];
-                  return positions?.join(", ") || "—";
-                },
-              },
-              {
-                id: "attendance",
-                header: "出席率",
-                content: (item) => `${item.attendance_rate}%`,
-              },
-              {
-                id: "tier",
-                header: "区分",
-                content: (item) => item.tier,
-              },
-            ],
-          }}
-          items={members ?? []}
-          empty={
-            <Box textAlign="center" color="text-body-secondary" padding="xxl">
-              メンバーがいません
-            </Box>
-          }
-        />
+        <MembersList initialMembers={members ?? []} teamId={id} />
       </SpaceBetween>
     </ContentLayout>
   );

@@ -1,6 +1,8 @@
 "use client";
 
 import { CreateActivityModal } from "@/components/CreateActivityModal";
+import { TeamProvider } from "@/contexts/TeamContext";
+import type { TeamInfo } from "@/contexts/TeamContext";
 import AppLayout from "@cloudscape-design/components/app-layout";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
@@ -11,13 +13,6 @@ import Spinner from "@cloudscape-design/components/spinner";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-interface TeamInfo {
-  memberId: string;
-  teamId: string;
-  teamName: string;
-  role: string;
-}
 
 interface MeData {
   displayName: string;
@@ -214,7 +209,9 @@ export default function ManagerLayout({
           }
           navigationOpen={navOpen}
           onNavigationChange={({ detail }) => setNavOpen(detail.open)}
-          content={children}
+          content={
+            <TeamProvider activeTeam={activeTeam}>{children}</TeamProvider>
+          }
           toolsHide
           headerSelector="#top-nav"
         />

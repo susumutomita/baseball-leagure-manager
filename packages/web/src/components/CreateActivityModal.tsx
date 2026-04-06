@@ -1,5 +1,6 @@
 "use client";
 
+import { useTeam } from "@/contexts/TeamContext";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
 import ColumnLayout from "@cloudscape-design/components/column-layout";
@@ -51,7 +52,8 @@ export function CreateActivityModal({
   onDismiss,
 }: CreateActivityModalProps) {
   const router = useRouter();
-  const teamId = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID;
+  const team = useTeam();
+  const teamId = team?.teamId;
 
   const [activityType, setActivityType] = useState("FRIENDLY");
   const [title, setTitle] = useState("");

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTeam } from "@/contexts/TeamContext";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
 import Button from "@cloudscape-design/components/button";
@@ -29,8 +30,6 @@ import type {
 import { DAY_OF_WEEK, TIME_SLOT } from "@match-engine/core";
 import { useCallback, useEffect, useState } from "react";
 
-const TEAM_ID = process.env.NEXT_PUBLIC_DEFAULT_TEAM_ID ?? "";
-
 const DAY_OPTIONS: MultiselectProps.Option[] = [
   { label: "月曜", value: "MONDAY" },
   { label: "火曜", value: "TUESDAY" },
@@ -54,6 +53,8 @@ const COST_SPLIT_OPTIONS: SelectProps.Option[] = [
 ];
 
 export default function SettingsPage() {
+  const team = useTeam();
+  const TEAM_ID = team?.teamId ?? "";
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingTeam, setSavingTeam] = useState(false);
@@ -139,8 +140,8 @@ export default function SettingsPage() {
         setLoading(false);
       }
     }
-    load();
-  }, [applyPolicy]);
+    if (TEAM_ID) load();
+  }, [applyPolicy, TEAM_ID]);
 
   const handleSave = async () => {
     setSaving(true);

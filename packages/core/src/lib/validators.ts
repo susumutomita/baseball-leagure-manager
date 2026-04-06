@@ -305,6 +305,86 @@ export type UpdateTeamRsvpSettingsInput = z.infer<
   typeof updateTeamRsvpSettingsSchema
 >;
 
+// --- Member ---
+
+export const createMemberSchema = z.object({
+  team_id: uuidSchema,
+  name: z.string().min(1, "名前は必須です").max(100),
+  tier: z.enum(["PRO", "LITE"]).default("PRO"),
+  role: z.enum(["SUPER_ADMIN", "ADMIN", "MEMBER"]).default("MEMBER"),
+  line_user_id: z.string().nullable().default(null),
+  email: z
+    .string()
+    .email("メールアドレスの形式が正しくありません")
+    .nullable()
+    .default(null),
+  positions_json: z.array(z.string()).default([]),
+  jersey_number: z.number().int().min(0).max(999).nullable().default(null),
+});
+export type CreateMemberInput = z.infer<typeof createMemberSchema>;
+
+export const updateMemberSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  tier: z.enum(["PRO", "LITE"]).optional(),
+  role: z.enum(["SUPER_ADMIN", "ADMIN", "MEMBER"]).optional(),
+  line_user_id: z.string().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  positions_json: z.array(z.string()).optional(),
+  jersey_number: z.number().int().min(0).max(999).nullable().optional(),
+  status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
+});
+export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
+
+// --- Helper (update) ---
+
+export const updateHelperSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  line_user_id: z.string().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  note: z.string().max(500).nullable().optional(),
+});
+export type UpdateHelperInput = z.infer<typeof updateHelperSchema>;
+
+// --- Opponent Team ---
+
+export const createOpponentTeamSchema = z.object({
+  team_id: uuidSchema,
+  name: z.string().min(1, "チーム名は必須です").max(200),
+  area: z.string().max(200).nullable().default(null),
+  contact_name: z.string().max(100).nullable().default(null),
+  contact_email: z.string().email().nullable().default(null),
+  contact_line: z.string().nullable().default(null),
+  contact_phone: z.string().nullable().default(null),
+  home_ground: z.string().max(200).nullable().default(null),
+  note: z.string().max(500).nullable().default(null),
+});
+export type CreateOpponentTeamInput = z.infer<typeof createOpponentTeamSchema>;
+
+export const updateOpponentTeamSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  area: z.string().max(200).nullable().optional(),
+  contact_name: z.string().max(100).nullable().optional(),
+  contact_email: z.string().email().nullable().optional(),
+  contact_line: z.string().nullable().optional(),
+  contact_phone: z.string().nullable().optional(),
+  home_ground: z.string().max(200).nullable().optional(),
+  note: z.string().max(500).nullable().optional(),
+});
+export type UpdateOpponentTeamInput = z.infer<typeof updateOpponentTeamSchema>;
+
+// --- Ground (update) ---
+
+export const updateGroundSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  municipality: z.string().min(1).max(200).optional(),
+  source_url: z.string().url().nullable().optional(),
+  cost_per_slot: z.number().int().min(0).nullable().optional(),
+  is_hardball_ok: z.boolean().optional(),
+  has_night_lights: z.boolean().optional(),
+  note: z.string().max(500).nullable().optional(),
+});
+export type UpdateGroundInput = z.infer<typeof updateGroundSchema>;
+
 // --- Zod エラー → AppError 変換 ---
 
 import type { ValidationErr } from "./result";

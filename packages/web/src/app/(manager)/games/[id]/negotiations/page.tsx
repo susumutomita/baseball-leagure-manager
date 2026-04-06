@@ -1,3 +1,4 @@
+import { NegotiationActions } from "@/components/NegotiationActions";
 import { createClient } from "@/lib/supabase/server";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
@@ -8,6 +9,7 @@ import Link from "@cloudscape-design/components/link";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Table from "@cloudscape-design/components/table";
+import { NegotiationFormWrapper } from "./NegotiationFormWrapper";
 
 const NEGOTIATION_STATUS_TYPE: Record<
   string,
@@ -40,7 +42,7 @@ export default async function NegotiationsPage({
 
   const { data: game } = await supabase
     .from("games")
-    .select("id, title")
+    .select("id, title, team_id")
     .eq("id", id)
     .single();
 
@@ -59,6 +61,11 @@ export default async function NegotiationsPage({
     .select("*, opponent_teams(name, area, contact_name)")
     .eq("game_id", id)
     .order("created_at", { ascending: false });
+
+  const { data: opponents } = await supabase
+    .from("opponent_teams")
+    .select("id, name, area")
+    .eq("team_id", game.team_id);
 
   return (
     <ContentLayout
@@ -80,6 +87,16 @@ export default async function NegotiationsPage({
               : undefined
           }
           description={`${game.title} の対戦交渉一覧`}
+          actions={
+            <NegotiationFormWrapper
+              gameId={id}
+              opponents={(opponents ?? []).map((o) => ({
+                id: o.id,
+                name: o.name,
+                area: o.area,
+              }))}
+            />
+          }
         >
           対戦交渉
         </Header>
@@ -96,7 +113,6 @@ export default async function NegotiationsPage({
                   const opponent = item.opponent_teams as {
                     name: string;
                     area: string;
-                    contact_name: string;
                   } | null;
                   return opponent?.name ?? "—";
                 },
@@ -106,9 +122,7 @@ export default async function NegotiationsPage({
                 header: "地域",
                 cell: (item) => {
                   const opponent = item.opponent_teams as {
-                    name: string;
                     area: string;
-                    contact_name: string;
                   } | null;
                   return opponent?.area ?? "—";
                 },
@@ -133,18 +147,14 @@ export default async function NegotiationsPage({
                     : "—",
               },
               {
-                id: "replied_at",
-                header: "返信日",
-                cell: (item) =>
-                  item.replied_at
-                    ? new Date(item.replied_at).toLocaleDateString("ja-JP")
-                    : "—",
-              },
-              {
-                id: "message",
-                header: "メッセージ",
-                cell: (item) => item.message_sent ?? "—",
-                maxWidth: 200,
+                id: "actions",
+                header: "操作",
+                cell: (item) => (
+                  <NegotiationActions
+                    negotiationId={item.id}
+                    currentStatus={item.status}
+                  />
+                ),
               },
             ]}
             items={negotiations}
@@ -153,7 +163,7 @@ export default async function NegotiationsPage({
         ) : (
           <Container header={<Header variant="h2">交渉一覧</Header>}>
             <Box textAlign="center" color="text-status-inactive" padding="l">
-              対戦交渉がありません
+              対戦交渉がありません。「交渉を作成」から始めましょう。
             </Box>
             <Box textAlign="center" padding="s">
               <Link href={`/games/${id}`}>試合詳細に戻る</Link>
