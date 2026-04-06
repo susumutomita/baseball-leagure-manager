@@ -23,6 +23,24 @@ export type {
   Settlement,
   GameResult,
   AuditLog,
+  // League
+  LeagueStatus,
+  LeagueFormat,
+  LeagueTeamStatus,
+  LeagueMatchStatus,
+  League,
+  LeagueTeam,
+  LeagueMatch,
+  LeagueStanding,
+  // Viral
+  InviteType,
+  SkillLevel,
+  TeamInvitation,
+  TeamProfile,
+  InvitationUse,
+  // RSVP Settings
+  RsvpVisibilityMode,
+  TeamRsvpSettings,
 } from "./types/domain";
 
 export {
@@ -33,6 +51,12 @@ export {
   HELPER_REQUEST_STATUSES,
   MEMBER_TIERS,
   MEMBER_ROLES,
+  LEAGUE_STATUSES,
+  LEAGUE_FORMATS,
+  LEAGUE_TEAM_STATUSES,
+  LEAGUE_MATCH_STATUSES,
+  INVITE_TYPES,
+  SKILL_LEVELS,
 } from "./types/domain";
 
 // State Machine
@@ -388,6 +412,11 @@ export {
   createGroundSchema,
   updateGroundWatchSchema,
   sendNotificationSchema,
+  createLeagueSchema,
+  recordMatchResultSchema,
+  createInvitationSchema,
+  updateTeamProfileSchema,
+  updateTeamRsvpSettingsSchema,
   zodToValidationError,
 } from "./lib/validators";
 export type {
@@ -405,6 +434,11 @@ export type {
   CreateGroundInput,
   UpdateGroundWatchInput,
   SendNotificationInput,
+  CreateLeagueInput,
+  RecordMatchResultInput,
+  CreateInvitationInput,
+  UpdateTeamProfileInput,
+  UpdateTeamRsvpSettingsInput,
 } from "./lib/validators";
 
 // AI Service
@@ -541,6 +575,85 @@ export type {
   TeamOrchestrationResult,
 } from "./lib/orchestrator";
 
+// League State Machine
+export {
+  canLeagueTransition,
+  canLeagueTransitionWithContext,
+  getAvailableLeagueTransitions,
+} from "./lib/league-state-machine";
+export type { LeagueTransitionCheck } from "./lib/league-state-machine";
+
+// League Scheduler
+export {
+  generateRoundRobinSchedule,
+  generateDoubleRoundRobinSchedule,
+} from "./lib/league-scheduler";
+export type { ScheduledMatch } from "./lib/league-scheduler";
+
+// League Standings
+export { calculateStandings, rankStandings } from "./lib/league-standings";
+
+// League Manager
+export {
+  createLeague,
+  inviteTeam,
+  acceptInvitation,
+  declineInvitation,
+  getAcceptedTeams,
+} from "./lib/league-manager";
+export type { CreateLeagueInput as CreateLeagueData } from "./lib/league-manager";
+
+// RSVP Defaults
+export { processDeadlineDefaults } from "./lib/rsvp-defaults";
+export type { RsvpDefaultResult } from "./lib/rsvp-defaults";
+
+// RSVP Visibility
+export {
+  aggregateRsvps,
+  filterRsvpsForVisibility,
+} from "./lib/rsvp-visibility";
+export type {
+  RsvpAggregate,
+  FilteredRsvpView,
+} from "./lib/rsvp-visibility";
+
+// Attendance Probability
+export {
+  predictAttendanceProbability,
+  estimatePerPersonCost,
+} from "./lib/attendance-probability";
+export type { AttendancePrediction as AttendanceProbability } from "./lib/attendance-probability";
+
+// Invitation Manager
+export {
+  generateInviteCode,
+  createInvitation as createTeamInvitation,
+  validateTeamInvitation,
+  useInvitation,
+  buildTeamInvitationUrl,
+} from "./lib/invitation-manager";
+export type {
+  CreateInvitationInput as CreateTeamInvitationInput,
+  InvitationValidationError,
+} from "./lib/invitation-manager";
+
+// Team Profile Manager
+export {
+  createDefaultProfile,
+  isProfileComplete,
+} from "./lib/team-profile-manager";
+
+// Team Discovery
+export { searchPublicTeams, recommendTeams } from "./lib/team-discovery";
+export type {
+  TeamSearchFilters,
+  ScoredTeamProfile,
+} from "./lib/team-discovery";
+
+// Viral Analytics
+export { calculateViralMetrics } from "./lib/viral-analytics";
+export type { ViralMetrics } from "./lib/viral-analytics";
+
 // Test Fixtures
 export {
   createTeamFixture,
@@ -556,4 +669,10 @@ export {
   createAttendanceFixture,
   createMembersFixture,
   createRsvpsFixture,
+  createLeagueFixture,
+  createLeagueTeamFixture,
+  createLeagueMatchFixture,
+  createLeagueStandingFixture,
+  createTeamInvitationFixture,
+  createTeamProfileFixture,
 } from "./lib/test-fixtures";
