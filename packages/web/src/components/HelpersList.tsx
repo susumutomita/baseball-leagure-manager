@@ -1,16 +1,15 @@
 "use client";
 
+import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { HelperFormModal } from "@/components/HelperFormModal";
+import { useCrudList } from "@/hooks/useCrudList";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
 import Cards from "@cloudscape-design/components/cards";
 import Flashbar from "@cloudscape-design/components/flashbar";
 import Header from "@cloudscape-design/components/header";
-import Modal from "@cloudscape-design/components/modal";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 interface Helper {
   id: string;
@@ -28,64 +27,20 @@ interface HelpersListProps {
 }
 
 export function HelpersList({ initialHelpers }: HelpersListProps) {
-  const router = useRouter();
-  const [showModal, setShowModal] = useState(false);
-  const [editingItem, setEditingItem] = useState<Helper | null>(null);
-  const [deletingItem, setDeletingItem] = useState<Helper | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [flash, setFlash] = useState<{ type: "success"; content: string }[]>(
-    [],
-  );
-
-  const handleDelete = async () => {
-    if (!deletingItem) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/helpers/${deletingItem.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setDeletingItem(null);
-        setFlash([{ type: "success", content: "助っ人を削除しました" }]);
-        router.refresh();
-      }
-    } catch {
-      // ignore
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleSuccess = () => {
-    setFlash([
-      {
-        type: "success",
-        content: editingItem ? "助っ人を更新しました" : "助っ人を追加しました",
-      },
-    ]);
-    setEditingItem(null);
-    router.refresh();
-  };
+  const crud = useCrudList<Helper>({
+    deleteEndpoint: (id) => `/api/helpers/${id}`,
+    entityName: "助っ人",
+  });
 
   return (
     <>
-      {flash.length > 0 && (
-        <Flashbar
-          items={flash.map((f) => ({
-            ...f,
-            dismissible: true,
-            onDismiss: () => setFlash([]),
-          }))}
-        />
-      )}
+      {crud.flash.length > 0 && <Flashbar items={crud.flash} />}
 
       <Cards
         header={
           <Header
             counter={`(${initialHelpers.length})`}
-            actions={
-              <Button onClick={() => setShowModal(true)}>助っ人を追加</Button>
-            }
+            actions={<Button onClick={crud.openCreate}>助っ人を追加</Button>}
           >
             助っ人一覧
           </Header>
@@ -129,16 +84,13 @@ export function HelpersList({ initialHelpers }: HelpersListProps) {
               header: "操作",
               content: (item) => (
                 <SpaceBetween direction="horizontal" size="xs">
-                  <Button
-                    variant="link"
-                    onClick={() => {
-                      setEditingItem(item);
-                      setShowModal(true);
-                    }}
-                  >
+                  <Button variant="link" onClick={() => crud.openEdit(item)}>
                     編集
                   </Button>
-                  <Button variant="link" onClick={() => setDeletingItem(item)}>
+                  <Button
+                    variant="link"
+                    onClick={() => crud.setDeletingItem(item)}
+                  >
                     削除
                   </Button>
                 </SpaceBetween>
@@ -155,40 +107,20 @@ export function HelpersList({ initialHelpers }: HelpersListProps) {
       />
 
       <HelperFormModal
-        visible={showModal}
-        onDismiss={() => {
-          setShowModal(false);
-          setEditingItem(null);
-        }}
-        onSuccess={handleSuccess}
-        helper={editingItem}
+        visible={crud.showModal}
+        onDismiss={crud.closeModal}
+        onSuccess={crud.handleSuccess}
+        helper={crud.editingItem}
       />
 
-      <Modal
-        visible={!!deletingItem}
-        onDismiss={() => setDeletingItem(null)}
-        header="助っ人を削除"
-        footer={
-          <Box float="right">
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button variant="link" onClick={() => setDeletingItem(null)}>
-                キャンセル
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleDelete}
-                loading={deleting}
-              >
-                削除
-              </Button>
-            </SpaceBetween>
-          </Box>
-        }
-      >
-        <Box>
-          <strong>{deletingItem?.name}</strong> を削除しますか？
-        </Box>
-      </Modal>
+      <DeleteConfirmModal
+        visible={!!crud.deletingItem}
+        onDismiss={() => crud.setDeletingItem(null)}
+        onConfirm={crud.handleDelete}
+        loading={crud.deleting}
+        itemName={crud.deletingItem?.name ?? ""}
+        entityName="助っ人"
+      />
     </>
   );
 }

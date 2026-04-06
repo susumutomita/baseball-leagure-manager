@@ -1,16 +1,15 @@
 "use client";
 
+import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { MemberFormModal } from "@/components/MemberFormModal";
+import { useCrudList } from "@/hooks/useCrudList";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
 import Cards from "@cloudscape-design/components/cards";
 import Flashbar from "@cloudscape-design/components/flashbar";
 import Header from "@cloudscape-design/components/header";
-import Modal from "@cloudscape-design/components/modal";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "管理者(代表)",
@@ -45,67 +44,20 @@ interface MembersListProps {
 }
 
 export function MembersList({ initialMembers, teamId }: MembersListProps) {
-  const router = useRouter();
-
-  const [showModal, setShowModal] = useState(false);
-  const [editingItem, setEditingItem] = useState<Member | null>(null);
-  const [deletingItem, setDeletingItem] = useState<Member | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [flash, setFlash] = useState<{ type: "success"; content: string }[]>(
-    [],
-  );
-
-  const handleDelete = async () => {
-    if (!deletingItem) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/members/${deletingItem.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setDeletingItem(null);
-        setFlash([{ type: "success", content: "メンバーを削除しました" }]);
-        router.refresh();
-      }
-    } catch {
-      // ignore
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleSuccess = () => {
-    setFlash([
-      {
-        type: "success",
-        content: editingItem
-          ? "メンバーを更新しました"
-          : "メンバーを追加しました",
-      },
-    ]);
-    setEditingItem(null);
-    router.refresh();
-  };
+  const crud = useCrudList<Member>({
+    deleteEndpoint: (id) => `/api/members/${id}`,
+    entityName: "メンバー",
+  });
 
   return (
     <>
-      {flash.length > 0 && (
-        <Flashbar
-          items={flash.map((f) => ({
-            ...f,
-            dismissible: true,
-            onDismiss: () => setFlash([]),
-          }))}
-        />
-      )}
+      {crud.flash.length > 0 && <Flashbar items={crud.flash} />}
 
       <Cards
         header={
           <Header
             counter={`(${initialMembers.length})`}
-            actions={
-              <Button onClick={() => setShowModal(true)}>メンバーを追加</Button>
-            }
+            actions={<Button onClick={crud.openCreate}>メンバーを追加</Button>}
           >
             メンバー一覧
           </Header>
@@ -130,10 +82,8 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
             {
               id: "positions",
               header: "ポジション",
-              content: (item) => {
-                const positions = item.positions_json as string[];
-                return positions?.join(", ") || "—";
-              },
+              content: (item) =>
+                (item.positions_json as string[])?.join(", ") || "—",
             },
             {
               id: "jersey_number",
@@ -165,16 +115,13 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
               header: "操作",
               content: (item) => (
                 <SpaceBetween direction="horizontal" size="xs">
-                  <Button
-                    variant="link"
-                    onClick={() => {
-                      setEditingItem(item);
-                      setShowModal(true);
-                    }}
-                  >
+                  <Button variant="link" onClick={() => crud.openEdit(item)}>
                     編集
                   </Button>
-                  <Button variant="link" onClick={() => setDeletingItem(item)}>
+                  <Button
+                    variant="link"
+                    onClick={() => crud.setDeletingItem(item)}
+                  >
                     削除
                   </Button>
                 </SpaceBetween>
@@ -191,41 +138,21 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
       />
 
       <MemberFormModal
-        visible={showModal}
-        onDismiss={() => {
-          setShowModal(false);
-          setEditingItem(null);
-        }}
-        onSuccess={handleSuccess}
+        visible={crud.showModal}
+        onDismiss={crud.closeModal}
+        onSuccess={crud.handleSuccess}
         teamId={teamId}
-        member={editingItem}
+        member={crud.editingItem}
       />
 
-      <Modal
-        visible={!!deletingItem}
-        onDismiss={() => setDeletingItem(null)}
-        header="メンバーを削除"
-        footer={
-          <Box float="right">
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button variant="link" onClick={() => setDeletingItem(null)}>
-                キャンセル
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleDelete}
-                loading={deleting}
-              >
-                削除
-              </Button>
-            </SpaceBetween>
-          </Box>
-        }
-      >
-        <Box>
-          <strong>{deletingItem?.name}</strong> を削除しますか？
-        </Box>
-      </Modal>
+      <DeleteConfirmModal
+        visible={!!crud.deletingItem}
+        onDismiss={() => crud.setDeletingItem(null)}
+        onConfirm={crud.handleDelete}
+        loading={crud.deleting}
+        itemName={crud.deletingItem?.name ?? ""}
+        entityName="メンバー"
+      />
     </>
   );
 }
