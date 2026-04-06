@@ -46,7 +46,7 @@ export default async function HelpersPage({
         </Header>
       }
     >
-      <HelpersList initialHelpers={helpers ?? []} teamId={id} />
+      <HelpersList initialHelpers={helpers ?? []} />
     </ContentLayout>
   );
 }

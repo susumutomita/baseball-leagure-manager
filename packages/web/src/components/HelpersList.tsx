@@ -23,7 +23,6 @@ interface Helper {
 
 interface HelpersListProps {
   initialHelpers: Helper[];
-  teamId?: string;
 }
 
 export function HelpersList({ initialHelpers }: HelpersListProps) {
