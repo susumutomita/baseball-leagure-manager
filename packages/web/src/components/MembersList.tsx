@@ -82,8 +82,7 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
             {
               id: "positions",
               header: "ポジション",
-              content: (item) =>
-                (item.positions_json as string[])?.join(", ") || "—",
+              content: (item) => item.positions_json?.join(", ") || "—",
             },
             {
               id: "jersey_number",

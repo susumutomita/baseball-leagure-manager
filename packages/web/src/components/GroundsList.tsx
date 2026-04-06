@@ -24,7 +24,6 @@ interface Ground {
 
 interface GroundsListProps {
   initialGrounds: Ground[];
-  teamId?: string;
 }
 
 export function GroundsList({ initialGrounds }: GroundsListProps) {
