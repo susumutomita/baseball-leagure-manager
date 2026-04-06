@@ -21,8 +21,10 @@ const PUBLIC_PATHS = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 公開パスはスキップ
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+  // 公開パスはスキップ（完全一致 or パス区切り付き前方一致）
+  if (
+    PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  ) {
     return NextResponse.next();
   }
 

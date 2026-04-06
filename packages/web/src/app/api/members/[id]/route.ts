@@ -32,16 +32,35 @@ export async function PATCH(
     );
   }
 
+  // チーム所有権チェック
   const { data: before } = await supabase
     .from("members")
     .select("*")
     .eq("id", id)
     .single();
 
+  if (!before || before.team_id !== authResult.team_id) {
+    return NextResponse.json(
+      apiError("NOT_FOUND", "メンバーが見つかりません"),
+      { status: 404 },
+    );
+  }
+
+  // ロール昇格防止: SUPER_ADMIN のみがロール変更可能
+  if (parsed.data.role && parsed.data.role !== before.role) {
+    if (authResult.role !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        apiError("FORBIDDEN", "ロール変更はSUPER_ADMINのみ可能です"),
+        { status: 403 },
+      );
+    }
+  }
+
   const { data, error } = await supabase
     .from("members")
     .update(parsed.data)
     .eq("id", id)
+    .eq("team_id", authResult.team_id)
     .select()
     .single();
 
@@ -78,10 +97,12 @@ export async function DELETE(
   const { id } = await params;
   const supabase = await createClient();
 
+  // チーム所有権チェック付き論理削除
   const { data, error } = await supabase
     .from("members")
     .update({ status: "INACTIVE" })
     .eq("id", id)
+    .eq("team_id", authResult.team_id)
     .select()
     .single();
 
