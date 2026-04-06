@@ -587,6 +587,15 @@ export type {
   TeamOrchestrationResult,
 } from "./lib/orchestrator";
 
+// RSVP Token
+export {
+  generateRsvpToken,
+  decodeRsvpToken,
+  validateRsvpToken,
+  buildRsvpUrl,
+} from "./lib/rsvp-token";
+export type { RsvpTokenPayload } from "./lib/rsvp-token";
+
 // League State Machine
 export {
   canLeagueTransition,

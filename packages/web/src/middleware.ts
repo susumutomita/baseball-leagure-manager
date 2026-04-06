@@ -14,6 +14,8 @@ const PUBLIC_PATHS = [
   "/docs",
   "/contact",
   "/legal",
+  "/rsvp",
+  "/invite",
 ];
 
 export async function middleware(request: NextRequest) {
