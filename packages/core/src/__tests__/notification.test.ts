@@ -1,4 +1,4 @@
-import { describe, expect, it, mock, spyOn } from "bun:test";
+import { describe, expect, it, vi } from "vitest";
 import {
   createDefaultDispatchers,
   queueNotification,
@@ -85,7 +85,9 @@ describe("queueNotification", () => {
 
   describe("登録が失敗したとき", () => {
     it("nullを返してエラーをログ出力する", async () => {
-      const consoleSpy = spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       const supabase = createMockSupabase({
         data: null,
         error: { message: "insert failed" },
@@ -98,7 +100,7 @@ describe("queueNotification", () => {
         "通知キュー登録失敗:",
         expect.objectContaining({ message: "insert failed" }),
       );
-      mock.restore();
+      vi.restoreAllMocks();
     });
   });
 });
@@ -232,25 +234,25 @@ describe("createDefaultDispatchers", () => {
 
   describe("EMAIL チャネルのとき", () => {
     it("スタブが true を返す", async () => {
-      spyOn(console, "log").mockImplementation(() => {});
+      vi.spyOn(console, "log").mockImplementation(() => {});
       const dispatchers = createDefaultDispatchers(async () => true);
 
       const result = await dispatchers.EMAIL("user-1", "hello");
 
       expect(result).toBe(true);
-      mock.restore();
+      vi.restoreAllMocks();
     });
   });
 
   describe("PUSH チャネルのとき", () => {
     it("スタブが true を返す", async () => {
-      spyOn(console, "log").mockImplementation(() => {});
+      vi.spyOn(console, "log").mockImplementation(() => {});
       const dispatchers = createDefaultDispatchers(async () => true);
 
       const result = await dispatchers.PUSH("user-1", "hello");
 
       expect(result).toBe(true);
-      mock.restore();
+      vi.restoreAllMocks();
     });
   });
 });

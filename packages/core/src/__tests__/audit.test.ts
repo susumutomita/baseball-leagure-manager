@@ -1,4 +1,4 @@
-import { describe, expect, it, mock, spyOn } from "bun:test";
+import { describe, expect, it, vi } from "vitest";
 import {
   AUDIT_ACTIONS,
   auditGameTransition,
@@ -47,7 +47,9 @@ describe("writeAuditLog", () => {
 
   describe("書き込みが失敗したとき", () => {
     it("success: falseとエラーメッセージを返す", async () => {
-      const consoleSpy = spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       const supabase = createMockSupabase({
         data: null,
         error: { message: "connection refused" },
@@ -60,7 +62,7 @@ describe("writeAuditLog", () => {
       expect(consoleSpy).toHaveBeenCalledWith("監査ログ書き込み失敗:", {
         message: "connection refused",
       });
-      mock.restore();
+      vi.restoreAllMocks();
     });
   });
 });

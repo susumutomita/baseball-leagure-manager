@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { generatePayPayLink } from "../lib/paypay";
 import { calculateSettlement } from "../lib/settlement";
 import type { SettlementCalculationInput } from "../lib/settlement";

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { recommendOpponents, scoreOpponent } from "../lib/opponent-matcher";
 import type { OpponentTeam } from "../types/domain";
 

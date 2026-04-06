@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { planFollowUp } from "../lib/rsvp-followup";
 import type { Game, Member, Rsvp } from "../types/domain";
 

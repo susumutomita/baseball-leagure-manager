@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildGameConfirmedMessage,
   buildRsvpReminderFlex,
@@ -179,11 +179,11 @@ describe("line-messaging", () => {
     const originalToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
     beforeEach(() => {
-      process.env.LINE_CHANNEL_ACCESS_TOKEN = undefined;
+      vi.stubEnv("LINE_CHANNEL_ACCESS_TOKEN", "");
     });
 
     afterEach(() => {
-      process.env.LINE_CHANNEL_ACCESS_TOKEN = originalToken;
+      vi.unstubAllEnvs();
     });
 
     describe("LINE_CHANNEL_ACCESS_TOKEN が未設定のとき", () => {

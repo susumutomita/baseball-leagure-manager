@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildGameConfirmedEmail,
   buildRsvpReminderEmail,
@@ -188,11 +188,11 @@ describe("email-service", () => {
     const originalKey = process.env.RESEND_API_KEY;
 
     beforeEach(() => {
-      process.env.RESEND_API_KEY = undefined;
+      vi.stubEnv("RESEND_API_KEY", "");
     });
 
     afterEach(() => {
-      process.env.RESEND_API_KEY = originalKey;
+      vi.unstubAllEnvs();
     });
 
     describe("RESEND_API_KEY が未設定のとき", () => {
@@ -210,14 +210,12 @@ describe("email-service", () => {
   });
 
   describe("createEmailSender", () => {
-    const originalKey = process.env.RESEND_API_KEY;
-
     beforeEach(() => {
-      process.env.RESEND_API_KEY = undefined;
+      vi.stubEnv("RESEND_API_KEY", "");
     });
 
     afterEach(() => {
-      process.env.RESEND_API_KEY = originalKey;
+      vi.unstubAllEnvs();
     });
 
     describe("スタブモードのとき", () => {
