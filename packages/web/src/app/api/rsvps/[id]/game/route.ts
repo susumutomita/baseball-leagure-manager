@@ -53,19 +53,11 @@ export async function GET(
     });
   }
 
-  // RSVP情報
-  const { data: rsvp } = await supabase
-    .from("rsvps")
-    .select("id, response, member_id")
-    .eq("id", rsvpId)
-    .single();
-
-  // メンバー名
-  const { data: member } = await supabase
-    .from("members")
-    .select("name")
-    .eq("id", memberId)
-    .single();
+  // RSVP情報 + メンバー名を並列取得
+  const [{ data: rsvp }, { data: member }] = await Promise.all([
+    supabase.from("rsvps").select("id, response").eq("id", rsvpId).single(),
+    supabase.from("members").select("name").eq("id", memberId).single(),
+  ]);
 
   return NextResponse.json(
     apiSuccess({
