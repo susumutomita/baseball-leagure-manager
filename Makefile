@@ -29,14 +29,14 @@ format: ## Biome フォーマット
 typecheck: ## TypeScript 型チェック
 	$(BUN) run --filter '*' typecheck
 
-test: ## テスト実行
-	$(BUN) test
+test: ## テスト実行 (Vitest)
+	$(BUN) run test
 
 test-watch: ## テスト (watch モード)
-	$(BUN) test --watch
+	bunx vitest
 
 test-coverage: ## テスト + カバレッジ
-	$(BUN) test --coverage
+	bunx vitest run --coverage
 
 check: lint typecheck test ## lint + typecheck + test 一括実行
 	@echo "✅ All checks passed"
