@@ -41,7 +41,7 @@ export default async function GroundsPage({
         </Header>
       }
     >
-      <GroundsList initialGrounds={grounds ?? []} teamId={id} />
+      <GroundsList initialGrounds={grounds ?? []} />
     </ContentLayout>
   );
 }

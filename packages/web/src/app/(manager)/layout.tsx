@@ -150,7 +150,7 @@ export default function ManagerLayout({
                   e.preventDefault();
                   if (e.detail.href === "#create") {
                     setShowCreateModal(true);
-                  } else if (e.detail.href !== "#") {
+                  } else if (!e.detail.href.startsWith("#")) {
                     router.push(e.detail.href);
                   }
                 }}
@@ -171,32 +171,40 @@ export default function ManagerLayout({
                       {
                         type: "link",
                         text: "メンバー",
-                        href: teamId ? `/teams/${teamId}` : "#",
+                        href: teamId ? `/teams/${teamId}` : "#team-members",
                       },
                       {
                         type: "link",
                         text: "助っ人",
-                        href: teamId ? `/teams/${teamId}/helpers` : "#",
+                        href: teamId
+                          ? `/teams/${teamId}/helpers`
+                          : "#team-helpers",
                       },
                       {
                         type: "link",
                         text: "対戦相手",
-                        href: teamId ? `/teams/${teamId}/opponents` : "#",
+                        href: teamId
+                          ? `/teams/${teamId}/opponents`
+                          : "#team-opponents",
                       },
                       {
                         type: "link",
                         text: "グラウンド",
-                        href: teamId ? `/teams/${teamId}/grounds` : "#",
+                        href: teamId
+                          ? `/teams/${teamId}/grounds`
+                          : "#team-grounds",
                       },
                       {
                         type: "link",
                         text: "成績・統計",
-                        href: teamId ? `/teams/${teamId}/stats` : "#",
+                        href: teamId ? `/teams/${teamId}/stats` : "#team-stats",
                       },
                       {
                         type: "link",
                         text: "カレンダー",
-                        href: teamId ? `/teams/${teamId}/calendar` : "#",
+                        href: teamId
+                          ? `/teams/${teamId}/calendar`
+                          : "#team-calendar",
                       },
                       {
                         type: "link",

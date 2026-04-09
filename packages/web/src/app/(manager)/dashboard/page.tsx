@@ -170,7 +170,7 @@ export default function DashboardPage() {
   }
 
   const calendarGames = games
-    .filter((g) => g.game_date)
+    .filter((g): g is GameRow & { game_date: string } => g.game_date !== null)
     .map((g) => ({
       id: g.id,
       title: g.title,
