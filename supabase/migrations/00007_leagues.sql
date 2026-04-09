@@ -76,6 +76,14 @@ CREATE INDEX idx_league_matches_round ON league_matches(league_id, round);
 CREATE INDEX idx_league_standings_league ON league_standings(league_id);
 
 -- updated_at 自動更新トリガー
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER set_leagues_updated_at
   BEFORE UPDATE ON leagues FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER set_league_teams_updated_at

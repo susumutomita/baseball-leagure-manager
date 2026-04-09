@@ -105,15 +105,15 @@ INSERT INTO negotiations (id, game_id, opponent_team_id, status, proposed_dates_
 
 -- ===== 助っ人リクエスト =====
 INSERT INTO helper_requests (id, game_id, helper_id, status, message, sent_at, responded_at) VALUES
-  ('hhhhhhhh-0001-4001-8001-hhhhhhhhhhhh', 'bbbbbbbb-0005-4005-8005-bbbbbbbbbbbb', 'ff000000-0001-4001-8001-ff0000000001', 'ACCEPTED', '5/10の試合、助っ人お願いできますか？', now(), now()),
-  ('hhhhhhhh-0002-4002-8002-hhhhhhhhhhhh', 'bbbbbbbb-0005-4005-8005-bbbbbbbbbbbb', 'ff000000-0002-4002-8002-ff0000000002', 'PENDING',  '5/10の試合、助っ人お願いできますか？', now(), NULL);
+  ('abababab-0001-4001-8001-abababababab', 'bbbbbbbb-0005-4005-8005-bbbbbbbbbbbb', 'ff000000-0001-4001-8001-ff0000000001', 'ACCEPTED', '5/10の試合、助っ人お願いできますか？', now(), now()),
+  ('abababab-0002-4002-8002-abababababab', 'bbbbbbbb-0005-4005-8005-bbbbbbbbbbbb', 'ff000000-0002-4002-8002-ff0000000002', 'PENDING',  '5/10の試合、助っ人お願いできますか？', now(), NULL);
 
 -- ===== 試合結果 =====
 INSERT INTO game_results (id, game_id, our_score, opponent_score, result, innings, note) VALUES
-  ('rrrrrrrr-0001-4001-8001-rrrrrrrrrrrr', 'bbbbbbbb-0001-4001-8001-bbbbbbbbbbbb', 8,  3, 'WIN',  7, '田中が完投。打線も好調'),
-  ('rrrrrrrr-0002-4002-8002-rrrrrrrrrrrr', 'bbbbbbbb-0002-4002-8002-bbbbbbbbbbbb', 4,  6, 'LOSE', 7, '中盤に逆転を許した'),
-  ('rrrrrrrr-0003-4003-8003-rrrrrrrrrrrr', 'bbbbbbbb-0003-4003-8003-bbbbbbbbbbbb', 5,  5, 'DRAW', 7, '延長なしの規定により引き分け'),
-  ('rrrrrrrr-0004-4004-8004-rrrrrrrrrrrr', 'bbbbbbbb-0008-4008-8008-bbbbbbbbbbbb', 7,  2, 'WIN',  7, 'リーグ戦初勝利');
+  ('cdcdcdcd-0001-4001-8001-cdcdcdcdcdcd', 'bbbbbbbb-0001-4001-8001-bbbbbbbbbbbb', 8,  3, 'WIN',  7, '田中が完投。打線も好調'),
+  ('cdcdcdcd-0002-4002-8002-cdcdcdcdcdcd', 'bbbbbbbb-0002-4002-8002-bbbbbbbbbbbb', 4,  6, 'LOSE', 7, '中盤に逆転を許した'),
+  ('cdcdcdcd-0003-4003-8003-cdcdcdcdcdcd', 'bbbbbbbb-0003-4003-8003-bbbbbbbbbbbb', 5,  5, 'DRAW', 7, '延長なしの規定により引き分け'),
+  ('cdcdcdcd-0004-4004-8004-cdcdcdcdcdcd', 'bbbbbbbb-0008-4008-8008-bbbbbbbbbbbb', 7,  2, 'WIN',  7, 'リーグ戦初勝利');
 
 -- ===== 出席記録 =====
 INSERT INTO attendances (game_id, person_type, person_id, status, recorded_by) VALUES

@@ -4,6 +4,7 @@ import { SESSION_COOKIE_NAME } from "./lib/line-auth";
 // 認証不要のパス
 const PUBLIC_PATHS = [
   "/login",
+  "/dev",
   "/api/auth",
   "/auth/callback",
   "/api/liff",
