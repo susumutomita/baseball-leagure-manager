@@ -2,6 +2,7 @@
 
 import { DashboardView } from "@/components/DashboardView";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
+import { TeamSetupChecklist } from "@/components/TeamSetupChecklist";
 import { useTeam } from "@/contexts/TeamContext";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
@@ -45,10 +46,17 @@ interface GameRow {
   result?: string | null;
 }
 
+interface SetupSummary {
+  memberCount: number;
+  groundCount: number;
+  opponentCount: number;
+}
+
 export default function DashboardPage() {
   const team = useTeam();
   const teamId = team?.teamId;
   const [games, setGames] = useState<GameRow[]>([]);
+  const [setupSummary, setSetupSummary] = useState<SetupSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,10 +70,33 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/games?team_id=${teamId}&limit=20`);
-        if (!res.ok) throw new Error("試合データの取得に失敗しました");
-        const json = await res.json();
-        setGames(json.data ?? []);
+        const [gamesRes, membersRes, groundsRes, opponentsRes] =
+          await Promise.all([
+            fetch(`/api/games?team_id=${teamId}&limit=20`),
+            fetch(`/api/teams/${teamId}/members`),
+            fetch(`/api/grounds?team_id=${teamId}`),
+            fetch(`/api/teams/${teamId}/opponents`),
+          ]);
+
+        if (!gamesRes.ok) throw new Error("試合データの取得に失敗しました");
+
+        const [gamesJson, membersJson, groundsJson, opponentsJson] =
+          await Promise.all([
+            gamesRes.json(),
+            membersRes.ok ? membersRes.json() : Promise.resolve({ data: [] }),
+            groundsRes.ok ? groundsRes.json() : Promise.resolve({ data: [] }),
+            opponentsRes.ok
+              ? opponentsRes.json()
+              : Promise.resolve({ data: [] }),
+          ]);
+
+        const nextGames = gamesJson.data ?? [];
+        setGames(nextGames);
+        setSetupSummary({
+          memberCount: membersJson.data?.length ?? 0,
+          groundCount: groundsJson.data?.length ?? 0,
+          opponentCount: opponentsJson.data?.length ?? 0,
+        });
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "データの取得に失敗しました",
@@ -155,14 +186,25 @@ export default function DashboardPage() {
         }
       >
         <Container header={<Header variant="h2">まだ活動がありません</Header>}>
-          <SpaceBetween size="m">
-            <Box variant="p">
-              最初の活動を作成して、チーム運営を始めましょう。
-              試合・練習・イベントを作成すると、メンバーへの出欠確認が自動で始まります。
-            </Box>
-            <Button variant="primary" href="/games">
-              活動を作成する
-            </Button>
+          <SpaceBetween size="l">
+            {setupSummary && (
+              <TeamSetupChecklist
+                teamId={teamId}
+                memberCount={setupSummary.memberCount}
+                groundCount={setupSummary.groundCount}
+                opponentCount={setupSummary.opponentCount}
+                gameCount={games.length}
+              />
+            )}
+            <SpaceBetween size="m">
+              <Box variant="p">
+                最初の活動を作成して、チーム運営を始めましょう。
+                試合・練習・イベントを作成すると、メンバーへの出欠確認が自動で始まります。
+              </Box>
+              <Button variant="primary" href="/games">
+                活動を作成する
+              </Button>
+            </SpaceBetween>
           </SpaceBetween>
         </Container>
       </ContentLayout>
@@ -193,6 +235,16 @@ export default function DashboardPage() {
       }
     >
       <SpaceBetween size="l">
+        {setupSummary && (
+          <TeamSetupChecklist
+            teamId={teamId}
+            memberCount={setupSummary.memberCount}
+            groundCount={setupSummary.groundCount}
+            opponentCount={setupSummary.opponentCount}
+            gameCount={games.length}
+          />
+        )}
+
         <ColumnLayout columns={3}>
           <KpiCard label="進行中" value={active.length} />
           <KpiCard label="確定済み" value={confirmed.length} />

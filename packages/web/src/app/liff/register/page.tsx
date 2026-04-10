@@ -46,6 +46,7 @@ function ErrorDisplay({
 export default function LiffRegisterPage() {
   const { accessToken, profile } = useLiffContext();
   const searchParams = useSearchParams();
+  const inviteCode = searchParams.get("code");
   const teamId = searchParams.get("team_id");
 
   const [members, setMembers] = useState<Member[]>([]);
@@ -59,12 +60,37 @@ export default function LiffRegisterPage() {
   } | null>(null);
 
   const fetchMembers = useCallback(async () => {
-    if (!teamId) {
+    setLoading(true);
+    setFetchError(null);
+
+    const resolvedTeamId = inviteCode
+      ? await (async () => {
+          const inviteRes = await fetch(`/api/invitations/${inviteCode}`);
+          if (!inviteRes.ok) {
+            if (inviteRes.status === 404) {
+              setFetchError("招待コードが見つかりません。");
+            } else {
+              const inviteJson = await inviteRes.json().catch(() => null);
+              setFetchError(
+                inviteJson?.error?.message ??
+                  "招待リンクの検証に失敗しました。",
+              );
+            }
+            return null;
+          }
+
+          const inviteJson = (await inviteRes.json()) as {
+            data?: { team_id?: string };
+          };
+          return inviteJson.data?.team_id ?? null;
+        })()
+      : teamId;
+
+    if (!resolvedTeamId) {
       setLoading(false);
       return;
     }
-    setLoading(true);
-    setFetchError(null);
+
     try {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey =
@@ -77,7 +103,7 @@ export default function LiffRegisterPage() {
       }
 
       const membersRes = await fetch(
-        `${supabaseUrl}/rest/v1/members?team_id=eq.${teamId}&status=eq.ACTIVE&select=id,name,line_user_id&order=name`,
+        `${supabaseUrl}/rest/v1/members?team_id=eq.${resolvedTeamId}&status=eq.ACTIVE&select=id,name,line_user_id&order=name`,
         {
           headers: {
             apikey: supabaseKey,
@@ -99,7 +125,7 @@ export default function LiffRegisterPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [inviteCode, teamId]);
 
   useEffect(() => {
     fetchMembers();
@@ -118,7 +144,10 @@ export default function LiffRegisterPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ member_id: memberId }),
+        body: JSON.stringify({
+          member_id: memberId,
+          invite_code: inviteCode,
+        }),
       });
 
       const json = (await res.json()) as {
@@ -146,9 +175,9 @@ export default function LiffRegisterPage() {
     }
   };
 
-  if (!teamId) {
+  if (!teamId && !inviteCode) {
     return (
-      <ErrorDisplay message="チーム ID が指定されていません。正しいリンクからアクセスしてください。" />
+      <ErrorDisplay message="招待コードが指定されていません。正しいリンクからアクセスしてください。" />
     );
   }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { MemberInvitePanel } from "@/components/MemberInvitePanel";
 import { useTeam } from "@/contexts/TeamContext";
 import Box from "@cloudscape-design/components/box";
 import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
@@ -64,7 +65,6 @@ export default function SettingsPage() {
   const [teamName, setTeamName] = useState("");
   const [homeArea, setHomeArea] = useState("");
   const [activityDay, setActivityDay] = useState("");
-  const [inviteLink, setInviteLink] = useState("");
 
   // Policy state
   const [autoAccept, setAutoAccept] = useState(false);
@@ -256,12 +256,6 @@ export default function SettingsPage() {
     }
   };
 
-  const generateInviteLink = () => {
-    const liffId = process.env.NEXT_PUBLIC_LIFF_ID ?? "YOUR_LIFF_ID";
-    const link = `https://liff.line.me/${liffId}/register?team_id=${TEAM_ID}`;
-    setInviteLink(link);
-  };
-
   if (loading) {
     return (
       <ContentLayout header={<Header variant="h1">設定</Header>}>
@@ -363,48 +357,9 @@ export default function SettingsPage() {
           />
         </Container>
 
-        {/* Member Invitation */}
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="LINE経由でメンバーを招待するリンクを生成します"
-            >
-              メンバー招待
-            </Header>
-          }
-        >
-          <SpaceBetween size="m">
-            <Button onClick={generateInviteLink}>招待リンクを生成</Button>
-            {inviteLink && (
-              <SpaceBetween size="xs">
-                <Box variant="awsui-key-label">招待リンク</Box>
-                <SpaceBetween direction="horizontal" size="xs">
-                  <Input value={inviteLink} readOnly />
-                  <Button
-                    iconName="copy"
-                    onClick={() => {
-                      navigator.clipboard.writeText(inviteLink);
-                      setFlash([
-                        {
-                          type: "success",
-                          content: "招待リンクをコピーしました",
-                          dismissible: true,
-                          onDismiss: () => setFlash([]),
-                        },
-                      ]);
-                    }}
-                  >
-                    コピー
-                  </Button>
-                </SpaceBetween>
-                <Box variant="small" color="text-body-secondary">
-                  このリンクをLINEグループに共有してメンバーを招待してください
-                </Box>
-              </SpaceBetween>
-            )}
-          </SpaceBetween>
-        </Container>
+        {team?.memberId && (
+          <MemberInvitePanel teamId={TEAM_ID} memberId={team.memberId} />
+        )}
 
         <form
           onSubmit={(e) => {
