@@ -57,6 +57,6 @@ CREATE INDEX idx_invitation_uses_invitation ON invitation_uses(invitation_id);
 
 -- updated_at 自動更新トリガー
 CREATE TRIGGER set_team_invitations_updated_at
-  BEFORE UPDATE ON team_invitations FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON team_invitations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER set_team_profiles_updated_at
-  BEFORE UPDATE ON team_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON team_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

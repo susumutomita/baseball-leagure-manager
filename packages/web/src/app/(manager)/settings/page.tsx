@@ -357,9 +357,7 @@ export default function SettingsPage() {
           />
         </Container>
 
-        {team?.memberId && (
-          <MemberInvitePanel teamId={TEAM_ID} memberId={team.memberId} />
-        )}
+        {team?.memberId && <MemberInvitePanel teamId={TEAM_ID} />}
 
         <form
           onSubmit={(e) => {

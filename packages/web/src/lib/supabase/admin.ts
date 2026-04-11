@@ -5,7 +5,9 @@ const supabaseSecret = process.env.SUPABASE_SECRET_KEY;
 
 export function createAdminClient() {
   if (!supabaseUrl || !supabaseSecret) {
-    throw new Error("SUPABASE_SECRET_KEY is not configured");
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY is not configured",
+    );
   }
 
   return createClient(supabaseUrl, supabaseSecret, {

@@ -43,12 +43,19 @@ export async function POST(request: Request) {
   } | null = null;
 
   if (body.invite_code) {
-    const { data: inviteData } = await supabase
+    const { data: inviteData, error: invitationFetchError } = await supabase
       .from("team_invitations")
       .select("id, team_id, use_count, max_uses, expires_at")
       .eq("invite_code", body.invite_code)
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
+
+    if (invitationFetchError) {
+      return NextResponse.json(
+        { error: invitationFetchError.message },
+        { status: 500 },
+      );
+    }
 
     if (!inviteData) {
       return NextResponse.json(
@@ -130,17 +137,40 @@ export async function POST(request: Request) {
   }
 
   if (invitation) {
-    const { error: invitationError } = await supabase
+    const { data: consumedInvitations, error: invitationError } = await supabase
       .from("team_invitations")
       .update({ use_count: invitation.use_count + 1 })
-      .eq("id", invitation.id);
+      .eq("id", invitation.id)
+      .eq("use_count", invitation.use_count)
+      .select("id");
 
-    if (!invitationError) {
-      await supabase.from("invitation_uses").insert({
+    if (invitationError) {
+      return NextResponse.json(
+        { error: invitationError.message },
+        { status: 500 },
+      );
+    }
+
+    if (!consumedInvitations || consumedInvitations.length !== 1) {
+      return NextResponse.json(
+        { error: "招待コードの使用に失敗しました。もう一度お試しください。" },
+        { status: 409 },
+      );
+    }
+
+    const { error: invitationUseError } = await supabase
+      .from("invitation_uses")
+      .insert({
         invitation_id: invitation.id,
-        used_by_user_id: result.lineUserId,
+        used_by_user_id: target.id,
         used_by_team_id: target.team_id,
       });
+
+    if (invitationUseError) {
+      return NextResponse.json(
+        { error: invitationUseError.message },
+        { status: 500 },
+      );
     }
   }
 

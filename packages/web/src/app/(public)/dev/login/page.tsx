@@ -82,9 +82,10 @@ export default async function DevLoginPage({
           <Alert type="error">
             メンバー一覧を取得できませんでした: {membersError.message}
           </Alert>
-        ) : (
+        ) : (members as MemberRow[] | null) &&
+          (members as MemberRow[]).length > 0 ? (
           <SpaceBetween size="m">
-            {(members as MemberRow[] | null)?.map((member) => (
+            {(members as MemberRow[]).map((member) => (
               <Container
                 key={member.id}
                 header={
@@ -100,12 +101,12 @@ export default async function DevLoginPage({
                   このメンバーでログイン
                 </Button>
               </Container>
-            )) ?? (
-              <Alert type="warning">
-                ACTIVE メンバーが見つかりません。seed を確認してください。
-              </Alert>
-            )}
+            ))}
           </SpaceBetween>
+        ) : (
+          <Alert type="warning">
+            ACTIVE メンバーが見つかりません。seed を確認してください。
+          </Alert>
         )}
       </SpaceBetween>
     </ContentLayout>

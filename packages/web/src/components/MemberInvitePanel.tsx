@@ -3,26 +3,31 @@
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
 import Container from "@cloudscape-design/components/container";
+import Flashbar from "@cloudscape-design/components/flashbar";
 import Header from "@cloudscape-design/components/header";
 import Input from "@cloudscape-design/components/input";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import { useState } from "react";
+import { z } from "zod/v4";
+
+const MemberInvitePanelSchema = z.object({
+  teamId: z.string().uuid("チーム ID の形式が不正です"),
+});
 
 interface MemberInvitePanelProps {
   teamId: string;
-  memberId: string;
   title?: string;
   description?: string;
 }
 
 export function MemberInvitePanel({
   teamId,
-  memberId,
   title = "メンバー招待",
   description = "LINE グループに共有する招待リンクを発行します",
 }: MemberInvitePanelProps) {
   const [inviteLink, setInviteLink] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copyLoading, setCopyLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -42,20 +47,31 @@ export function MemberInvitePanel({
     setMessage(null);
 
     try {
+      const parsed = MemberInvitePanelSchema.safeParse({ teamId });
+      if (!parsed.success) {
+        setMessage({
+          type: "error",
+          text: parsed.error.issues[0]?.message ?? "チーム ID が不正です。",
+        });
+        return;
+      }
+
       const expiresAt = new Date(
         Date.now() + 1000 * 60 * 60 * 24 * 14,
       ).toISOString();
 
-      const res = await fetch(`/api/teams/${teamId}/invitations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          invite_type: "MEMBER",
-          created_by: memberId,
-          expires_at: expiresAt,
-          max_uses: 50,
-        }),
-      });
+      const res = await fetch(
+        `/api/teams/${encodeURIComponent(parsed.data.teamId)}/invitations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            invite_type: "MEMBER",
+            expires_at: expiresAt,
+            max_uses: 50,
+          }),
+        },
+      );
       const json = await res.json();
 
       if (!res.ok) {
@@ -91,7 +107,8 @@ export function MemberInvitePanel({
   };
 
   const copyInviteLink = async () => {
-    if (!inviteLink) return;
+    if (!inviteLink || copyLoading) return;
+    setCopyLoading(true);
     try {
       await navigator.clipboard.writeText(inviteLink);
       setMessage({
@@ -103,6 +120,8 @@ export function MemberInvitePanel({
         type: "error",
         text: "クリップボードへのコピーに失敗しました",
       });
+    } finally {
+      setCopyLoading(false);
     }
   };
 
@@ -116,22 +135,27 @@ export function MemberInvitePanel({
     >
       <SpaceBetween size="m">
         {message && (
-          <Box
-            color={
-              message.type === "success"
-                ? "text-status-success"
-                : "text-status-error"
-            }
-          >
-            {message.text}
-          </Box>
+          <Flashbar
+            items={[
+              {
+                type: message.type === "success" ? "success" : "error",
+                content: message.text,
+                dismissible: true,
+                onDismiss: () => setMessage(null),
+              },
+            ]}
+          />
         )}
 
         <SpaceBetween direction="horizontal" size="xs">
           <Button loading={loading} onClick={generateInviteLink}>
             招待リンクを生成
           </Button>
-          <Button disabled={!inviteLink} onClick={copyInviteLink}>
+          <Button
+            loading={copyLoading}
+            disabled={!inviteLink || copyLoading}
+            onClick={copyInviteLink}
+          >
             コピー
           </Button>
         </SpaceBetween>

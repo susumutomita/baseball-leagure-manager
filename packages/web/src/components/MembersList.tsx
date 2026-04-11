@@ -59,7 +59,6 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
       {team?.memberId && (
         <MemberInvitePanel
           teamId={teamId}
-          memberId={team.memberId}
           title="メンバー招待"
           description="LINE 連携用の招待リンクを発行して、チームメンバーを追加します"
         />
@@ -143,7 +142,15 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
         items={initialMembers}
         empty={
           <Box textAlign="center" color="text-body-secondary" padding="xxl">
-            メンバーがいません
+            <SpaceBetween size="m">
+              <Box>メンバーがいません</Box>
+              <Box variant="small">
+                最初のメンバーを追加して運営を始めてください。
+              </Box>
+              <Button variant="primary" onClick={crud.openCreate}>
+                メンバーを追加
+              </Button>
+            </SpaceBetween>
           </Box>
         }
       />

@@ -57,6 +57,7 @@ export default function DashboardPage() {
   const teamId = team?.teamId;
   const [games, setGames] = useState<GameRow[]>([]);
   const [setupSummary, setSetupSummary] = useState<SetupSummary | null>(null);
+  const [setupWarning, setSetupWarning] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,6 +70,7 @@ export default function DashboardPage() {
     async function load() {
       setLoading(true);
       setError(null);
+      setSetupWarning(null);
       try {
         const [gamesRes, membersRes, groundsRes, opponentsRes] =
           await Promise.all([
@@ -80,18 +82,23 @@ export default function DashboardPage() {
 
         if (!gamesRes.ok) throw new Error("試合データの取得に失敗しました");
 
-        const [gamesJson, membersJson, groundsJson, opponentsJson] =
-          await Promise.all([
-            gamesRes.json(),
-            membersRes.ok ? membersRes.json() : Promise.resolve({ data: [] }),
-            groundsRes.ok ? groundsRes.json() : Promise.resolve({ data: [] }),
-            opponentsRes.ok
-              ? opponentsRes.json()
-              : Promise.resolve({ data: [] }),
-          ]);
+        const gamesJson = await gamesRes.json();
 
         const nextGames = gamesJson.data ?? [];
         setGames(nextGames);
+
+        if (!membersRes.ok || !groundsRes.ok || !opponentsRes.ok) {
+          setSetupSummary(null);
+          setSetupWarning("初期セットアップ状況の取得に失敗しました。");
+          return;
+        }
+
+        const [membersJson, groundsJson, opponentsJson] = await Promise.all([
+          membersRes.json(),
+          groundsRes.json(),
+          opponentsRes.json(),
+        ]);
+
         setSetupSummary({
           memberCount: membersJson.data?.length ?? 0,
           groundCount: groundsJson.data?.length ?? 0,
@@ -187,6 +194,9 @@ export default function DashboardPage() {
       >
         <Container header={<Header variant="h2">まだ活動がありません</Header>}>
           <SpaceBetween size="l">
+            {setupWarning && (
+              <Box color="text-status-warning">{setupWarning}</Box>
+            )}
             {setupSummary && (
               <TeamSetupChecklist
                 teamId={teamId}
@@ -235,6 +245,7 @@ export default function DashboardPage() {
       }
     >
       <SpaceBetween size="l">
+        {setupWarning && <Box color="text-status-warning">{setupWarning}</Box>}
         {setupSummary && (
           <TeamSetupChecklist
             teamId={teamId}
