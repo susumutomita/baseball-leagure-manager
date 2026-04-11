@@ -20,12 +20,20 @@ export async function POST(
   if (roleCheck) return roleCheck;
 
   const { id: teamId } = await params;
+  if (authResult.team_id !== teamId) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   const supabase = await createClient();
   const body = await request.json();
 
   const parsed = createInvitationSchema.safeParse({
     ...body,
     team_id: teamId,
+    created_by: authResult.id,
   });
   if (!parsed.success) {
     const ve = zodToValidationError(parsed.error);
@@ -63,7 +71,17 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+
   const { id: teamId } = await params;
+  if (authResult.team_id !== teamId) {
+    return NextResponse.json(
+      apiError("FORBIDDEN", "アクセス権限がありません"),
+      { status: 403 },
+    );
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase

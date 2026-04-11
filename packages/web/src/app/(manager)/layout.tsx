@@ -141,86 +141,94 @@ export default function ManagerLayout({
           <Spinner size="large" />
         </Box>
       ) : (
-        <AppLayout
-          navigation={
-            <SideNavigation
-              activeHref={pathname}
-              onFollow={(e) => {
-                e.preventDefault();
-                if (e.detail.href === "#create") {
-                  setShowCreateModal(true);
-                } else if (e.detail.href !== "#") {
-                  router.push(e.detail.href);
-                }
-              }}
-              header={{ text: "メニュー", href: "/dashboard" }}
-              items={[
-                { type: "link", text: "ダッシュボード", href: "/dashboard" },
-                { type: "link", text: "試合一覧", href: "/games" },
-                {
-                  type: "link",
-                  text: "活動を作成",
-                  href: "#create",
-                },
-                { type: "divider" },
-                {
-                  type: "section",
-                  text: "チーム管理",
-                  items: [
-                    {
-                      type: "link",
-                      text: "メンバー",
-                      href: teamId ? `/teams/${teamId}` : "#",
-                    },
-                    {
-                      type: "link",
-                      text: "助っ人",
-                      href: teamId ? `/teams/${teamId}/helpers` : "#",
-                    },
-                    {
-                      type: "link",
-                      text: "対戦相手",
-                      href: teamId ? `/teams/${teamId}/opponents` : "#",
-                    },
-                    {
-                      type: "link",
-                      text: "グラウンド",
-                      href: teamId ? `/teams/${teamId}/grounds` : "#",
-                    },
-                    {
-                      type: "link",
-                      text: "成績・統計",
-                      href: teamId ? `/teams/${teamId}/stats` : "#",
-                    },
-                    {
-                      type: "link",
-                      text: "カレンダー",
-                      href: teamId ? `/teams/${teamId}/calendar` : "#",
-                    },
-                    {
-                      type: "link",
-                      text: "設定",
-                      href: "/settings",
-                    },
-                  ],
-                },
-              ]}
-            />
-          }
-          navigationOpen={navOpen}
-          onNavigationChange={({ detail }) => setNavOpen(detail.open)}
-          content={
-            <TeamProvider activeTeam={activeTeam}>{children}</TeamProvider>
-          }
-          toolsHide
-          headerSelector="#top-nav"
-        />
-      )}
+        <TeamProvider activeTeam={activeTeam}>
+          <AppLayout
+            navigation={
+              <SideNavigation
+                activeHref={pathname}
+                onFollow={(e) => {
+                  e.preventDefault();
+                  if (e.detail.href === "#create") {
+                    setShowCreateModal(true);
+                  } else if (!e.detail.href.startsWith("#")) {
+                    router.push(e.detail.href);
+                  }
+                }}
+                header={{ text: "メニュー", href: "/dashboard" }}
+                items={[
+                  { type: "link", text: "ダッシュボード", href: "/dashboard" },
+                  { type: "link", text: "試合一覧", href: "/games" },
+                  {
+                    type: "link",
+                    text: "活動を作成",
+                    href: "#create",
+                  },
+                  { type: "divider" },
+                  {
+                    type: "section",
+                    text: "チーム管理",
+                    items: [
+                      {
+                        type: "link",
+                        text: "メンバー",
+                        href: teamId ? `/teams/${teamId}` : "#team-members",
+                      },
+                      {
+                        type: "link",
+                        text: "助っ人",
+                        href: teamId
+                          ? `/teams/${teamId}/helpers`
+                          : "#team-helpers",
+                      },
+                      {
+                        type: "link",
+                        text: "対戦相手",
+                        href: teamId
+                          ? `/teams/${teamId}/opponents`
+                          : "#team-opponents",
+                      },
+                      {
+                        type: "link",
+                        text: "グラウンド",
+                        href: teamId
+                          ? `/teams/${teamId}/grounds`
+                          : "#team-grounds",
+                      },
+                      {
+                        type: "link",
+                        text: "成績・統計",
+                        href: teamId ? `/teams/${teamId}/stats` : "#team-stats",
+                      },
+                      {
+                        type: "link",
+                        text: "カレンダー",
+                        href: teamId
+                          ? `/teams/${teamId}/calendar`
+                          : "#team-calendar",
+                      },
+                      {
+                        type: "link",
+                        text: "設定",
+                        href: "/settings",
+                      },
+                    ],
+                  },
+                ]}
+              />
+            }
+            navigationOpen={navOpen}
+            onNavigationChange={({ detail }) => setNavOpen(detail.open)}
+            content={children}
+            toolsHide
+            headerSelector="#top-nav"
+          />
 
-      <CreateActivityModal
-        visible={showCreateModal}
-        onDismiss={() => setShowCreateModal(false)}
-      />
+          <CreateActivityModal
+            visible={showCreateModal}
+            onDismiss={() => setShowCreateModal(false)}
+          />
+        </TeamProvider>
+      )}
 
       <Modal
         visible={showLogoutConfirm}

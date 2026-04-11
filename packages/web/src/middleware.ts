@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { isDevLoginEnabled } from "./lib/dev-auth";
 import { SESSION_COOKIE_NAME } from "./lib/line-auth";
 
 // 認証不要のパス
@@ -20,6 +21,11 @@ const PUBLIC_PATHS = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isDevPath =
+    pathname === "/dev" ||
+    pathname.startsWith("/dev/") ||
+    pathname === "/api/dev" ||
+    pathname.startsWith("/api/dev/");
 
   // CSRF: ミューテーション系リクエストの Origin ヘッダー検証
   if (["POST", "PATCH", "PUT", "DELETE"].includes(request.method)) {
@@ -28,6 +34,13 @@ export async function middleware(request: NextRequest) {
     if (origin && host && !origin.includes(host)) {
       return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
     }
+  }
+
+  if (isDevPath) {
+    if (process.env.NODE_ENV !== "development" || !isDevLoginEnabled()) {
+      return new NextResponse("Not Found", { status: 404 });
+    }
+    return NextResponse.next();
   }
 
   // 公開パスはスキップ（完全一致 or パス区切り付き前方一致）

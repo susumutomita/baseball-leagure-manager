@@ -2,6 +2,8 @@
 
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { MemberFormModal } from "@/components/MemberFormModal";
+import { MemberInvitePanel } from "@/components/MemberInvitePanel";
+import { useTeam } from "@/contexts/TeamContext";
 import { useCrudList } from "@/hooks/useCrudList";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
@@ -44,6 +46,7 @@ interface MembersListProps {
 }
 
 export function MembersList({ initialMembers, teamId }: MembersListProps) {
+  const team = useTeam();
   const crud = useCrudList<Member>({
     deleteEndpoint: (id) => `/api/members/${id}`,
     entityName: "メンバー",
@@ -52,6 +55,14 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
   return (
     <>
       {crud.flash.length > 0 && <Flashbar items={crud.flash} />}
+
+      {team?.memberId && (
+        <MemberInvitePanel
+          teamId={teamId}
+          title="メンバー招待"
+          description="LINE 連携用の招待リンクを発行して、チームメンバーを追加します"
+        />
+      )}
 
       <Cards
         header={
@@ -131,7 +142,15 @@ export function MembersList({ initialMembers, teamId }: MembersListProps) {
         items={initialMembers}
         empty={
           <Box textAlign="center" color="text-body-secondary" padding="xxl">
-            メンバーがいません
+            <SpaceBetween size="m">
+              <Box>メンバーがいません</Box>
+              <Box variant="small">
+                最初のメンバーを追加して運営を始めてください。
+              </Box>
+              <Button variant="primary" onClick={crud.openCreate}>
+                メンバーを追加
+              </Button>
+            </SpaceBetween>
           </Box>
         }
       />

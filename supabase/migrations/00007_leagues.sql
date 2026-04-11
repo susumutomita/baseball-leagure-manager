@@ -75,12 +75,11 @@ CREATE INDEX idx_league_matches_league ON league_matches(league_id);
 CREATE INDEX idx_league_matches_round ON league_matches(league_id, round);
 CREATE INDEX idx_league_standings_league ON league_standings(league_id);
 
--- updated_at 自動更新トリガー
 CREATE TRIGGER set_leagues_updated_at
-  BEFORE UPDATE ON leagues FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON leagues FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER set_league_teams_updated_at
-  BEFORE UPDATE ON league_teams FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON league_teams FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER set_league_matches_updated_at
-  BEFORE UPDATE ON league_matches FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON league_matches FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER set_league_standings_updated_at
-  BEFORE UPDATE ON league_standings FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON league_standings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

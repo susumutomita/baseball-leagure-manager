@@ -3,6 +3,20 @@
 import { useLiffContext } from "@/components/liff/LiffProvider";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { z } from "zod/v4";
+
+const InviteParamsSchema = z
+  .object({
+    inviteCode: z
+      .string()
+      .regex(/^[A-Za-z0-9]{8}$/, "招待コードの形式が不正です")
+      .nullable(),
+    teamId: z.string().uuid("チーム ID の形式が不正です").nullable(),
+  })
+  .refine((value) => value.inviteCode || value.teamId, {
+    message:
+      "招待コードまたはチーム ID が指定されていません。正しいリンクからアクセスしてください。",
+  });
 
 interface Member {
   id: string;
@@ -46,7 +60,10 @@ function ErrorDisplay({
 export default function LiffRegisterPage() {
   const { accessToken, profile } = useLiffContext();
   const searchParams = useSearchParams();
-  const teamId = searchParams.get("team_id");
+  const parsedParams = InviteParamsSchema.safeParse({
+    inviteCode: searchParams.get("code"),
+    teamId: searchParams.get("team_id"),
+  });
 
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,15 +74,51 @@ export default function LiffRegisterPage() {
     success: boolean;
     message: string;
   } | null>(null);
+  const parsedParamsErrorMessage = parsedParams.success
+    ? null
+    : (parsedParams.error.issues[0]?.message ?? "リンクが不正です");
+  const inviteCode = parsedParams.success ? parsedParams.data.inviteCode : null;
+  const teamId = parsedParams.success ? parsedParams.data.teamId : null;
 
   const fetchMembers = useCallback(async () => {
-    if (!teamId) {
+    if (!parsedParams.success) {
       setLoading(false);
+      setFetchError(parsedParamsErrorMessage);
       return;
     }
+
     setLoading(true);
     setFetchError(null);
+
     try {
+      let resolvedTeamId = teamId;
+      if (inviteCode) {
+        const inviteRes = await fetch(
+          `/api/invitations/${encodeURIComponent(inviteCode)}`,
+        );
+        const inviteJson = (await inviteRes.json()) as {
+          data?: { team_id?: string };
+          error?: { message?: string };
+        };
+
+        if (!inviteRes.ok) {
+          setFetchError(
+            inviteJson.error?.message ??
+              (inviteRes.status === 404
+                ? "招待コードが見つかりません。"
+                : "招待リンクの検証に失敗しました。"),
+          );
+          return;
+        }
+
+        resolvedTeamId = inviteJson.data?.team_id ?? null;
+      }
+
+      if (!resolvedTeamId) {
+        setFetchError("チームが特定できませんでした。");
+        return;
+      }
+
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey =
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
@@ -76,15 +129,18 @@ export default function LiffRegisterPage() {
         return;
       }
 
-      const membersRes = await fetch(
-        `${supabaseUrl}/rest/v1/members?team_id=eq.${teamId}&status=eq.ACTIVE&select=id,name,line_user_id&order=name`,
-        {
-          headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-          },
+      const membersUrl = new URL("/rest/v1/members", supabaseUrl);
+      membersUrl.searchParams.set("team_id", `eq.${resolvedTeamId}`);
+      membersUrl.searchParams.set("status", "eq.ACTIVE");
+      membersUrl.searchParams.set("select", "id,name,line_user_id");
+      membersUrl.searchParams.set("order", "name");
+
+      const membersRes = await fetch(membersUrl.toString(), {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
         },
-      );
+      });
       if (!membersRes.ok) {
         if (membersRes.status === 404) {
           setFetchError("指定されたチームが見つかりません。");
@@ -99,7 +155,7 @@ export default function LiffRegisterPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [inviteCode, parsedParams.success, parsedParamsErrorMessage, teamId]);
 
   useEffect(() => {
     fetchMembers();
@@ -118,7 +174,10 @@ export default function LiffRegisterPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ member_id: memberId }),
+        body: JSON.stringify({
+          member_id: memberId,
+          invite_code: inviteCode,
+        }),
       });
 
       const json = (await res.json()) as {
@@ -146,10 +205,8 @@ export default function LiffRegisterPage() {
     }
   };
 
-  if (!teamId) {
-    return (
-      <ErrorDisplay message="チーム ID が指定されていません。正しいリンクからアクセスしてください。" />
-    );
+  if (parsedParamsErrorMessage) {
+    return <ErrorDisplay message={parsedParamsErrorMessage} />;
   }
 
   if (loading) {

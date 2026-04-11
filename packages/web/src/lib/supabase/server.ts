@@ -2,11 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+const supabaseKey = process.env.SUPABASE_SECRET_KEY;
 
 export const createClient = async () => {
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY is not configured",
+    );
+  }
+
   const cookieStore = await cookies();
-  return createServerClient(supabaseUrl!, supabaseKey!, {
+  return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
